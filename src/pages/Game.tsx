@@ -1,16 +1,13 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import WalletConnector from '@/components/WalletConnector';
 import { sendTransaction } from '@/lib/web3';
-import { LoadingOverlay } from '@/components/grow-room/LoadingOverlay';
+import LoadingOverlay from '@/components/grow-room/LoadingOverlay';
 import ReptilianAttackEngine from '@/game/ReptilianAttackEngine';
 
-// Wallet address to send THC to (same as grow room)
 const RECIPIENT_ADDRESS = '0x097766e8dE97A0A53B3A31AB4dB02d0004C8cc4F';
-// Game start cost
 const GAME_START_COST = 0.1;
 
 const Game: React.FC = () => {
@@ -41,7 +38,6 @@ const Game: React.FC = () => {
   const lastFrameTime = useRef<number>(0);
   const { toast } = useToast();
 
-  // Maximize window on load
   useEffect(() => {
     const windowElement = document.querySelector('.window[data-id="game"]');
     if (windowElement && !windowIsMaximized) {
@@ -53,7 +49,6 @@ const Game: React.FC = () => {
     }
   }, [windowIsMaximized]);
 
-  // Initialize game engine
   useEffect(() => {
     if (!gameEngineRef.current) {
       gameEngineRef.current = new ReptilianAttackEngine();
@@ -73,7 +68,6 @@ const Game: React.FC = () => {
     setPendingAction(actionType);
 
     try {
-      // Send THC to the recipient address
       const success = await sendTransaction(RECIPIENT_ADDRESS, amount.toString());
       
       if (success) {
@@ -114,7 +108,6 @@ const Game: React.FC = () => {
       return;
     }
 
-    // Check THC balance
     if (parseFloat(thcBalance || '0') < GAME_START_COST) {
       toast({
         title: "Insufficient THC",
@@ -124,7 +117,6 @@ const Game: React.FC = () => {
       return;
     }
 
-    // Process the transaction
     const success = await handleTransaction(GAME_START_COST, "Starting Game");
     
     if (success) {
@@ -156,18 +148,15 @@ const Game: React.FC = () => {
 
     const deltaTime = timestamp - (lastFrameTime.current || timestamp);
     lastFrameTime.current = timestamp;
-    const delta = deltaTime / 16.67; // Normalize to ~60fps
+    const delta = deltaTime / 16.67;
 
-    // Update game state
     const updatedState = gameEngineRef.current.update(delta, {
       left: mouseState.current.left,
       right: mouseState.current.right
     });
     
-    // Render the game
     gameEngineRef.current.render();
     
-    // Update React state (only properties we care about in the UI)
     setGameState(prev => ({
       ...prev,
       score: updatedState.score,
@@ -207,7 +196,7 @@ const Game: React.FC = () => {
     };
 
     const handleContextMenu = (e: MouseEvent) => {
-      e.preventDefault(); // Prevent context menu from showing on right click
+      e.preventDefault();
     };
 
     window.addEventListener('resize', handleResize);
@@ -241,7 +230,6 @@ const Game: React.FC = () => {
   }, [gameState.gameStarted, gameState.gameOver, gameState.paused]);
 
   useEffect(() => {
-    // Award THC when game is over
     if (gameState.gameOver && gameState.thcEarned > 0 && address) {
       toast({
         title: "Crypto Earned!",
@@ -262,7 +250,6 @@ const Game: React.FC = () => {
       return;
     }
 
-    // Process the transaction
     const success = await handleTransaction(upgradeCost, `Upgrading ${upgradeType}`);
     
     if (success) {
@@ -320,7 +307,6 @@ const Game: React.FC = () => {
           )}
         </div>
         
-        {/* Upgrades Section */}
         {address && !gameState.gameStarted && (
           <div className="win95-panel p-2 w-full max-w-screen-lg mb-4">
             <h3 className="font-bold mb-2">Upgrades:</h3>
