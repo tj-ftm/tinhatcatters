@@ -29,8 +29,8 @@ export const handlePlantSeed = async (
     return;
   }
   
-  // Cost to plant a seed
-  const seedCost = 5;
+  // Cost to plant a seed - must match what's shown in the UI
+  const seedCost = 0.1;
   
   // Check if player has enough THC
   if (thcAmount < seedCost) {
@@ -190,7 +190,7 @@ export const handleUpgradeCapacity = async (
   setPlantCapacity: React.Dispatch<React.SetStateAction<number>>,
   toast: any
 ) => {
-  // Calculate upgrade cost based on current capacity
+  // Calculate upgrade cost based on current capacity - must match what's shown in the UI
   const upgradeCost = plantCapacity * 15;
   
   // Check if player has enough THC

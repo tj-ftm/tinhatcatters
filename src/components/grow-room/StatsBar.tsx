@@ -20,6 +20,7 @@ const StatsBar: React.FC<StatsBarProps> = ({
 }) => {
   // Format the THC amount to display only 2 decimal places
   const formattedThcAmount = thcAmount.toFixed(2);
+  const seedCost = 0.1; // Constant for seed cost
   
   return (
     <div className="win95-window p-2 mb-4">
@@ -35,10 +36,10 @@ const StatsBar: React.FC<StatsBarProps> = ({
         <Button 
           className="win95-button flex items-center px-2 py-1"
           onClick={onPlantSeed}
-          disabled={plantCount >= plantCapacity || thcAmount < 0.1 || isLoading}
+          disabled={plantCount >= plantCapacity || thcAmount < seedCost || isLoading}
         >
           <Sprout className="w-4 h-4 mr-1" />
-          <span>Plant Seed (0.1 $THC)</span>
+          <span>Plant Seed ({seedCost} $THC)</span>
         </Button>
       </div>
     </div>

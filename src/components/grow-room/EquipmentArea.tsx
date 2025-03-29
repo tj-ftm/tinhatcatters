@@ -20,6 +20,9 @@ const EquipmentArea: React.FC<EquipmentAreaProps> = ({
   onShowUpgradeModal,
   onUpgradeCapacity
 }) => {
+  // Calculate expansion cost based on plant capacity
+  const expansionCost = plantCapacity * 15;
+  
   return (
     <div className="win95-window p-2 w-full md:w-1/3">
       <div className="win95-title-bar mb-2">
@@ -75,7 +78,7 @@ const EquipmentArea: React.FC<EquipmentAreaProps> = ({
             disabled={isLoading}
           >
             <Plus className="w-4 h-4 mr-1" />
-            Expand Room ({plantCapacity * 2} $THC)
+            Expand Room ({expansionCost} $THC)
           </Button>
         </div>
       </div>
