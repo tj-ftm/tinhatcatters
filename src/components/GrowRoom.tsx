@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useGrowRoom } from '@/hooks/useGrowRoom';
 import StatsBar from './grow-room/StatsBar';
 import GrowingArea from './grow-room/GrowingArea';
@@ -25,21 +25,19 @@ const GrowRoom: React.FC = () => {
     getGrowthColor
   } = useGrowRoom();
 
-  // Maximize the window when component mounts
-  useEffect(() => {
-    const growRoomWindow = document.querySelector('[data-window-id="growroom"]');
-    if (growRoomWindow) {
-      const maximizeButton = growRoomWindow.querySelector('.window-maximize-button') as HTMLButtonElement;
-      if (maximizeButton) {
-        maximizeButton.click();
-      }
-    }
-  }, []);
-
   return (
     <div className="h-full flex flex-col">
-      {/* Growing Area - Larger and fills available space */}
-      <div className="flex-1 flex">
+      {/* Top Bar with Stats */}
+      <StatsBar 
+        thcAmount={thcAmount}
+        plantCount={plants.length}
+        plantCapacity={plantCapacity}
+        isLoading={isLoading}
+        onPlantSeed={plantSeed}
+      />
+
+      <div className="flex-1 flex flex-col md:flex-row gap-4">
+        {/* Growing Area */}
         <GrowingArea 
           plants={plants}
           plantCapacity={plantCapacity}
@@ -49,27 +47,14 @@ const GrowRoom: React.FC = () => {
           onPlantSeed={plantSeed}
           onHarvestPlant={harvestPlant}
         />
-      </div>
-      
-      {/* Equipment Area - Horizontal at bottom */}
-      <div>
+        
+        {/* Equipment Area */}
         <EquipmentArea 
           equipment={equipment}
           plantCapacity={plantCapacity}
           isLoading={isLoading}
           onShowUpgradeModal={setShowUpgradeModal}
           onUpgradeCapacity={upgradeCapacity}
-        />
-      </div>
-      
-      {/* Stats Bar - At the very bottom */}
-      <div>
-        <StatsBar 
-          thcAmount={thcAmount}
-          plantCount={plants.length}
-          plantCapacity={plantCapacity}
-          isLoading={isLoading}
-          onPlantSeed={plantSeed}
         />
       </div>
       

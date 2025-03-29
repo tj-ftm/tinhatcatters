@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import EquipmentItem from './EquipmentItem';
 import { Equipment, EquipmentType } from '@/types/growRoom';
-import { Separator } from '@/components/ui/separator';
 
 interface EquipmentAreaProps {
   equipment: Record<EquipmentType, Equipment>;
@@ -21,69 +20,65 @@ const EquipmentArea: React.FC<EquipmentAreaProps> = ({
   onShowUpgradeModal,
   onUpgradeCapacity
 }) => {
-  // Fixed expansion cost at 2 THC
-  const expansionCost = 2;
+  // Calculate expansion cost based on plant capacity
+  const expansionCost = plantCapacity * 15;
   
   return (
-    <div className="win95-window p-1 w-full">
-      <div className="win95-title-bar mb-1 text-xs">
+    <div className="win95-window p-2 w-full md:w-1/3">
+      <div className="win95-title-bar mb-2">
         <span>Equipment</span>
       </div>
       
-      <div className="p-1 space-y-1">
-        <div className="grid grid-cols-5 gap-1">
-          {/* Light */}
-          <EquipmentItem
-            type={EquipmentType.Light}
-            equipment={equipment[EquipmentType.Light]}
-            isLoading={isLoading}
-            onUpgrade={() => onShowUpgradeModal(EquipmentType.Light)}
-          />
-          
-          {/* Pot */}
-          <EquipmentItem
-            type={EquipmentType.Pot}
-            equipment={equipment[EquipmentType.Pot]}
-            isLoading={isLoading}
-            onUpgrade={() => onShowUpgradeModal(EquipmentType.Pot)}
-          />
-          
-          {/* Nutrients */}
-          <EquipmentItem
-            type={EquipmentType.Nutrients}
-            equipment={equipment[EquipmentType.Nutrients]}
-            isLoading={isLoading}
-            onUpgrade={() => onShowUpgradeModal(EquipmentType.Nutrients)}
-          />
-          
-          {/* Ventilation */}
-          <EquipmentItem
-            type={EquipmentType.Ventilation}
-            equipment={equipment[EquipmentType.Ventilation]}
-            isLoading={isLoading}
-            onUpgrade={() => onShowUpgradeModal(EquipmentType.Ventilation)}
-          />
-          
-          {/* Automation */}
-          <EquipmentItem
-            type={EquipmentType.Automation}
-            equipment={equipment[EquipmentType.Automation]}
-            isLoading={isLoading}
-            onUpgrade={() => onShowUpgradeModal(EquipmentType.Automation)}
-          />
-        </div>
+      <div className="p-2 space-y-4">
+        {/* Light */}
+        <EquipmentItem
+          type={EquipmentType.Light}
+          equipment={equipment[EquipmentType.Light]}
+          isLoading={isLoading}
+          onUpgrade={() => onShowUpgradeModal(EquipmentType.Light)}
+        />
         
-        <Separator className="my-1" />
+        {/* Pot */}
+        <EquipmentItem
+          type={EquipmentType.Pot}
+          equipment={equipment[EquipmentType.Pot]}
+          isLoading={isLoading}
+          onUpgrade={() => onShowUpgradeModal(EquipmentType.Pot)}
+        />
         
-        {/* Capacity Upgrade - Smaller */}
-        <div className="win95-window p-1">
+        {/* Nutrients */}
+        <EquipmentItem
+          type={EquipmentType.Nutrients}
+          equipment={equipment[EquipmentType.Nutrients]}
+          isLoading={isLoading}
+          onUpgrade={() => onShowUpgradeModal(EquipmentType.Nutrients)}
+        />
+        
+        {/* Ventilation */}
+        <EquipmentItem
+          type={EquipmentType.Ventilation}
+          equipment={equipment[EquipmentType.Ventilation]}
+          isLoading={isLoading}
+          onUpgrade={() => onShowUpgradeModal(EquipmentType.Ventilation)}
+        />
+        
+        {/* Automation */}
+        <EquipmentItem
+          type={EquipmentType.Automation}
+          equipment={equipment[EquipmentType.Automation]}
+          isLoading={isLoading}
+          onUpgrade={() => onShowUpgradeModal(EquipmentType.Automation)}
+        />
+        
+        {/* Capacity Upgrade */}
+        <div className="win95-window p-2 mt-4">
           <Button
-            className="win95-button flex items-center justify-center w-full text-xs py-1"
+            className="win95-button flex items-center justify-center w-full"
             onClick={onUpgradeCapacity}
-            disabled={isLoading || plantCapacity >= 50}
+            disabled={isLoading}
           >
-            <Plus className="w-3 h-3 mr-1" />
-            Expand Room ({expansionCost} $THC) - {plantCapacity}/50 Capacity
+            <Plus className="w-4 h-4 mr-1" />
+            Expand Room ({expansionCost} $THC)
           </Button>
         </div>
       </div>

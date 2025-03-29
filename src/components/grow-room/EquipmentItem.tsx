@@ -15,15 +15,15 @@ const EquipmentItem: React.FC<EquipmentItemProps> = ({ type, equipment, isLoadin
   const getIcon = () => {
     switch (type) {
       case EquipmentType.Light:
-        return <Sun className="w-4 h-4 mr-1 text-yellow-500" />;
+        return <Sun className="w-5 h-5 mr-2 text-yellow-500" />;
       case EquipmentType.Pot:
-        return <div className="w-4 h-4 mr-1 flex items-center justify-center">🪴</div>;
+        return <div className="w-5 h-5 mr-2 flex items-center justify-center">🪴</div>;
       case EquipmentType.Nutrients:
-        return <Droplets className="w-4 h-4 mr-1 text-blue-500" />;
+        return <Droplets className="w-5 h-5 mr-2 text-blue-500" />;
       case EquipmentType.Ventilation:
-        return <Fan className="w-4 h-4 mr-1 text-gray-500" />;
+        return <Fan className="w-5 h-5 mr-2 text-gray-500" />;
       case EquipmentType.Automation:
-        return <div className="w-4 h-4 mr-1 flex items-center justify-center">💧</div>;
+        return <div className="w-5 h-5 mr-2 flex items-center justify-center">💧</div>;
       default:
         return null;
     }
@@ -45,24 +45,24 @@ const EquipmentItem: React.FC<EquipmentItemProps> = ({ type, equipment, isLoadin
   };
   
   return (
-    <div className="win95-window p-1">
-      <div className="flex justify-between items-center text-xs">
+    <div className="win95-window p-2">
+      <div className="flex justify-between items-center">
         <div className="flex items-center">
           {getIcon()}
           <div>
-            <div className="font-bold text-xs">{equipment.name.split(' ')[0]}</div>
-            <div className="text-[10px]">
+            <div className="font-bold">{equipment.name}</div>
+            <div className="text-xs">
               {getDisplayMetric()}
             </div>
           </div>
         </div>
         {equipment.nextLevel && (
           <Button
-            className="win95-button px-1 py-0.5 text-[10px]"
+            className="win95-button px-2 py-1 text-xs"
             onClick={onUpgrade}
             disabled={isLoading}
           >
-            Up
+            Upgrade
           </Button>
         )}
       </div>

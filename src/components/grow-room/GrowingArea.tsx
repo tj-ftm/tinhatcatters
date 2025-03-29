@@ -25,8 +25,12 @@ const GrowingArea: React.FC<GrowingAreaProps> = ({
   onHarvestPlant
 }) => {
   return (
-    <div className="win95-window p-2 w-full h-full">
-      <div className="win95-inset h-full overflow-auto">
+    <div className="win95-window p-2 flex-1">
+      <div className="win95-title-bar mb-2">
+        <span>Grow Room ({plants.length}/{plantCapacity})</span>
+      </div>
+      
+      <div className="p-2 win95-inset h-[calc(100%-40px)] overflow-auto">
         {plants.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center">
             <Sprout className="w-12 h-12 mb-2 text-green-600" />
@@ -41,7 +45,7 @@ const GrowingArea: React.FC<GrowingAreaProps> = ({
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {plants.map(plant => (
               <PlantCard 
                 key={plant.id} 
