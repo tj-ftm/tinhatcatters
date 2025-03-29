@@ -44,7 +44,7 @@ const Desktop: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#0000FF] relative">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#1AB0ED] relative">
       <div className="flex-grow relative">
         {/* Desktop Icons */}
         <div className="absolute top-2 left-2 flex flex-col items-center gap-6">
