@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Game from '../pages/Game';
 import Shop from '../pages/Shop';
 import Index from '../pages/Index';
+import GrowRoom from './GrowRoom';
 
 interface WindowManagerProps {
   activeWindows: string[];
@@ -60,7 +61,7 @@ const WindowManager: React.FC<WindowManagerProps> = ({
   const getWindowSize = (windowId: string): Size => {
     if (sizes[windowId]) return sizes[windowId];
     
-    if (windowId === 'game') {
+    if (windowId === 'game' || windowId === 'growroom') {
       return { width: window.innerWidth * 0.8, height: window.innerHeight * 0.8 };
     } else if (windowId === 'shop') {
       return { width: window.innerWidth * 0.8, height: window.innerHeight * 0.7 };
@@ -181,6 +182,7 @@ const WindowManager: React.FC<WindowManagerProps> = ({
     closeWindow(windowId);
     if (windowId === 'game') navigate('/');
     if (windowId === 'shop') navigate('/');
+    if (windowId === 'growroom') navigate('/');
   };
 
   const toggleMaximize = (windowId: string) => {
@@ -275,6 +277,7 @@ const WindowManager: React.FC<WindowManagerProps> = ({
               {windowId === 'game' && <Game />}
               {windowId === 'shop' && <Shop />}
               {windowId === 'home' && <Index />}
+              {windowId === 'growroom' && <GrowRoom />}
               {windowId === 'computer' && (
                 <div className="p-4">
                   <h2 className="text-lg font-bold mb-4">My Computer</h2>
@@ -310,30 +313,27 @@ const WindowManager: React.FC<WindowManagerProps> = ({
             
             {!maximized && (
               <>
-                <div className="absolute w-2 h-2 top-0 left-0 cursor-nw-resize" 
+                <div className="absolute w-3 h-3 top-0 left-0 cursor-nw-resize" 
                      onMouseDown={(e) => startResize(windowId, 'nw', e)} />
-                <div className="absolute w-2 h-2 top-0 right-0 cursor-ne-resize" 
+                <div className="absolute w-3 h-3 top-0 right-0 cursor-ne-resize" 
                      onMouseDown={(e) => startResize(windowId, 'ne', e)} />
-                <div className="absolute w-2 h-2 bottom-0 left-0 cursor-sw-resize" 
+                <div className="absolute w-3 h-3 bottom-0 left-0 cursor-sw-resize" 
                      onMouseDown={(e) => startResize(windowId, 'sw', e)} />
-                <div className="absolute w-2 h-2 bottom-0 right-0 cursor-se-resize" 
-                     onMouseDown={(e) => startResize(windowId, 'se', e)} />
-                
-                <div className="absolute h-1 left-2 right-2 top-0 cursor-n-resize" 
-                     onMouseDown={(e) => startResize(windowId, 'n', e)} />
-                <div className="absolute h-1 left-2 right-2 bottom-0 cursor-s-resize" 
-                     onMouseDown={(e) => startResize(windowId, 's', e)} />
-                <div className="absolute w-1 top-2 bottom-2 left-0 cursor-w-resize" 
-                     onMouseDown={(e) => startResize(windowId, 'w', e)} />
-                <div className="absolute w-1 top-2 bottom-2 right-0 cursor-e-resize" 
-                     onMouseDown={(e) => startResize(windowId, 'e', e)} />
-                
-                <div className="absolute bottom-0 right-0 w-3 h-3 flex items-center justify-center cursor-se-resize"
+                <div className="absolute w-3 h-3 bottom-0 right-0 cursor-se-resize" 
                      onMouseDown={(e) => startResize(windowId, 'se', e)}>
                   <svg width="5" height="5" viewBox="0 0 8 8" className="fill-current text-gray-700">
                     <path d="M0,6 h2 v2 h-2 z M3,3 h2 v2 h-2 z M6,0 h2 v2 h-2 z" />
                   </svg>
                 </div>
+                
+                <div className="absolute h-2 left-3 right-3 top-0 cursor-n-resize" 
+                     onMouseDown={(e) => startResize(windowId, 'n', e)} />
+                <div className="absolute h-2 left-3 right-3 bottom-0 cursor-s-resize" 
+                     onMouseDown={(e) => startResize(windowId, 's', e)} />
+                <div className="absolute w-2 top-3 bottom-3 left-0 cursor-w-resize" 
+                     onMouseDown={(e) => startResize(windowId, 'w', e)} />
+                <div className="absolute w-2 top-3 bottom-3 right-0 cursor-e-resize" 
+                     onMouseDown={(e) => startResize(windowId, 'e', e)} />
               </>
             )}
           </div>

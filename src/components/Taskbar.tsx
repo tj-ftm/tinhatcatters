@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Computer, ShoppingCart, Gamepad2, Home, Wallet } from 'lucide-react';
+import { Computer, ShoppingCart, Gamepad2, Home, Wallet, Cannabis } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface TaskbarProps {
@@ -86,6 +86,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
             {window === 'computer' && <Computer className="h-4 w-4 mr-1" />}
             {window === 'home' && <Home className="h-4 w-4 mr-1" />}
             {window === 'wallet' && <Wallet className="h-4 w-4 mr-1" />}
+            {window === 'growroom' && <Cannabis className="h-4 w-4 mr-1" />}
             {window.charAt(0).toUpperCase() + window.slice(1)}
           </button>
         ))}
@@ -116,11 +117,33 @@ const Taskbar: React.FC<TaskbarProps> = ({
                 label="Home"
                 onClick={() => handleItemClick('/', 'home')}
               />
-              <StartMenuItem 
-                icon={<Gamepad2 className="h-4 w-4" />} 
-                label="Game"
-                onClick={() => handleItemClick('/game', 'game')}
-              />
+              
+              {/* Games submenu */}
+              <div className="relative group">
+                <div className="flex items-center p-1 hover:bg-win95-blue hover:text-white cursor-pointer">
+                  <div className="w-6 h-6 flex items-center justify-center mr-2">
+                    <Gamepad2 className="h-4 w-4" />
+                  </div>
+                  <span>Games</span>
+                  <span className="ml-auto">▶</span>
+                </div>
+                
+                <div className="hidden group-hover:block absolute left-full top-0 win95-window w-48 border-2">
+                  <div className="py-1">
+                    <StartMenuItem 
+                      icon={<Gamepad2 className="h-4 w-4" />} 
+                      label="Sonic Sidescroller"
+                      onClick={() => handleItemClick('/game', 'game')}
+                    />
+                    <StartMenuItem 
+                      icon={<Cannabis className="h-4 w-4" />} 
+                      label="THC Grow Room"
+                      onClick={() => handleItemClick('/growroom', 'growroom')}
+                    />
+                  </div>
+                </div>
+              </div>
+              
               <StartMenuItem 
                 icon={<ShoppingCart className="h-4 w-4" />}
                 label="NFT Shop"

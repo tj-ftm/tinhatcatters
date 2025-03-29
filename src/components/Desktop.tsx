@@ -42,7 +42,8 @@ const Desktop: React.FC = () => {
           <DesktopIcon label="My Computer" icon="💻" onClick={() => addWindow('computer')} />
           <DesktopIcon label="Network" icon="🌐" onClick={() => addWindow('network')} />
           <DesktopIcon label="Recycle Bin" icon="🗑️" onClick={() => addWindow('recyclebin')} />
-          <DesktopIcon label="Game" icon="🎮" onClick={() => addWindow('game')} />
+          <DesktopIcon label="Sonic Game" icon="🎮" onClick={() => addWindow('game')} />
+          <DesktopIcon label="THC Grow" icon="🌿" onClick={() => addWindow('growroom')} />
           <DesktopIcon label="Shop" icon="🛒" onClick={() => addWindow('shop')} />
         </div>
         
