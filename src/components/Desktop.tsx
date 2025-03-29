@@ -68,27 +68,27 @@ const Desktop: React.FC = () => {
         <div className="absolute top-2 left-2 flex flex-col items-center gap-6">
           <DesktopIcon 
             label="My Computer" 
-            icon={<img src="/favicon.png" alt="My Computer" className="h-8 w-8" />}
+            icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/computer-5769600-4828559.png" alt="My Computer" className="h-8 w-8" />}
             onClick={() => handleIconClick('computer')} 
           />
           <DesktopIcon 
             label="Reptilian Attack" 
-            icon={<img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" alt="Game" className="h-8 w-8" />} 
+            icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/game-controller-5679567-4730291.png" alt="Game" className="h-8 w-8" />} 
             onClick={() => handleIconClick('game', '/game')} 
           />
           <DesktopIcon 
             label="THC Grow Room" 
-            icon={<img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" alt="THC" className="h-8 w-8" />} 
+            icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/cannabis-5679566-4730290.png" alt="THC" className="h-8 w-8" />} 
             onClick={() => handleIconClick('growroom', '/growroom')} 
           />
           <DesktopIcon 
             label="NFT Shop" 
-            icon={<img src="/lovable-uploads/e03a9f53-e89d-4a06-aa83-0c24bf7db8db.jpg" alt="Shop" className="h-8 w-8" />} 
+            icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/shopping-cart-5679599-4730323.png" alt="Shop" className="h-8 w-8" />} 
             onClick={() => handleIconClick('shop', '/shop')} 
           />
           <DesktopIcon 
             label="Community Chat" 
-            icon={<img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" alt="Chat" className="h-8 w-8" />} 
+            icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/chat-5769598-4828557.png" alt="Chat" className="h-8 w-8" />} 
             onClick={handleChatClick} 
           />
         </div>

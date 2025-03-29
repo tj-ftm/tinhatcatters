@@ -22,6 +22,10 @@ const Shop: React.FC = () => {
                     src={`https://cdn3d.iconscout.com/3d/premium/thumb/nft-${5679570 + item}-4730294.png`}
                     alt={`NFT ${item}`}
                     className="w-24 h-24 object-contain mb-2"
+                    onError={(e) => {
+                      // Fallback to a different icon if the primary one fails
+                      (e.target as HTMLImageElement).src = "https://cdn3d.iconscout.com/3d/premium/thumb/nft-5679577-4730301.png";
+                    }}
                   />
                   <h3 className="font-bold">Reptilian NFT #{item}</h3>
                   <p className="text-sm mb-2">A unique collectible item</p>
