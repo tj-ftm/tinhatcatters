@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { 
   connectWallet, 
@@ -91,7 +90,7 @@ export function useWeb3Operations() {
     });
   };
 
-  // Refresh balance with improved retry logic and error handling
+  // Refresh balance with direct contract calls for ETH and THC
   const refreshBalance = async () => {
     if (!address || isRefreshingBalance) return;
     
@@ -105,13 +104,12 @@ export function useWeb3Operations() {
         // Continue with balance check anyway
       }
       
-      // Get ETH balance
+      // Get ETH balance - direct chain call
       const newBalance = await getBalance(address);
       setBalance(newBalance);
       
-      // Get THC token balance with retry logic built into the function
+      // Get THC token balance - direct contract call
       const newThcBalance = await getTHCBalance(address);
-      
       console.log("THC balance updated:", newThcBalance);
       setThcBalance(newThcBalance);
       
@@ -123,16 +121,19 @@ export function useWeb3Operations() {
     }
   };
 
-  // Refresh NFTs with better error handling
+  // Refresh NFTs with direct contract calls
   const refreshNFTs = async () => {
     if (address) {
       try {
         console.log("Refreshing NFTs for address:", address);
+        
+        // Direct contract call for TinHatCatters
         const cats = await getOwnedTinHatCatters(address);
         console.log("Retrieved cats:", cats);
         setTinHatCatters(cats);
         
         try {
+          // Get snacks (separate items from cats)
           const ownedSnacks = await getOwnedSnacks(address);
           setSnacks(ownedSnacks);
         } catch (snackError) {

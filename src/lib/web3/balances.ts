@@ -25,7 +25,7 @@ export const getBalance = async (address: string | null): Promise<string> => {
   }
 };
 
-// Function to get the THC balance using the correct contract address
+// Function to get the THC balance using direct contract interaction
 export const getTHCBalance = async (address: string | null): Promise<string> => {
   if (!address) {
     console.warn('No address provided to getTHCBalance');
@@ -37,31 +37,32 @@ export const getTHCBalance = async (address: string | null): Promise<string> => 
     return '0';
   }
 
-  // Log to check if we're getting here
   console.log('Getting THC balance for address:', address);
 
   try {
     const provider = new ethers.BrowserProvider(window.ethereum);
     
-    // Use the specific contract address provided
+    // THC token contract address
     const tokenAddress = '0x17Af1Df44444AB9091622e4Aa66dB5BB34E51aD5';
     
     console.log('Using token contract address:', tokenAddress);
     
+    // Standard ERC20 ABI for the functions we need
     const abi = [
       "function balanceOf(address) view returns (uint)",
       "function decimals() view returns (uint8)",
       "function symbol() view returns (string)"
     ];
     
+    // Create contract instance
     const tokenContract = new ethers.Contract(
       tokenAddress,
       abi,
       provider
     );
     
-    // Get token decimals - handle errors gracefully
-    let decimals = 18; // Default to 18 if we can't fetch
+    // Get token decimals - default to 18 if we can't fetch
+    let decimals = 18;
     try {
       decimals = await tokenContract.decimals();
       console.log('Token decimals:', decimals);
@@ -69,35 +70,15 @@ export const getTHCBalance = async (address: string | null): Promise<string> => 
       console.warn('Failed to get decimals, using default of 18:', err);
     }
     
-    // Get balance with timeout and retry logic
-    console.log('Fetching balance for address:', address);
+    // Get balance directly from the contract
+    const balance = await tokenContract.balanceOf(address);
+    console.log('Raw balance:', balance.toString());
     
-    let attempts = 0;
-    const maxAttempts = 3;
-    const retryDelay = 1000; // 1 second
+    // Format the balance with proper decimals
+    const formattedBalance = ethers.formatUnits(balance, decimals);
+    console.log('Formatted THC balance:', formattedBalance);
     
-    while (attempts < maxAttempts) {
-      try {
-        const balance = await tokenContract.balanceOf(address);
-        console.log('Raw balance:', balance.toString());
-        const formattedBalance = ethers.formatUnits(balance, decimals);
-        console.log('Formatted THC balance:', formattedBalance);
-        return formattedBalance;
-      } catch (err) {
-        attempts++;
-        console.warn(`THC balance fetch attempt ${attempts} failed:`, err);
-        
-        if (attempts >= maxAttempts) {
-          console.error('Max retries reached for THC balance fetch');
-          return '0';
-        }
-        
-        // Wait before retrying
-        await new Promise(resolve => setTimeout(resolve, retryDelay));
-      }
-    }
-    
-    return '0'; // Should not reach here due to the while loop, but TypeScript wants a return
+    return formattedBalance;
   } catch (error: any) {
     console.error('Error getting THC balance:', error);
     console.error('Error details:', error.message);

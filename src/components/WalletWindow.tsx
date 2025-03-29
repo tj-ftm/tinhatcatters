@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { X, Minus, Image, FileImage, RefreshCw } from 'lucide-react';
 import { useWeb3 } from '@/contexts/Web3Context';
@@ -44,32 +43,19 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
           try {
             await refreshNFTs();
             
-            if (!tinHatCatters || tinHatCatters.length === 0) {
-              console.log("Fetching NFTs directly");
-              const data = await fetchNFTsFromContract(address);
-              console.log("Fetched NFT data:", data);
-              setNftData(data);
-            } else {
+            if (tinHatCatters && tinHatCatters.length > 0) {
               console.log("Using NFTs from context:", tinHatCatters);
               setNftData(tinHatCatters);
+            } else {
+              console.log("No NFTs found in context, showing empty state");
             }
           } catch (nftError) {
             console.error("Error fetching NFTs:", nftError);
             toast({
               title: "NFT Loading Issue",
-              description: "Unable to load NFTs. Showing placeholder data.",
+              description: "Unable to load NFTs. Please try again later.",
               variant: "destructive"
             });
-            
-            const mockData = [
-              {
-                id: '1',
-                name: 'Tin Hat Catter #1',
-                image: `/assets/tinhats/1.png`,
-                description: "A unique Tin Hat Catter NFT"
-              }
-            ];
-            setNftData(mockData);
           }
         } catch (error) {
           console.error("Error loading wallet data:", error);
@@ -88,7 +74,7 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
         refreshBalance().catch(e => console.error("Error refreshing balance:", e));
         setLastRefresh(Date.now());
       }
-    }, 15000); // Refresh every 15 seconds
+    }, 15000);
     
     return () => clearInterval(refreshInterval);
   }, [address, refreshBalance]);
