@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
   connectWallet, 
@@ -42,7 +43,7 @@ const Web3Context = createContext<Web3ContextType>({
 
 export const useWeb3 = () => useContext(Web3Context);
 
-export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const Web3Provider = ({ children }: { children: ReactNode }) => {
   const [address, setAddress] = useState<string | null>(null);
   const [balance, setBalance] = useState<string>('0');
   const [thcBalance, setThcBalance] = useState<string | null>(null);
