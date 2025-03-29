@@ -12,7 +12,6 @@ import Shop from "./pages/Shop";
 import NotFound from "./pages/NotFound";
 import Desktop from "./components/Desktop";
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
 
@@ -31,32 +30,6 @@ const App = () => {
     
     // Set document title
     document.title = "TinHatCatters Game";
-    
-    // Fetch NFT data on startup (only if the NFTs table is empty)
-    const fetchNftData = async () => {
-      try {
-        // Check if NFT data exists
-        const { count } = await supabase
-          .from("nfts")
-          .select("*", { count: "exact", head: true });
-          
-        if (!count || count === 0) {
-          console.log("No NFT data found, fetching from API...");
-          // Call the edge function to fetch NFT data
-          await fetch(`${window.location.origin}/api/fetch-nft-data`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({}),
-          });
-        }
-      } catch (error) {
-        console.error("Error checking/fetching NFT data:", error);
-      }
-    };
-    
-    fetchNftData();
   }, []);
 
   return (

@@ -1,11 +1,9 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { X, Minus, Network } from 'lucide-react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import WalletConnector from './WalletConnector';
-import { ScrollArea } from './ui/scroll-area';
-import { fetchTinHatCattersFromSonicscan, switchToSonicNetwork } from '@/lib/web3';
-import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
+import { switchToSonicNetwork } from '@/lib/web3';
 import { Button } from './ui/button';
 import { toast } from '@/hooks/use-toast';
 
@@ -14,42 +12,9 @@ interface WalletWindowProps {
   onMinimize: () => void;
 }
 
-interface NFTData {
-  id: string;
-  image: string;
-}
-
 const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
-  const { address, balance, thcBalance, tinHatCatters } = useWeb3();
-  const [nftData, setNftData] = useState<NFTData[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [imageLoadErrors, setImageLoadErrors] = useState<Record<string, boolean>>({});
-  const [isCorrectNetwork, setIsCorrectNetwork] = useState<boolean>(true);
-  
-  useEffect(() => {
-    const loadNFTData = async () => {
-      if (address) {
-        setLoading(true);
-        try {
-          const data = await fetchTinHatCattersFromSonicscan(address);
-          setNftData(data);
-        } catch (error) {
-          console.error("Error fetching NFT data:", error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    
-    loadNFTData();
-  }, [address]);
-  
-  const handleImageError = (nftId: string) => {
-    setImageLoadErrors(prev => ({
-      ...prev,
-      [nftId]: true
-    }));
-  };
+  const { address, balance, thcBalance } = useWeb3();
+  const [isCorrectNetwork, setIsCorrectNetwork] = React.useState<boolean>(true);
   
   const handleSwitchNetwork = async () => {
     try {
@@ -136,40 +101,6 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
                 <div className="win95-inset p-1 text-xs font-bold text-black">
                   {thcBalance ? parseFloat(thcBalance).toFixed(2) : '0.00'} THC
                 </div>
-              </div>
-            </div>
-            
-            <div className="mb-2">
-              <div className="text-xs font-bold mb-1">Your Tin Hat Catter:</div>
-              <div className="win95-inset p-1 max-h-24 overflow-y-auto">
-                <ScrollArea className="h-full">
-                  {loading ? (
-                    <div className="text-xs text-center py-1 font-bold text-black">Loading NFTs...</div>
-                  ) : nftData && nftData.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-1">
-                      {nftData.map((nft) => (
-                        <div key={nft.id} className="text-xs p-1 bg-white/50 rounded flex flex-col items-center">
-                          <Avatar className="w-12 h-12 mb-1 border border-gray-300">
-                            {nft.image && !imageLoadErrors[nft.id] ? (
-                              <AvatarImage 
-                                src={nft.image} 
-                                alt={`THC #${nft.id}`}
-                                onError={() => handleImageError(nft.id)}
-                              />
-                            ) : (
-                              <AvatarFallback className="bg-gray-200 text-[10px]">
-                                THC #{nft.id}
-                              </AvatarFallback>
-                            )}
-                          </Avatar>
-                          <span className="font-bold text-black text-center text-[10px]">THC #{nft.id}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-xs text-center py-1 font-bold text-black">No NFTs found</div>
-                  )}
-                </ScrollArea>
               </div>
             </div>
             
