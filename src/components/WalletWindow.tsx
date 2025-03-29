@@ -20,17 +20,20 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
   const { address, balance, thcBalance, tinHatCatters } = useWeb3();
   const [nftData, setNftData] = useState<NFTData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [imageLoadErrors, setImageLoadErrors] = useState<Record<string, boolean>>({});
   
   useEffect(() => {
     const loadNFTData = async () => {
       if (address) {
         setLoading(true);
+        setError(null);
         try {
           const data = await fetchTinHatCattersFromSonicscan(address);
           setNftData(data);
         } catch (error) {
           console.error("Error fetching NFT data:", error);
+          setError("Failed to load NFT data. Please try again later.");
         } finally {
           setLoading(false);
         }
@@ -111,6 +114,8 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
                 <ScrollArea className="h-full">
                   {loading ? (
                     <div className="text-xs text-center py-1 font-bold text-black">Loading NFTs...</div>
+                  ) : error ? (
+                    <div className="text-xs text-center py-1 font-bold text-red-600">{error}</div>
                   ) : nftData && nftData.length > 0 ? (
                     <div className="grid grid-cols-2 gap-1">
                       {nftData.map((nft) => (
