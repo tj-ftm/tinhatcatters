@@ -26,8 +26,6 @@ const GrowingArea: React.FC<GrowingAreaProps> = ({
 }) => {
   return (
     <div className="win95-window p-2 w-full h-full">
-      {/* Removed the win95-title-bar with "Grow Room (0/1)" text */}
-      
       <div className="win95-inset h-full overflow-auto">
         {plants.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center">
