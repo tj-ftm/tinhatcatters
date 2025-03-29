@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Home, Gamepad2, ShoppingCart, Cannabis, Wallet, HelpCircle } from 'lucide-react';
+import { Home, Gamepad2, ShoppingCart, Cannabis, Wallet, HelpCircle, BarChart2, MessageSquare } from 'lucide-react';
 import FileIcon from './FileIcon';
 
 interface ComputerContentProps {
@@ -43,6 +43,16 @@ const ComputerContent: React.FC<ComputerContentProps> = ({ handleOpenWindow }) =
           label="Wallet" 
           icon={<Wallet className="h-5 w-5" />} 
           onClick={() => handleOpenWindow('wallet')} 
+        />
+        <FileIcon 
+          label="Community Chat" 
+          icon={<MessageSquare className="h-5 w-5" />} 
+          onClick={() => handleOpenWindow('chat')} 
+        />
+        <FileIcon 
+          label="Analytics" 
+          icon={<BarChart2 className="h-5 w-5" />} 
+          onClick={() => handleOpenWindow('analytics', '/analytics')} 
         />
         <FileIcon 
           label="Help" 
