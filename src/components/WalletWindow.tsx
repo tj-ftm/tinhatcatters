@@ -5,6 +5,7 @@ import { useWeb3 } from '@/contexts/Web3Context';
 import WalletConnector from './WalletConnector';
 import { ScrollArea } from './ui/scroll-area';
 import { fetchTinHatCattersFromSonicscan } from '@/lib/web3';
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 
 interface WalletWindowProps {
   onClose: () => void;
@@ -116,18 +117,19 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
                     <div className="grid grid-cols-2 gap-1">
                       {nftData.map((nft) => (
                         <div key={nft.id} className="text-xs p-1 bg-white/50 rounded flex flex-col items-center">
-                          {nft.image && !imageLoadErrors[nft.id] ? (
-                            <img 
-                              src={nft.image} 
-                              alt={`THC #${nft.id}`} 
-                              className="w-full h-auto object-contain mb-1 border border-gray-300"
-                              onError={() => handleImageError(nft.id)}
-                            />
-                          ) : (
-                            <div className="w-full h-12 bg-gray-200 flex items-center justify-center">
-                              <span className="text-[10px]">THC #{nft.id}</span>
-                            </div>
-                          )}
+                          <Avatar className="w-12 h-12 mb-1 border border-gray-300">
+                            {nft.image && !imageLoadErrors[nft.id] ? (
+                              <AvatarImage 
+                                src={nft.image} 
+                                alt={`THC #${nft.id}`}
+                                onError={() => handleImageError(nft.id)}
+                              />
+                            ) : (
+                              <AvatarFallback className="bg-gray-200 text-[10px]">
+                                THC #{nft.id}
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
                           <span className="font-bold text-black text-center text-[10px]">THC #{nft.id}</span>
                         </div>
                       ))}

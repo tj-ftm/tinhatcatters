@@ -3,6 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 interface NFTCardProps {
   id: string | number;
@@ -66,11 +67,19 @@ const NFTCard: React.FC<NFTCardProps> = ({
         {/* NFT Image */}
         <div className="win95-inset w-full aspect-square flex items-center justify-center mb-2 overflow-hidden">
           {image ? (
-            <img 
-              src={image} 
-              alt={name} 
-              className="w-full h-full object-contain pixel-art"
-            />
+            <div className="w-full h-full">
+              <AspectRatio ratio={1/1} className="h-full">
+                <img 
+                  src={image} 
+                  alt={name} 
+                  className="w-full h-full object-contain pixel-art"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="hotpink"/><text x="50%" y="50%" font-family="sans-serif" font-size="14" text-anchor="middle" fill="white">Image Error</text></svg>';
+                  }}
+                />
+              </AspectRatio>
+            </div>
           ) : (
             <div className="w-full h-full bg-[#FF69B4] flex items-center justify-center">
               <span className="text-xs">No Image</span>
