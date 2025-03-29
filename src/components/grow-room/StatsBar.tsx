@@ -26,21 +26,21 @@ const StatsBar: React.FC<StatsBarProps> = ({
   
   return (
     <div className="win95-window p-2 mb-4">
-      <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'justify-between items-center'}`}>
+      <div className={`flex ${isMobile ? 'flex-col space-y-1.5' : 'justify-between items-center'}`}>
         <div className="flex items-center">
-          <CircleDollarSign className="w-5 h-5 mr-1 text-green-600" />
-          <span className="font-bold">{formattedThcAmount} $THC</span>
+          <CircleDollarSign className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} mr-1 text-green-600`} />
+          <span className={`font-bold ${isMobile ? 'text-sm' : ''}`}>{formattedThcAmount} $THC</span>
         </div>
         <div className="flex items-center">
-          <Leaf className="w-5 h-5 mr-1 text-green-600" />
-          <span className="font-bold">{plantCount}/{plantCapacity} Plants</span>
+          <Leaf className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} mr-1 text-green-600`} />
+          <span className={`font-bold ${isMobile ? 'text-sm' : ''}`}>{plantCount}/{plantCapacity} Plants</span>
         </div>
         <Button 
-          className="win95-button flex items-center px-2 py-1"
+          className={`win95-button flex items-center ${isMobile ? 'px-1.5 py-0.5 text-xs h-7' : 'px-2 py-1'}`}
           onClick={onPlantSeed}
           disabled={plantCount >= plantCapacity || thcAmount < seedCost || isLoading}
         >
-          <Sprout className="w-4 h-4 mr-1" />
+          <Sprout className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} mr-1`} />
           <span>Plant Seed ({seedCost} $THC)</span>
         </Button>
       </div>
