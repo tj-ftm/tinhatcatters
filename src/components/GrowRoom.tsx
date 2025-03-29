@@ -27,16 +27,7 @@ const GrowRoom: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Top Bar with Stats */}
-      <StatsBar 
-        thcAmount={thcAmount}
-        plantCount={plants.length}
-        plantCapacity={plantCapacity}
-        isLoading={isLoading}
-        onPlantSeed={plantSeed}
-      />
-
-      <div className="flex-1 flex flex-col md:flex-row gap-4">
+      <div className="flex-1 flex flex-col gap-4">
         {/* Growing Area */}
         <GrowingArea 
           plants={plants}
@@ -48,13 +39,22 @@ const GrowRoom: React.FC = () => {
           onHarvestPlant={harvestPlant}
         />
         
-        {/* Equipment Area */}
+        {/* Equipment Area - Now horizontal */}
         <EquipmentArea 
           equipment={equipment}
           plantCapacity={plantCapacity}
           isLoading={isLoading}
           onShowUpgradeModal={setShowUpgradeModal}
           onUpgradeCapacity={upgradeCapacity}
+        />
+        
+        {/* Stats Bar - Moved to the bottom */}
+        <StatsBar 
+          thcAmount={thcAmount}
+          plantCount={plants.length}
+          plantCapacity={plantCapacity}
+          isLoading={isLoading}
+          onPlantSeed={plantSeed}
         />
       </div>
       

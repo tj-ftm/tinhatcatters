@@ -190,8 +190,18 @@ export const handleUpgradeCapacity = async (
   setPlantCapacity: React.Dispatch<React.SetStateAction<number>>,
   toast: any
 ) => {
-  // Calculate upgrade cost based on current capacity - must match what's shown in the UI
-  const upgradeCost = plantCapacity * 15;
+  // Check if at maximum capacity
+  if (plantCapacity >= 50) {
+    toast({
+      title: "Maximum Capacity Reached",
+      description: "Your grow room is at its maximum size of 50 plants.",
+      variant: "destructive"
+    });
+    return;
+  }
+  
+  // Fixed expansion cost at 2 THC
+  const upgradeCost = 2;
   
   // Check if player has enough THC
   if (thcAmount < upgradeCost) {
