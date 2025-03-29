@@ -48,7 +48,6 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [snacks, setSnacks] = useState<any[]>([]);
   const [connectedWalletType, setConnectedWalletType] = useState<string | null>(null);
 
-  // Connect wallet
   const connect = async (walletType?: string) => {
     if (!isWeb3Available()) {
       toast({
@@ -61,7 +60,6 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     setConnecting(true);
     try {
-      // Always ensure we're on Sonic network
       await switchToSonicNetwork();
       
       const userAddress = await connectWallet(walletType);
@@ -87,9 +85,7 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Disconnect wallet
   const disconnect = () => {
-    // If using WalletConnect, disconnect properly
     if (connectedWalletType === 'walletconnect') {
       disconnectWalletConnect();
     }
@@ -107,22 +103,18 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
-  // Refresh balance
   const refreshBalance = async () => {
     if (address) {
-      // Ensure on Sonic network before refreshing balance
       await switchToSonicNetwork();
       
       const newBalance = await getBalance(address);
       setBalance(newBalance);
       
-      // Get THC token balance
       const newThcBalance = await getThcBalance(address);
       setThcBalance(newThcBalance);
     }
   };
 
-  // Refresh NFTs
   const refreshNFTs = async () => {
     if (address) {
       const cats = await getOwnedTinHatCatters(address);
@@ -133,15 +125,12 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Listen for account changes and network changes
   useEffect(() => {
     if (isWeb3Available() && window.ethereum) {
       const handleAccountsChanged = (accounts: string[]) => {
         if (accounts.length === 0) {
-          // User disconnected
           disconnect();
         } else if (accounts[0] !== address) {
-          // Account changed
           setAddress(accounts[0]);
           refreshBalance();
           refreshNFTs();
@@ -149,7 +138,6 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
       };
       
       const handleChainChanged = () => {
-        // When chain changes, ensure we're on Sonic network
         switchToSonicNetwork().then(() => {
           if (address) {
             refreshBalance();
@@ -160,10 +148,8 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
       window.ethereum.on('accountsChanged', handleAccountsChanged);
       window.ethereum.on('chainChanged', handleChainChanged);
       
-      // Check network on initial load
       switchToSonicNetwork();
       
-      // Cleanup
       return () => {
         window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
         window.ethereum.removeListener('chainChanged', handleChainChanged);
@@ -171,12 +157,11 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [address]);
 
-  // Periodically refresh balance
   useEffect(() => {
     if (address) {
       const interval = setInterval(() => {
         refreshBalance();
-      }, 10000); // Refresh every 10 seconds
+      }, 10000);
       
       return () => clearInterval(interval);
     }

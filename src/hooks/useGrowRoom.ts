@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useWeb3 } from '@/contexts/Web3Context';
@@ -54,20 +53,16 @@ export const useGrowRoom = () => {
           if (newProgress >= 100) {
             newProgress = 0;
             
-            switch (plant.stage) {
-              case GrowthStage.Seed:
-                newStage = GrowthStage.Sprout;
-                break;
-              case GrowthStage.Sprout:
-                newStage = GrowthStage.Vegetative;
-                break;
-              case GrowthStage.Vegetative:
-                newStage = GrowthStage.Flowering;
-                break;
-              case GrowthStage.Flowering:
-                newStage = GrowthStage.Harvest;
-                newProgress = 100;
-                break;
+            // Fixed TypeScript error by handling GrowthStage.Harvest separately
+            if (newStage === GrowthStage.Seed) {
+              newStage = GrowthStage.Sprout;
+            } else if (newStage === GrowthStage.Sprout) {
+              newStage = GrowthStage.Vegetative;
+            } else if (newStage === GrowthStage.Vegetative) {
+              newStage = GrowthStage.Flowering;
+            } else if (newStage === GrowthStage.Flowering) {
+              newStage = GrowthStage.Harvest;
+              newProgress = 100;
             }
           }
           
