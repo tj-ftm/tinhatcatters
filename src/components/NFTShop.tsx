@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import WalletSelectDialog from './WalletSelectDialog';
 import { usePoints } from '@/hooks/use-points';
 import WalletConnector from './WalletConnector';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const AVAILABLE_SNACKS = {
   speed: [
@@ -210,6 +211,7 @@ const NFTShop: React.FC = () => {
   const [showWalletDialog, setShowWalletDialog] = useState(false);
   const [pendingSnackId, setPendingSnackId] = useState<string | null>(null);
   const { addPoints } = usePoints();
+  const isMobile = useIsMobile();
   
   const handleSelectWallet = async (walletId: string) => {
     try {
@@ -291,17 +293,17 @@ const NFTShop: React.FC = () => {
         <span>NFT Snack Shop</span>
       </div>
       
-      <div className="p-4">
+      <div className="p-2 md:p-4">
         {address && (
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-2 gap-2 md:gap-4 mb-2 md:mb-4">
             <div className="win95-panel">
-              <p className="text-xs font-bold mb-1">Your $THC Balance:</p>
-              <p className="win95-inset p-1 text-sm">{parseFloat(thcBalance || '0').toFixed(4)} $THC</p>
+              <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} font-bold mb-1`}>Your $THC Balance:</p>
+              <p className="win95-inset p-1 text-xs md:text-sm">{parseFloat(thcBalance || '0').toFixed(4)} $THC</p>
             </div>
             
             <div className="win95-panel">
-              <p className="text-xs font-bold mb-1">Your Points:</p>
-              <p className="win95-inset p-1 text-sm">
+              <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} font-bold mb-1`}>Your Points:</p>
+              <p className="win95-inset p-1 text-xs md:text-sm">
                 {address ? usePoints().getPoints(address) : 0} points
               </p>
             </div>
@@ -309,42 +311,42 @@ const NFTShop: React.FC = () => {
         )}
         
         {!address && (
-          <div className="win95-panel p-3 mb-4 flex items-center justify-between">
-            <p>Connect wallet to unlock purchases</p>
+          <div className="win95-panel p-2 md:p-3 mb-2 md:mb-4 flex items-center justify-between">
+            <p className={`${isMobile ? 'text-xs' : ''}`}>Connect wallet to unlock purchases</p>
             <WalletConnector />
           </div>
         )}
         
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
-          <TabsList className="win95-window p-0 flex w-full mb-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-2 md:mb-4">
+          <TabsList className="win95-window p-0 flex w-full mb-2 md:mb-4 overflow-x-auto">
             <TabsTrigger 
               value="speed" 
-              className="flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black"
+              className={`flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black ${isMobile ? 'text-[10px] py-1' : ''}`}
             >
-              Speed Boosts
+              {isMobile ? 'Speed' : 'Speed Boosts'}
             </TabsTrigger>
             <TabsTrigger 
               value="jump" 
-              className="flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black"
+              className={`flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black ${isMobile ? 'text-[10px] py-1' : ''}`}
             >
-              Jump Boosts
+              {isMobile ? 'Jump' : 'Jump Boosts'}
             </TabsTrigger>
             <TabsTrigger 
               value="health" 
-              className="flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black"
+              className={`flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black ${isMobile ? 'text-[10px] py-1' : ''}`}
             >
-              Health Items
+              {isMobile ? 'Health' : 'Health Items'}
             </TabsTrigger>
             <TabsTrigger 
               value="thc" 
-              className="flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black"
+              className={`flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black ${isMobile ? 'text-[10px] py-1' : ''}`}
             >
-              THC Grow Items
+              {isMobile ? 'THC' : 'THC Grow Items'}
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="speed" className="m-0">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {AVAILABLE_SNACKS.speed.map((snack) => (
                 <NFTCard
                   key={snack.id}
@@ -362,7 +364,7 @@ const NFTShop: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="jump" className="m-0">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {AVAILABLE_SNACKS.jump.map((snack) => (
                 <NFTCard
                   key={snack.id}
@@ -380,7 +382,7 @@ const NFTShop: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="health" className="m-0">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {AVAILABLE_SNACKS.health.map((snack) => (
                 <NFTCard
                   key={snack.id}
@@ -398,7 +400,7 @@ const NFTShop: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="thc" className="m-0">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {AVAILABLE_SNACKS.thc.map((snack) => (
                 <NFTCard
                   key={snack.id}

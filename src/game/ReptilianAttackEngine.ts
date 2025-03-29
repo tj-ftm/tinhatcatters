@@ -1,4 +1,3 @@
-
 // This is a stub implementation for the ReptilianAttackEngine class
 // In a real implementation, this would be a full-featured game engine
 
@@ -29,11 +28,14 @@ class ReptilianAttackEngine {
   private lastShootTime = 0;
   private upgrades = { speed: 1, fireRate: 1, health: 1 };
   private collisionBehavior: 'immediate' | 'fade' = 'fade';
+  private startTime: number = 0;
+  private gameTime: number = 0;
   
   initialize(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.context = canvas.getContext('2d');
     this.reset();
+    this.startTime = Date.now();
   }
   
   setCollisionBehavior(behavior: 'immediate' | 'fade') {
@@ -63,10 +65,16 @@ class ReptilianAttackEngine {
     this.lastEnemyShootTime = 0;
     this.lastShootTime = 0;
     this.upgrades = upgrades;
+    this.startTime = Date.now();
   }
   
   update(delta: number, input: { left: boolean, right: boolean }) {
     if (!this.canvas || !this.context) return this.getGameState();
+    
+    // Calculate game time if game is not over
+    if (!this.gameOver) {
+      this.gameTime = Date.now() - this.startTime;
+    }
     
     // Apply upgrades
     const speedMultiplier = this.upgrades.speed;
@@ -311,6 +319,11 @@ class ReptilianAttackEngine {
       this.thcEarned += 0.0001 * delta;
     }
     
+    // Check if game over, save high score
+    if (this.gameOver) {
+      this.saveGameResults();
+    }
+    
     return this.getGameState();
   }
   
@@ -397,8 +410,41 @@ class ReptilianAttackEngine {
       lives: this.lives,
       health: this.health,
       thcEarned: this.thcEarned,
-      gameOver: this.gameOver
+      gameOver: this.gameOver,
+      gameTime: this.gameTime
     };
+  }
+  
+  private saveGameResults() {
+    // Save high score to localStorage if it's better than the previous one
+    const currentHighScore = parseInt(localStorage.getItem('reptilian-high-score') || '0', 10);
+    if (this.score > currentHighScore) {
+      localStorage.setItem('reptilian-high-score', this.score.toString());
+    }
+    
+    // Save game time (formatted as mm:ss)
+    const minutes = Math.floor(this.gameTime / 60000);
+    const seconds = Math.floor((this.gameTime % 60000) / 1000);
+    const formattedTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    
+    // Get best time
+    const currentBestTime = localStorage.getItem('reptilian-best-time') || '0:00';
+    const [currentMinutes, currentSeconds] = currentBestTime.split(':').map(n => parseInt(n, 10));
+    const currentBestTimeSeconds = (currentMinutes * 60) + currentSeconds;
+    const newTimeSeconds = (minutes * 60) + seconds;
+    
+    // Only save if we have a time and it's better (lower) than current best
+    if (newTimeSeconds > 0 && (currentBestTimeSeconds === 0 || newTimeSeconds > currentBestTimeSeconds)) {
+      localStorage.setItem('reptilian-best-time', formattedTime);
+    }
+    
+    // Save THC earned this game
+    const totalTHCEarned = parseFloat(localStorage.getItem('reptilian-total-thc') || '0');
+    localStorage.setItem('reptilian-total-thc', (totalTHCEarned + this.thcEarned).toString());
+    
+    // Save total games played
+    const gamesPlayed = parseInt(localStorage.getItem('reptilian-games-played') || '0', 10);
+    localStorage.setItem('reptilian-games-played', (gamesPlayed + 1).toString());
   }
 }
 
