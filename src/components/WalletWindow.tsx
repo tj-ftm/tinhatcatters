@@ -4,7 +4,7 @@ import { X, Minus } from 'lucide-react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import WalletConnector from './WalletConnector';
 import { ScrollArea } from './ui/scroll-area';
-import { fetchTinHatCattersFromSonicscan } from '@/lib/web3';
+import { fetchNFTsFromContract } from '@/lib/web3';
 
 interface WalletWindowProps {
   onClose: () => void;
@@ -14,6 +14,10 @@ interface WalletWindowProps {
 interface NFTData {
   id: string;
   image: string;
+  name: string;
+  fallbackImage?: string;
+  description?: string;
+  attributes?: Array<{trait_type: string, value: string}>;
 }
 
 const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
@@ -29,7 +33,9 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
         setLoading(true);
         setError(null);
         try {
-          const data = await fetchTinHatCattersFromSonicscan(address);
+          // Use the updated function to fetch NFTs from the specific contract
+          const data = await fetchNFTsFromContract(address);
+          console.log("Fetched NFT data:", data);
           setNftData(data);
         } catch (error) {
           console.error("Error fetching NFT data:", error);
@@ -107,8 +113,8 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
             </div>
             
             <div className="mb-2">
-              <div className="text-xs font-bold mb-1">Your Tin Hat Catter:</div>
-              <div className="win95-inset p-1 max-h-24 overflow-y-auto">
+              <div className="text-xs font-bold mb-1">Your Tin Hat Catters:</div>
+              <div className="win95-inset p-1 max-h-28 overflow-y-auto">
                 <ScrollArea className="h-full">
                   {loading ? (
                     <div className="text-xs text-center py-1 font-bold text-black">Loading NFTs...</div>
@@ -118,19 +124,29 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
                     <div className="grid grid-cols-2 gap-1">
                       {nftData.map((nft) => (
                         <div key={nft.id} className="text-xs p-1 bg-white/50 rounded flex flex-col items-center">
-                          {nft.image && !imageLoadErrors[nft.id] ? (
+                          {!imageLoadErrors[nft.id] ? (
                             <img 
                               src={nft.image} 
-                              alt={`THC #${nft.id}`} 
+                              alt={nft.name} 
                               className="w-full h-auto object-contain mb-1 border border-gray-300"
-                              onError={() => handleImageError(nft.id)}
+                              onError={() => {
+                                handleImageError(nft.id);
+                                // If there's a fallback image, it will be used next render
+                              }}
+                            />
+                          ) : nft.fallbackImage && !imageLoadErrors[`fallback-${nft.id}`] ? (
+                            <img 
+                              src={nft.fallbackImage}
+                              alt={nft.name} 
+                              className="w-full h-auto object-contain mb-1 border border-gray-300"
+                              onError={() => handleImageError(`fallback-${nft.id}`)}
                             />
                           ) : (
                             <div className="w-full h-12 bg-gray-200 flex items-center justify-center">
-                              <span className="text-[10px]">THC #{nft.id}</span>
+                              <span className="text-[10px]">{nft.name || `THC #${nft.id}`}</span>
                             </div>
                           )}
-                          <span className="font-bold text-black text-center text-[10px]">THC #{nft.id}</span>
+                          <span className="font-bold text-black text-center text-[10px]">{nft.name || `THC #${nft.id}`}</span>
                         </div>
                       ))}
                     </div>
