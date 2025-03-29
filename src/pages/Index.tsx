@@ -1,6 +1,7 @@
 
 import React from 'react';
 import WalletConnector from '../components/WalletConnector';
+import ChatButton from '../components/ChatButton';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -47,8 +48,9 @@ const Index = () => {
           </Button>
         </div>
         
-        <div className="mt-6">
+        <div className="mt-6 flex flex-wrap gap-2 justify-center">
           <WalletConnector />
+          <ChatButton />
         </div>
       </div>
       
