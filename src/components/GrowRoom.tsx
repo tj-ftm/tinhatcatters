@@ -26,12 +26,12 @@ const GrowRoom: React.FC = () => {
     getGrowthColor
   } = useGrowRoom();
 
-  const { maximizeWindow } = useWindowManagement();
+  const { toggleMaximize } = useWindowManagement();
 
   // Maximize window on load
   useEffect(() => {
-    maximizeWindow('growroom');
-  }, [maximizeWindow]);
+    toggleMaximize('growroom');
+  }, [toggleMaximize]);
 
   return (
     <div className="h-full flex flex-col">
