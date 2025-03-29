@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { Wallet, LogOut, ChevronDown, ChevronUp } from 'lucide-react';
 import WalletSelectDialog from './WalletSelectDialog';
+import { toast } from '@/hooks/use-toast';
 
 const WalletConnector: React.FC = () => {
   const { address, balance, connecting, connect, disconnect } = useWeb3();
@@ -34,8 +35,17 @@ const WalletConnector: React.FC = () => {
     setShowWalletDialog(true);
   };
   
-  const handleSelectWallet = (walletId: string) => {
-    connect(walletId);
+  const handleSelectWallet = async (walletId: string) => {
+    try {
+      await connect(walletId);
+    } catch (error) {
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect wallet. Please try again.",
+        variant: "destructive"
+      });
+      console.error("Wallet connection error:", error);
+    }
   };
   
   // If not connected, show connect button

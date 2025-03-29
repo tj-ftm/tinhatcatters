@@ -1,7 +1,6 @@
 import { ethers } from 'ethers';
 import { toast } from '@/hooks/use-toast';
 import { EthereumProvider } from '@walletconnect/ethereum-provider';
-import { WalletConnectModal } from '@walletconnect/modal';
 
 export const SONIC_NETWORK = {
   name: 'Sonic',
@@ -42,9 +41,8 @@ export class Web3Error extends Error {
 // This is a placeholder project ID for development purposes only
 const WC_PROJECT_ID = 'c1330fe75b833d2e66f772f4d2c565a3';
 
-// Define these as null initially
+// Define as null initially
 let walletConnectProvider: null | Awaited<ReturnType<typeof EthereumProvider.init>> = null;
-let walletConnectModal: WalletConnectModal | null = null;
 
 // Initialize WalletConnect provider
 async function initWalletConnectProvider() {
@@ -138,30 +136,14 @@ export async function connectWallet(walletType?: string): Promise<string> {
         console.error('Error connecting with WalletConnect:', error);
         throw new Web3Error('Failed to connect with WalletConnect. Please try again.');
       }
-    } else if (walletType === 'metamask' || walletType === 'brave' || walletType === 'rabby' || walletType === 'other' || walletType === 'coinbase') {
-      // For browser wallets like MetaMask, Brave, etc.
+    } else if (walletType === 'browser') {
+      // For browser wallets
       if (!window.ethereum) {
-        throw new Web3Error(`${walletType} wallet not detected. Please install it.`);
+        throw new Web3Error('No browser wallet detected. Please install one.');
       }
       
-      // For specific wallets, we need to target their specific providers
-      let targetProvider;
-      
-      if (walletType === 'brave' && window.ethereum.isBraveWallet) {
-        targetProvider = window.ethereum;
-      } else if (walletType === 'metamask' && window.ethereum.isMetaMask) {
-        targetProvider = window.ethereum;
-      } else if (walletType === 'coinbase' && window.ethereum.isCoinbaseWallet) {
-        targetProvider = window.ethereum;
-      } else if (walletType === 'rabby' && window.ethereum.isRabby) {
-        targetProvider = window.ethereum;
-      } else {
-        // Default to window.ethereum for 'other' or if specific detection fails
-        targetProvider = window.ethereum;
-      }
-      
-      // Request account access from the specific provider
-      provider = new ethers.BrowserProvider(targetProvider);
+      // Use the default window.ethereum provider
+      provider = new ethers.BrowserProvider(window.ethereum);
       
       // Request account access
       const accounts = await provider.send('eth_requestAccounts', []);
