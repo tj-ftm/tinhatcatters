@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Computer, ShoppingCart, Gamepad2, Home, Wallet, Cannabis, MessageSquare } from 'lucide-react';
+import { ShoppingCart, Gamepad2, Wallet, Cannabis, MessageSquare, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import WalletConnector from './WalletConnector';
 
@@ -43,6 +43,11 @@ const Taskbar: React.FC<TaskbarProps> = ({
     }
   };
 
+  const openBuyTHC = () => {
+    window.open('https://www.shadow.so/trade?inputCurrency=0x0000000000000000000000000000000000000000&outputCurrency=0x17Af1Df44444AB9091622e4Aa66dB5BB34E51aD5', '_blank');
+    setStartMenuOpen(false);
+  };
+
   return (
     <div className="win95-window h-11 flex items-stretch z-50 border-t-2 w-full">
       <button 
@@ -77,8 +82,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
           >
             {window === 'game' && <Gamepad2 className="h-4 w-4 mr-1" />}
             {window === 'shop' && <ShoppingCart className="h-4 w-4 mr-1" />}
-            {window === 'computer' && <Computer className="h-4 w-4 mr-1" />}
-            {window === 'home' && <Home className="h-4 w-4 mr-1" />}
+            {window === 'computer' && <img src="/favicon.png" alt="Computer" className="h-4 w-4 mr-1" />}
             {window === 'wallet' && <Wallet className="h-4 w-4 mr-1" />}
             {window === 'growroom' && <Cannabis className="h-4 w-4 mr-1" />}
             {window === 'chat' && <MessageSquare className="h-4 w-4 mr-1" />}
@@ -95,24 +99,13 @@ const Taskbar: React.FC<TaskbarProps> = ({
       {/* Start Menu - Now with higher z-index to ensure it's always on top */}
       {startMenuOpen && (
         <div className="fixed left-0 bottom-11 win95-window w-56 border-2 z-[9999]">
-          <div className="bg-win95-blue h-full w-8 absolute left-0 top-0 bottom-0">
-            <div className="flex flex-col justify-end h-full pb-2 text-white font-bold">
-              <span className="transform -rotate-90 whitespace-nowrap origin-bottom-left translate-y-0 translate-x-0 absolute bottom-12">
-                TinhatCatters
-              </span>
+          <div className="p-1">
+            <div className="p-1 font-bold text-lg mb-1 flex items-center">
+              <img src="/favicon.png" alt="TinHatCatters" className="h-6 w-6 mr-2" />
+              TinHatCatters
             </div>
-          </div>
-
-          <div className="pl-8 py-1">
-            <div className="p-1 font-bold text-lg mb-1">Tin Hat Catters</div>
             
             <div className="flex flex-col">
-              <StartMenuItem 
-                icon={<Home className="h-4 w-4" />} 
-                label="Home"
-                onClick={() => handleItemClick('/', 'home')}
-              />
-              
               {/* Games submenu */}
               <div className="relative group">
                 <div className="flex items-center p-1 hover:bg-win95-blue hover:text-white cursor-pointer">
@@ -161,7 +154,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
                 }}
               />
               <StartMenuItem 
-                icon={<Computer className="h-4 w-4" />}
+                icon={<img src="/favicon.png" alt="Computer" className="h-4 w-4" />}
                 label="My Computer"
                 onClick={() => handleItemClick('/', 'computer')}
               />
@@ -169,9 +162,9 @@ const Taskbar: React.FC<TaskbarProps> = ({
               <div className="border-t border-win95-darkGray my-1"></div>
               
               <StartMenuItem 
-                icon="❓" 
-                label="Help"
-                onClick={() => alert('Help not available in this version!')}
+                icon={<ExternalLink className="h-4 w-4" />} 
+                label="Buy $THC"
+                onClick={openBuyTHC}
               />
             </div>
           </div>

@@ -126,13 +126,43 @@ const initialEquipment: Record<EquipmentType, Equipment> = {
   }
 };
 
+// Plant growth animation frames
+const PlantAnimations = {
+  [GrowthStage.Seed]: [
+    "🌱", 
+    "🌱"
+  ],
+  [GrowthStage.Sprout]: [
+    "🌿", 
+    "🌿", 
+    "🌿"
+  ],
+  [GrowthStage.Vegetative]: [
+    "☘️", 
+    "☘️", 
+    "🍀", 
+    "🍀"
+  ],
+  [GrowthStage.Flowering]: [
+    "🌴", 
+    "🌴", 
+    "🌲", 
+    "🌲"
+  ],
+  [GrowthStage.Harvest]: [
+    "🌳", 
+    "🌳"
+  ]
+};
+
 const GrowRoom: React.FC = () => {
   const { thcBalance, address } = useWeb3();
-  const [thcAmount, setThcAmount] = useState<number>(50); // Starting with 50 $THC
+  const [thcAmount, setThcAmount] = useState<number>(0);
   const [plants, setPlants] = useState<Plant[]>([]);
   const [equipment, setEquipment] = useState<Record<EquipmentType, Equipment>>(initialEquipment);
-  const [plantCapacity, setPlantCapacity] = useState<number>(1);
+  const [plantCapacity, setPlantCapacity] = useState<number>(5);
   const [showUpgradeModal, setShowUpgradeModal] = useState<EquipmentType | null>(null);
+  const [plantAnimFrames, setPlantAnimFrames] = useState<Record<number, number>>({});
   const { toast } = useToast();
   
   // Update local THC amount from wallet if available
@@ -144,6 +174,22 @@ const GrowRoom: React.FC = () => {
       }
     }
   }, [thcBalance]);
+
+  // Animation frame updater
+  useEffect(() => {
+    const animationInterval = setInterval(() => {
+      setPlantAnimFrames(prev => {
+        const newFrames = { ...prev };
+        plants.forEach(plant => {
+          const framesArray = PlantAnimations[plant.stage];
+          newFrames[plant.id] = ((newFrames[plant.id] || 0) + 1) % framesArray.length;
+        });
+        return newFrames;
+      });
+    }, 500);
+
+    return () => clearInterval(animationInterval);
+  }, [plants]);
 
   // Calculate total speed and quality multipliers from equipment
   const calculateMultipliers = () => {
@@ -352,6 +398,15 @@ const GrowRoom: React.FC = () => {
 
   // Upgrade grow room capacity
   const upgradeCapacity = () => {
+    if (plantCapacity >= 50) {
+      toast({
+        title: "Maximum Capacity Reached",
+        description: "You have reached the maximum grow room capacity.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     const cost = plantCapacity * 200;
     
     if (thcAmount < cost) {
@@ -364,11 +419,11 @@ const GrowRoom: React.FC = () => {
     }
     
     setThcAmount(prev => prev - cost);
-    setPlantCapacity(prev => prev + 1);
+    setPlantCapacity(prev => prev + 5);
     
     toast({
       title: "Grow Room Expanded!",
-      description: `Your grow room can now hold ${plantCapacity + 1} plants!`
+      description: `Your grow room can now hold ${plantCapacity + 5} plants!`
     });
   };
 
@@ -384,22 +439,11 @@ const GrowRoom: React.FC = () => {
     }
   };
 
-  // Get plant icon based on stage
-  const getPlantIcon = (stage: GrowthStage) => {
-    switch (stage) {
-      case GrowthStage.Seed:
-        return <div className="w-10 h-10 bg-brown-600 rounded-full flex items-center justify-center">🌱</div>;
-      case GrowthStage.Sprout:
-        return <Sprout className="w-10 h-10 text-green-400" />;
-      case GrowthStage.Vegetative:
-        return <Leaf className="w-10 h-10 text-green-600" />;
-      case GrowthStage.Flowering:
-        return <div className="w-10 h-10 text-purple-500 flex items-center justify-center">🌿</div>;
-      case GrowthStage.Harvest:
-        return <div className="w-10 h-10 text-pink-600 flex items-center justify-center">☘️</div>;
-      default:
-        return <Sprout className="w-10 h-10" />;
-    }
+  // Get plant animation frame
+  const getPlantFrame = (plant: Plant) => {
+    const frameIndex = plantAnimFrames[plant.id] || 0;
+    const framesArray = PlantAnimations[plant.stage];
+    return framesArray[frameIndex];
   };
 
   // Equipment upgrade modal
@@ -451,10 +495,30 @@ const GrowRoom: React.FC = () => {
     );
   };
 
+  // If wallet not connected, show connection message
+  if (!address) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center p-4">
+        <div className="win95-window p-4 max-w-md w-full text-center">
+          <div className="win95-title-bar mb-4">
+            <span>THC Grow Room</span>
+          </div>
+          <Leaf className="w-16 h-16 mx-auto mb-4 text-green-600" />
+          <h2 className="text-xl font-bold mb-2">Wallet Not Connected</h2>
+          <p className="mb-4">Connect your wallet to start growing plants and earning $THC.</p>
+          <div className="bg-cover bg-center h-48 rounded mb-4" style={{ backgroundImage: "url('/lovable-uploads/07183bff-2cfc-4347-875c-f0343ccaa8bc.png')" }}></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex flex-col">
       {/* Top Bar with Stats */}
       <div className="win95-window p-2 mb-4">
+        <div className="win95-title-bar mb-2">
+          <span>THC Grow Room</span>
+        </div>
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <CircleDollarSign className="w-5 h-5 mr-1 text-green-600" />
@@ -485,7 +549,7 @@ const GrowRoom: React.FC = () => {
           <div className="p-2 win95-inset h-[calc(100%-40px)] overflow-auto">
             {plants.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center">
-                <Sprout className="w-12 h-12 mb-2 text-green-600" />
+                <div className="bg-cover bg-center h-32 w-32 mb-4" style={{ backgroundImage: "url('/lovable-uploads/07183bff-2cfc-4347-875c-f0343ccaa8bc.png')" }}></div>
                 <p className="mb-4">Your grow room is empty!</p>
                 <Button 
                   className="win95-button flex items-center"
@@ -501,8 +565,8 @@ const GrowRoom: React.FC = () => {
                 {plants.map(plant => (
                   <div key={plant.id} className="win95-window p-2">
                     <div className="flex flex-col items-center">
-                      <div className="mb-2">
-                        {getPlantIcon(plant.stage)}
+                      <div className="mb-2 text-4xl">
+                        {getPlantFrame(plant)}
                       </div>
                       <div className="font-bold mb-1">
                         {plant.stage.charAt(0).toUpperCase() + plant.stage.slice(1)}
@@ -662,10 +726,14 @@ const GrowRoom: React.FC = () => {
               <Button
                 className="win95-button flex items-center justify-center w-full"
                 onClick={upgradeCapacity}
+                disabled={plantCapacity >= 50}
               >
                 <Plus className="w-4 h-4 mr-1" />
                 Expand Room ({plantCapacity * 200} $THC)
               </Button>
+              <div className="text-xs text-center mt-1">
+                Max Capacity: 50 Plants
+              </div>
             </div>
           </div>
         </div>

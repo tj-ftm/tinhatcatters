@@ -46,6 +46,15 @@ const Index = () => {
             <span className="font-bold">NFT Shop</span>
             <span className="text-xs mt-1">Buy awesome items!</span>
           </Button>
+          
+          <Button 
+            className="win95-button h-auto py-4 flex flex-col items-center"
+            onClick={() => navigate('/growroom')}
+          >
+            <span className="text-2xl mb-2">🌿</span>
+            <span className="font-bold">THC Grow Room</span>
+            <span className="text-xs mt-1">Grow plants & earn $THC!</span>
+          </Button>
         </div>
         
         <div className="mt-6 flex flex-wrap gap-2 justify-center">

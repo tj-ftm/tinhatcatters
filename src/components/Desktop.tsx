@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Taskbar from './Taskbar';
@@ -54,13 +55,20 @@ const Desktop: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#1AB0ED] relative">
+    <div 
+      className="flex flex-col h-screen w-screen overflow-hidden relative"
+      style={{
+        backgroundImage: "url('/lovable-uploads/6d4e8ebb-627f-4f21-baaf-ff5524cf554c.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center"
+      }}
+    >
       <div className="flex-grow relative">
         {/* Desktop Icons */}
         <div className="absolute top-2 left-2 flex flex-col items-center gap-6">
           <DesktopIcon 
             label="My Computer" 
-            icon="💻" 
+            icon={<img src="/favicon.png" alt="My Computer" className="h-8 w-8" />}
             onClick={() => handleIconClick('computer')} 
           />
           <DesktopIcon 
@@ -167,16 +175,17 @@ const Desktop: React.FC = () => {
 
 const DesktopIcon: React.FC<{ 
   label: string; 
-  icon: string; 
+  icon: React.ReactNode | string; 
   onClick: () => void 
 }> = ({ label, icon, onClick }) => {
   return (
     <div 
       className="flex flex-col items-center cursor-pointer w-16 group hover:bg-win95-blue/20"
       onClick={onClick}
-      onDoubleClick={onClick}
     >
-      <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">{icon}</div>
+      <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">
+        {typeof icon === 'string' ? icon : icon}
+      </div>
       <span className="text-white text-xs text-center bg-win95-blue/80 px-1 py-0.5 w-full">
         {label}
       </span>

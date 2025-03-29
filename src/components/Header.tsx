@@ -47,6 +47,9 @@ const Header: React.FC = () => {
           <Link to="/shop" className="win95-button">
             NFT Shop
           </Link>
+          <Link to="/growroom" className="win95-button">
+            THC Grow Room
+          </Link>
         </nav>
         
         <WalletConnector />
