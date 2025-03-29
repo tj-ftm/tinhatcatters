@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import NFTCard from './NFTCard';
@@ -244,7 +243,6 @@ const NFTShop: React.FC = () => {
       return;
     }
     
-    // Find the snack in any category
     let snack = null;
     Object.values(AVAILABLE_SNACKS).forEach(category => {
       const found = category.find(s => s.id === snackId);
@@ -253,7 +251,6 @@ const NFTShop: React.FC = () => {
     
     if (!snack) return;
     
-    // Check if user has enough balance
     if (parseFloat(thcBalance || '0') < snack.price) {
       toast({
         title: 'Insufficient Balance',
@@ -269,7 +266,6 @@ const NFTShop: React.FC = () => {
       const success = await purchaseSnack(Number(snackId));
       
       if (success) {
-        // Add points (10 points per price unit)
         addPoints(address, snack.price * 10);
         
         toast({
@@ -296,31 +292,25 @@ const NFTShop: React.FC = () => {
       </div>
       
       <div className="p-4">
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="win95-panel">
-            {address ? (
-              <>
-                <p className="text-xs font-bold mb-1">Your $THC Balance:</p>
-                <p className="win95-inset p-1 text-sm">{parseFloat(thcBalance || '0').toFixed(4)} $THC</p>
-              </>
-            ) : (
-              <div className="text-center">
-                <WalletConnector />
-              </div>
-            )}
+        {address && (
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="win95-panel">
+              <p className="text-xs font-bold mb-1">Your $THC Balance:</p>
+              <p className="win95-inset p-1 text-sm">{parseFloat(thcBalance || '0').toFixed(4)} $THC</p>
+            </div>
+            
+            <div className="win95-panel">
+              <p className="text-xs font-bold mb-1">Your Points:</p>
+              <p className="win95-inset p-1 text-sm">
+                {address ? usePoints().getPoints(address) : 0} points
+              </p>
+            </div>
           </div>
-          
-          <div className="win95-panel">
-            <p className="text-xs font-bold mb-1">Your Points:</p>
-            <p className="win95-inset p-1 text-sm">
-              {address ? usePoints().getPoints(address) : 0} points
-            </p>
-          </div>
-        </div>
+        )}
         
         {!address && (
-          <div className="win95-panel p-3 mb-4 text-center">
-            <p className="mb-2">Connect your wallet to purchase items:</p>
+          <div className="win95-panel p-3 mb-4 flex items-center justify-between">
+            <p>Connect wallet to unlock purchases</p>
             <WalletConnector />
           </div>
         )}
@@ -354,7 +344,7 @@ const NFTShop: React.FC = () => {
           </TabsList>
           
           <TabsContent value="speed" className="m-0">
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
               {AVAILABLE_SNACKS.speed.map((snack) => (
                 <NFTCard
                   key={snack.id}
@@ -365,13 +355,14 @@ const NFTShop: React.FC = () => {
                   price={snack.price}
                   onPurchase={() => handlePurchaseClick(snack.id)}
                   className="w-full"
+                  disabled={!address}
                 />
               ))}
             </div>
           </TabsContent>
           
           <TabsContent value="jump" className="m-0">
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
               {AVAILABLE_SNACKS.jump.map((snack) => (
                 <NFTCard
                   key={snack.id}
@@ -382,13 +373,14 @@ const NFTShop: React.FC = () => {
                   price={snack.price}
                   onPurchase={() => handlePurchaseClick(snack.id)}
                   className="w-full"
+                  disabled={!address}
                 />
               ))}
             </div>
           </TabsContent>
           
           <TabsContent value="health" className="m-0">
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
               {AVAILABLE_SNACKS.health.map((snack) => (
                 <NFTCard
                   key={snack.id}
@@ -399,13 +391,14 @@ const NFTShop: React.FC = () => {
                   price={snack.price}
                   onPurchase={() => handlePurchaseClick(snack.id)}
                   className="w-full"
+                  disabled={!address}
                 />
               ))}
             </div>
           </TabsContent>
           
           <TabsContent value="thc" className="m-0">
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
               {AVAILABLE_SNACKS.thc.map((snack) => (
                 <NFTCard
                   key={snack.id}
@@ -416,6 +409,7 @@ const NFTShop: React.FC = () => {
                   price={snack.price}
                   onPurchase={() => handlePurchaseClick(snack.id)}
                   className="w-full"
+                  disabled={!address}
                 />
               ))}
             </div>

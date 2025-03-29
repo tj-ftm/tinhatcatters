@@ -19,6 +19,7 @@ interface NFTCardProps {
   onPurchase?: () => void;
   selected?: boolean;
   className?: string;
+  disabled?: boolean;
 }
 
 const NFTCard: React.FC<NFTCardProps> = ({
@@ -31,7 +32,8 @@ const NFTCard: React.FC<NFTCardProps> = ({
   onUse,
   onPurchase,
   selected = false,
-  className
+  className,
+  disabled = false
 }) => {
   // Format boost text based on type
   const getBoostText = () => {
@@ -52,6 +54,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
       className={cn(
         "win95-window p-0 transition-transform hover:scale-105",
         selected ? "ring-2 ring-[#FFFF00]" : "",
+        disabled ? "opacity-75" : "",
         className
       )}
     >
@@ -99,6 +102,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
             <Button 
               className="win95-button flex-1 text-[10px] py-0.5 h-6" 
               onClick={onSelect}
+              disabled={disabled}
             >
               Select
             </Button>
@@ -108,6 +112,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
             <Button 
               className="win95-button flex-1 text-[10px] py-0.5 h-6" 
               onClick={onUse}
+              disabled={disabled}
             >
               Use
             </Button>
@@ -115,8 +120,13 @@ const NFTCard: React.FC<NFTCardProps> = ({
           
           {onPurchase && (
             <Button 
-              className="win95-button flex-1 text-[10px] py-0.5 h-6" 
+              className={cn(
+                "win95-button flex-1 text-[10px] py-0.5 h-6",
+                disabled ? "cursor-not-allowed" : "cursor-pointer"
+              )}
               onClick={onPurchase}
+              disabled={disabled}
+              title={disabled ? "Connect wallet to purchase" : "Buy this item"}
             >
               Buy
             </Button>
