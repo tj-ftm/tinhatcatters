@@ -29,7 +29,7 @@ const Inventory: React.FC<InventoryProps> = ({ onUseSnack }) => {
         {snacks.length === 0 ? (
           <div className="win95-panel p-4 text-center">
             <p className="text-sm mb-2">Your inventory is empty.</p>
-            <p className="text-xs">Visit the shop to purchase snack NFTs for gameplay boosts!</p>
+            <p className="text-xs">Visit the shop to purchase snack NFTs with $THC for gameplay boosts!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
+import { useWeb3 } from '@/contexts/Web3Context';
 import { 
   Leaf, 
   Droplets, 
@@ -126,12 +127,23 @@ const initialEquipment: Record<EquipmentType, Equipment> = {
 };
 
 const GrowRoom: React.FC = () => {
-  const [budBalance, setBudBalance] = useState<number>(50); // Starting with 50 $BUD
+  const { thcBalance, address } = useWeb3();
+  const [thcAmount, setThcAmount] = useState<number>(50); // Starting with 50 $THC
   const [plants, setPlants] = useState<Plant[]>([]);
   const [equipment, setEquipment] = useState<Record<EquipmentType, Equipment>>(initialEquipment);
   const [plantCapacity, setPlantCapacity] = useState<number>(1);
   const [showUpgradeModal, setShowUpgradeModal] = useState<EquipmentType | null>(null);
   const { toast } = useToast();
+  
+  // Update local THC amount from wallet if available
+  useEffect(() => {
+    if (thcBalance) {
+      const parsedBalance = parseFloat(thcBalance);
+      if (!isNaN(parsedBalance)) {
+        setThcAmount(parsedBalance);
+      }
+    }
+  }, [thcBalance]);
 
   // Calculate total speed and quality multipliers from equipment
   const calculateMultipliers = () => {
@@ -215,10 +227,10 @@ const GrowRoom: React.FC = () => {
       return;
     }
 
-    if (budBalance < 10) {
+    if (thcAmount < 10) {
       toast({
-        title: "Not Enough $BUD",
-        description: "You need 10 $BUD to plant a new seed.",
+        title: "Not Enough $THC",
+        description: "You need 10 $THC to plant a new seed.",
         variant: "destructive"
       });
       return;
@@ -235,7 +247,7 @@ const GrowRoom: React.FC = () => {
     };
 
     setPlants([...plants, newPlant]);
-    setBudBalance(prev => prev - 10); // Seeds cost 10 $BUD
+    setThcAmount(prev => prev - 10); // Seeds cost 10 $THC
 
     toast({
       title: "Seed Planted!",
@@ -249,14 +261,14 @@ const GrowRoom: React.FC = () => {
     if (!plantToHarvest || plantToHarvest.stage !== GrowthStage.Harvest) return;
 
     const { qualityMultiplier } = calculateMultipliers();
-    const budEarned = Math.floor(25 * qualityMultiplier * plantToHarvest.quality);
+    const thcEarned = Math.floor(25 * qualityMultiplier * plantToHarvest.quality);
     
-    setBudBalance(prev => prev + budEarned);
+    setThcAmount(prev => prev + thcEarned);
     setPlants(plants.filter(p => p.id !== plantId));
     
     toast({
       title: "Plant Harvested!",
-      description: `You earned ${budEarned} $BUD from your harvest!`
+      description: `You earned ${thcEarned} $THC from your harvest!`
     });
   };
 
@@ -265,16 +277,16 @@ const GrowRoom: React.FC = () => {
     const itemToUpgrade = equipment[type];
     if (!itemToUpgrade.nextLevel) return;
 
-    if (budBalance < itemToUpgrade.nextLevel.cost) {
+    if (thcAmount < itemToUpgrade.nextLevel.cost) {
       toast({
-        title: "Not Enough $BUD",
-        description: `You need ${itemToUpgrade.nextLevel.cost} $BUD for this upgrade.`,
+        title: "Not Enough $THC",
+        description: `You need ${itemToUpgrade.nextLevel.cost} $THC for this upgrade.`,
         variant: "destructive"
       });
       return;
     }
 
-    setBudBalance(prev => prev - itemToUpgrade.nextLevel!.cost);
+    setThcAmount(prev => prev - itemToUpgrade.nextLevel!.cost);
     
     // Create the next level for the advanced equipment
     let newNextLevel = null;
@@ -342,16 +354,16 @@ const GrowRoom: React.FC = () => {
   const upgradeCapacity = () => {
     const cost = plantCapacity * 200;
     
-    if (budBalance < cost) {
+    if (thcAmount < cost) {
       toast({
-        title: "Not Enough $BUD",
-        description: `You need ${cost} $BUD to expand your grow room.`,
+        title: "Not Enough $THC",
+        description: `You need ${cost} $THC to expand your grow room.`,
         variant: "destructive"
       });
       return;
     }
     
-    setBudBalance(prev => prev - cost);
+    setThcAmount(prev => prev - cost);
     setPlantCapacity(prev => prev + 1);
     
     toast({
@@ -427,10 +439,10 @@ const GrowRoom: React.FC = () => {
               <Button 
                 className="win95-button flex items-center"
                 onClick={() => upgradeEquipment(showUpgradeModal)}
-                disabled={budBalance < item.nextLevel.cost}
+                disabled={thcAmount < item.nextLevel.cost}
               >
                 <CircleDollarSign className="w-4 h-4 mr-1" />
-                Upgrade ({item.nextLevel.cost} $BUD)
+                Upgrade ({item.nextLevel.cost} $THC)
               </Button>
             </div>
           </div>
@@ -446,7 +458,7 @@ const GrowRoom: React.FC = () => {
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <CircleDollarSign className="w-5 h-5 mr-1 text-green-600" />
-            <span className="font-bold">{budBalance} $BUD</span>
+            <span className="font-bold">{thcAmount} $THC</span>
           </div>
           <div className="flex items-center">
             <Leaf className="w-5 h-5 mr-1 text-green-600" />
@@ -455,10 +467,10 @@ const GrowRoom: React.FC = () => {
           <Button 
             className="win95-button flex items-center px-2 py-1"
             onClick={plantSeed}
-            disabled={plants.length >= plantCapacity || budBalance < 10}
+            disabled={plants.length >= plantCapacity || thcAmount < 10}
           >
             <Sprout className="w-4 h-4 mr-1" />
-            <span>Plant Seed (10 $BUD)</span>
+            <span>Plant Seed (10 $THC)</span>
           </Button>
         </div>
       </div>
@@ -478,10 +490,10 @@ const GrowRoom: React.FC = () => {
                 <Button 
                   className="win95-button flex items-center"
                   onClick={plantSeed}
-                  disabled={budBalance < 10}
+                  disabled={thcAmount < 10}
                 >
                   <Sprout className="w-4 h-4 mr-1" />
-                  Plant Seed (10 $BUD)
+                  Plant Seed (10 $THC)
                 </Button>
               </div>
             ) : (
@@ -652,7 +664,7 @@ const GrowRoom: React.FC = () => {
                 onClick={upgradeCapacity}
               >
                 <Plus className="w-4 h-4 mr-1" />
-                Expand Room ({plantCapacity * 200} $BUD)
+                Expand Room ({plantCapacity * 200} $THC)
               </Button>
             </div>
           </div>
