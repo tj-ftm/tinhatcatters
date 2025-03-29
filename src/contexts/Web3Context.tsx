@@ -7,6 +7,7 @@ import {
   getOwnedSnacks,
   isWeb3Available,
   getThcBalance,
+  disconnectWalletConnect,
 } from '@/lib/web3';
 import { toast } from '@/hooks/use-toast';
 
@@ -45,6 +46,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
   const [connecting, setConnecting] = useState<boolean>(false);
   const [tinHatCatters, setTinHatCatters] = useState<any[]>([]);
   const [snacks, setSnacks] = useState<any[]>([]);
+  const [connectedWalletType, setConnectedWalletType] = useState<string | null>(null);
 
   // Connect wallet
   const connect = async (walletType?: string) => {
@@ -61,6 +63,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
     try {
       const userAddress = await connectWallet(walletType);
       setAddress(userAddress);
+      setConnectedWalletType(walletType || 'unknown');
       await refreshBalance();
       await refreshNFTs();
       
@@ -83,11 +86,18 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
 
   // Disconnect wallet
   const disconnect = () => {
+    // If using WalletConnect, disconnect properly
+    if (connectedWalletType === 'walletconnect') {
+      disconnectWalletConnect();
+    }
+    
     setAddress(null);
     setBalance('0');
     setThcBalance(null);
     setTinHatCatters([]);
     setSnacks([]);
+    setConnectedWalletType(null);
+    
     toast({
       title: 'Wallet Disconnected',
       description: 'Your wallet has been disconnected.',

@@ -9,7 +9,7 @@ import {
   DialogClose
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Wallet, Shield, Chrome, Award } from 'lucide-react';
+import { Wallet, Shield, Chrome, Award, Smartphone } from 'lucide-react';
 
 interface WalletOption {
   id: string;
@@ -42,6 +42,12 @@ const walletOptions: WalletOption[] = [
     name: 'Brave',
     icon: <Chrome className="h-6 w-6 text-red-500" />,
     description: 'Use Brave browser wallet'
+  },
+  {
+    id: 'walletconnect',
+    name: 'WalletConnect',
+    icon: <Smartphone className="h-6 w-6 text-blue-500" />,
+    description: 'Scan QR code with your mobile wallet'
   },
   {
     id: 'other',

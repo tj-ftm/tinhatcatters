@@ -1,5 +1,7 @@
 import { ethers } from 'ethers';
 import { toast } from '@/hooks/use-toast';
+import { EthereumProvider } from '@walletconnect/ethereum-provider';
+import { WalletConnectModal } from '@walletconnect/modal';
 
 export const SONIC_NETWORK = {
   name: 'Sonic',
@@ -36,9 +38,57 @@ export class Web3Error extends Error {
   }
 }
 
+// WalletConnect project ID - would normally be an env variable
+// This is a placeholder project ID for development purposes only
+const WC_PROJECT_ID = 'c1330fe75b833d2e66f772f4d2c565a3';
+
+let walletConnectProvider: EthereumProvider | null = null;
+let walletConnectModal: WalletConnectModal | null = null;
+
+// Initialize WalletConnect provider
+async function initWalletConnectProvider() {
+  if (!walletConnectProvider) {
+    walletConnectProvider = await EthereumProvider.init({
+      projectId: WC_PROJECT_ID,
+      chains: [Number(parseInt(SONIC_NETWORK.chainId, 16))],
+      optionalChains: [Number(parseInt(SONIC_NETWORK.chainId, 16))],
+      showQrModal: false,
+      rpcMap: {
+        [Number(parseInt(SONIC_NETWORK.chainId, 16))]: SONIC_NETWORK.rpcUrl,
+      },
+      metadata: {
+        name: "TinHatCatters",
+        description: "TinHatCatters App",
+        url: window.location.origin,
+        icons: [`${window.location.origin}/favicon.ico`],
+      },
+    });
+
+    // Initialize WalletConnect Modal
+    walletConnectModal = new WalletConnectModal({
+      projectId: WC_PROJECT_ID,
+      themeMode: 'light',
+      themeVariables: {
+        '--wcm-font-family': 'MS Sans Serif, sans-serif',
+        '--wcm-background-color': '#c0c0c0',
+        '--wcm-accent-color': '#000080',
+      },
+    });
+
+    // Setup event listeners
+    walletConnectProvider.on('disconnect', () => {
+      console.log('WalletConnect disconnected');
+      walletConnectProvider = null;
+    });
+  }
+
+  return walletConnectProvider;
+}
+
 // Check if MetaMask or another Web3 provider is available
 export function isWeb3Available(): boolean {
-  return typeof window !== 'undefined' && typeof window.ethereum !== 'undefined';
+  return typeof window !== 'undefined' && 
+    (typeof window.ethereum !== 'undefined' || WC_PROJECT_ID !== undefined);
 }
 
 // Get ethers provider based on wallet type
@@ -47,34 +97,78 @@ export function getProvider(walletType?: string): ethers.BrowserProvider | null 
     return null;
   }
   
-  // Custom provider selection logic could be added here
-  // For now, we'll just use window.ethereum for all wallet types
-  return new ethers.BrowserProvider(window.ethereum);
+  if (walletType === 'walletconnect' && walletConnectProvider) {
+    return new ethers.BrowserProvider(walletConnectProvider as any);
+  } else if (window.ethereum) {
+    return new ethers.BrowserProvider(window.ethereum);
+  }
+  
+  return null;
 }
 
 // Connect wallet and return address
 export async function connectWallet(walletType?: string): Promise<string> {
   if (!isWeb3Available()) {
-    throw new Web3Error('No Web3 provider detected. Please install MetaMask.');
+    throw new Web3Error('No Web3 provider detected. Please install MetaMask or use WalletConnect.');
   }
 
   try {
-    const provider = getProvider(walletType);
-    if (!provider) {
-      throw new Web3Error('Cannot initialize Web3 provider.');
-    }
-
-    // Request account access
-    const accounts = await provider.send('eth_requestAccounts', []);
+    let provider;
     
-    if (accounts.length === 0) {
-      throw new Web3Error('No accounts found. Please unlock your wallet.');
-    }
+    // Handle different wallet types
+    if (walletType === 'walletconnect') {
+      const wcProvider = await initWalletConnectProvider();
+      
+      if (!wcProvider) {
+        throw new Web3Error('Failed to initialize WalletConnect.');
+      }
+      
+      // Open modal to scan QR code
+      if (walletConnectModal) {
+        walletConnectModal.openModal();
+      }
+      
+      // Connect to WalletConnect
+      const accounts = await wcProvider.enable();
+      
+      if (walletConnectModal) {
+        walletConnectModal.closeModal();
+      }
+      
+      if (accounts.length === 0) {
+        throw new Web3Error('No accounts found. Please connect your wallet.');
+      }
+      
+      provider = new ethers.BrowserProvider(wcProvider as any);
+      
+      // Check if user is on Sonic network
+      await switchToSonicNetwork(provider, true);
+      
+      return accounts[0];
+    } else if (walletType === 'metamask' || walletType === 'brave' || walletType === 'rabby' || walletType === 'other') {
+      // For browser wallets like MetaMask, Brave, etc.
+      if (!window.ethereum) {
+        throw new Web3Error(`${walletType} wallet not detected. Please install it.`);
+      }
+      
+      // For specific wallets, we would implement specific logic here
+      // This is a simplified version
+      provider = new ethers.BrowserProvider(window.ethereum);
+      
+      // Request account access
+      const accounts = await provider.send('eth_requestAccounts', []);
+      
+      if (accounts.length === 0) {
+        throw new Web3Error('No accounts found. Please unlock your wallet.');
+      }
 
-    // Check if user is on Sonic network
-    await switchToSonicNetwork();
-    
-    return accounts[0];
+      // Check if user is on Sonic network
+      await switchToSonicNetwork(provider);
+      
+      return accounts[0];
+    } else {
+      throw new Web3Error('Invalid wallet type selected.');
+    }
   } catch (error) {
     console.error('Error connecting wallet:', error);
     if (error instanceof Web3Error) {
@@ -131,50 +225,69 @@ export async function getThcBalance(address: string): Promise<string> {
 }
 
 // Switch to Sonic network
-export async function switchToSonicNetwork(): Promise<boolean> {
-  if (!isWeb3Available()) {
-    throw new Web3Error('No Web3 provider detected. Please install MetaMask.');
+export async function switchToSonicNetwork(
+  provider?: ethers.BrowserProvider,
+  isWalletConnect: boolean = false
+): Promise<boolean> {
+  if (!isWeb3Available() && !provider) {
+    throw new Web3Error('No Web3 provider detected.');
   }
 
   try {
-    // Check if user is already on Sonic network
-    const provider = getProvider();
-    if (!provider) {
+    const web3Provider = provider || getProvider();
+    
+    if (!web3Provider) {
       throw new Web3Error('Cannot initialize Web3 provider.');
     }
 
-    const network = await provider.getNetwork();
+    const network = await web3Provider.getNetwork();
     
-    if (network.chainId.toString() === SONIC_NETWORK.chainId) {
+    if (network.chainId.toString() === parseInt(SONIC_NETWORK.chainId, 16).toString()) {
       return true;
     }
 
-    // Request network switch
-    try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: SONIC_NETWORK.chainId }],
-      });
+    if (isWalletConnect) {
+      // WalletConnect handles chain switching differently
+      if (walletConnectProvider) {
+        await walletConnectProvider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: SONIC_NETWORK.chainId }],
+        });
+      }
       return true;
-    } catch (switchError: any) {
-      // Network doesn't exist in wallet, so we need to add it
-      if (switchError.code === 4902) {
+    }
+
+    // For browser wallets
+    if (window.ethereum) {
+      // Request network switch
+      try {
         await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [
-            {
-              chainId: SONIC_NETWORK.chainId,
-              chainName: SONIC_NETWORK.name,
-              nativeCurrency: SONIC_NETWORK.currency,
-              rpcUrls: [SONIC_NETWORK.rpcUrl],
-              blockExplorerUrls: [SONIC_NETWORK.explorerUrl],
-            },
-          ],
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: SONIC_NETWORK.chainId }],
         });
         return true;
+      } catch (switchError: any) {
+        // Network doesn't exist in wallet, so we need to add it
+        if (switchError.code === 4902) {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: SONIC_NETWORK.chainId,
+                chainName: SONIC_NETWORK.name,
+                nativeCurrency: SONIC_NETWORK.currency,
+                rpcUrls: [SONIC_NETWORK.rpcUrl],
+                blockExplorerUrls: [SONIC_NETWORK.explorerUrl],
+              },
+            ],
+          });
+          return true;
+        }
+        throw switchError;
       }
-      throw switchError;
     }
+    
+    return false;
   } catch (error) {
     console.error('Error switching network:', error);
     toast({
@@ -270,5 +383,17 @@ export async function purchaseSnack(snackId: number): Promise<boolean> {
       variant: 'destructive',
     });
     return false;
+  }
+}
+
+// Disconnect WalletConnect if it was used
+export async function disconnectWalletConnect(): Promise<void> {
+  if (walletConnectProvider) {
+    try {
+      await walletConnectProvider.disconnect();
+      walletConnectProvider = null;
+    } catch (error) {
+      console.error('Error disconnecting WalletConnect:', error);
+    }
   }
 }
