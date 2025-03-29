@@ -1,6 +1,12 @@
 
-import { Plant, Equipment, EquipmentType, GrowthStage } from '@/types/growRoom';
-import { calculateMultipliers, createNewPlant } from './plantUtils';
+import { toast } from '@/hooks/use-toast';
+import { 
+  GrowthStage, 
+  Plant, 
+  Equipment, 
+  EquipmentType
+} from '@/types/growRoom';
+import { createNewPlant, calculateMultipliers } from './plantUtils';
 
 // Handle planting a new seed
 export const handlePlantSeed = async (
@@ -13,40 +19,48 @@ export const handlePlantSeed = async (
   setThcAmount: React.Dispatch<React.SetStateAction<number>>,
   toast: any
 ) => {
+  // Check if grow room is full
   if (plants.length >= plantCapacity) {
     toast({
-      title: "Maximum Capacity Reached",
-      description: "Upgrade your grow room to plant more seeds!",
+      title: "Grow Room Full",
+      description: "Upgrade your grow room capacity to plant more seeds.",
       variant: "destructive"
     });
     return;
   }
-
-  const seedCost = 0.1; // Reduced from 10
   
+  // Cost to plant a seed
+  const seedCost = 5;
+  
+  // Check if player has enough THC
   if (thcAmount < seedCost) {
     toast({
-      title: "Not Enough $THC",
-      description: `You need ${seedCost} $THC to plant a new seed.`,
+      title: "Not Enough THC",
+      description: `You need ${seedCost} THC to plant a new seed.`,
       variant: "destructive"
     });
     return;
   }
-
+  
   // Process transaction
-  const transactionSuccess = await handleTransaction(seedCost, "Planting Seed");
-  if (!transactionSuccess) return;
-
-  const { speedMultiplier } = calculateMultipliers(equipment);
-  const newPlant = createNewPlant(speedMultiplier);
-
-  setPlants([...plants, newPlant]);
-  setThcAmount(prev => prev - seedCost);
-
-  toast({
-    title: "Seed Planted!",
-    description: "Your seed has been planted and is now growing.",
-  });
+  const success = await handleTransaction(seedCost, "Planting Seed");
+  
+  if (success) {
+    // Calculate multipliers
+    const { speedMultiplier } = calculateMultipliers(equipment);
+    
+    // Create new plant
+    const newPlant = createNewPlant(speedMultiplier);
+    
+    // Update state
+    setPlants([...plants, newPlant]);
+    setThcAmount(prevAmount => prevAmount - seedCost);
+    
+    toast({
+      title: "Seed Planted",
+      description: "A new seed has been planted in your grow room.",
+    });
+  }
 };
 
 // Handle harvesting a plant
@@ -56,20 +70,53 @@ export const handleHarvestPlant = (
   equipment: Record<EquipmentType, Equipment>,
   setThcAmount: React.Dispatch<React.SetStateAction<number>>,
   setPlants: React.Dispatch<React.SetStateAction<Plant[]>>,
-  toast: any
+  toast: any,
+  onHarvest?: (plant: Plant, thcProduced: number, equipment: Record<EquipmentType, Equipment>) => void
 ) => {
-  const plantToHarvest = plants.find(p => p.id === plantId);
-  if (!plantToHarvest || plantToHarvest.stage !== GrowthStage.Harvest) return;
-
-  const { qualityMultiplier } = calculateMultipliers(equipment);
-  const thcEarned = Math.floor(25 * qualityMultiplier * plantToHarvest.quality);
+  // Find plant by ID
+  const plantIndex = plants.findIndex(p => p.id === plantId);
   
-  setThcAmount(prev => prev + thcEarned);
-  setPlants(plants.filter(p => p.id !== plantId));
+  if (plantIndex === -1) {
+    toast({
+      title: "Plant Not Found",
+      description: "The plant you're trying to harvest doesn't exist.",
+      variant: "destructive"
+    });
+    return;
+  }
+  
+  const plant = plants[plantIndex];
+  
+  // Check if plant is ready for harvest
+  if (plant.stage !== GrowthStage.Harvest) {
+    toast({
+      title: "Not Ready",
+      description: "This plant is not ready for harvest yet.",
+      variant: "destructive"
+    });
+    return;
+  }
+  
+  // Calculate THC produced based on plant quality and equipment
+  const { qualityMultiplier } = calculateMultipliers(equipment);
+  const thcProduced = Math.round(10 * plant.quality * qualityMultiplier);
+  
+  // Remove plant from array
+  const updatedPlants = [...plants];
+  updatedPlants.splice(plantIndex, 1);
+  
+  // Update state
+  setPlants(updatedPlants);
+  setThcAmount(prevAmount => prevAmount + thcProduced);
+  
+  // Call the onHarvest callback if provided
+  if (onHarvest) {
+    onHarvest(plant, thcProduced, equipment);
+  }
   
   toast({
-    title: "Plant Harvested!",
-    description: `You earned ${thcEarned} $THC from your harvest!`
+    title: "Plant Harvested",
+    description: `You harvested ${thcProduced} THC from your plant!`,
   });
 };
 
@@ -84,87 +131,54 @@ export const handleUpgradeEquipment = async (
   setShowUpgradeModal: React.Dispatch<React.SetStateAction<EquipmentType | null>>,
   toast: any
 ) => {
-  const itemToUpgrade = equipment[type];
-  if (!itemToUpgrade.nextLevel) return;
-
-  if (thcAmount < itemToUpgrade.nextLevel.cost) {
+  const item = equipment[type];
+  
+  // Check if upgrade is available
+  if (!item.nextLevel) {
     toast({
-      title: "Not Enough $THC",
-      description: `You need ${itemToUpgrade.nextLevel.cost} $THC for this upgrade.`,
+      title: "Max Level Reached",
+      description: "This equipment is already at maximum level.",
       variant: "destructive"
     });
     return;
   }
-
-  // Process transaction
-  const transactionSuccess = await handleTransaction(
-    itemToUpgrade.nextLevel.cost, 
-    `Upgrading ${itemToUpgrade.name}`
-  );
-  if (!transactionSuccess) return;
-
-  setThcAmount(prev => prev - itemToUpgrade.nextLevel!.cost);
   
-  // Create the next level for the advanced equipment
-  let newNextLevel = null;
-  if (itemToUpgrade.level === 1) {
-    // Set up the third tier with costs reduced by 100x
-    switch (type) {
-      case EquipmentType.Light:
-        newNextLevel = {
-          name: 'Full-Spectrum Quantum Board',
-          effect: { speedBoost: 2, qualityBoost: 1.5 },
-          cost: 3.5 // Reduced from 350
-        };
-        break;
-      case EquipmentType.Pot:
-        newNextLevel = {
-          name: 'Hydroponic Tray',
-          effect: { speedBoost: 1.5, qualityBoost: 2 },
-          cost: 4 // Reduced from 400
-        };
-        break;
-      case EquipmentType.Nutrients:
-        newNextLevel = {
-          name: 'Premium Boost',
-          effect: { speedBoost: 1.3, qualityBoost: 2.5 },
-          cost: 3 // Reduced from 300
-        };
-        break;
-      case EquipmentType.Ventilation:
-        newNextLevel = {
-          name: 'Climate Control',
-          effect: { speedBoost: 2.2, qualityBoost: 1.3 },
-          cost: 4.5 // Reduced from 450
-        };
-        break;
-      case EquipmentType.Automation:
-        newNextLevel = {
-          name: 'Smart Irrigation',
-          effect: { speedBoost: 1.8, qualityBoost: 1.7 },
-          cost: 4.2 // Reduced from 420
-        };
-        break;
-    }
+  // Check if player has enough THC
+  if (thcAmount < item.nextLevel.cost) {
+    toast({
+      title: "Not Enough THC",
+      description: `You need ${item.nextLevel.cost} THC to upgrade this equipment.`,
+      variant: "destructive"
+    });
+    return;
   }
-
-  setEquipment({
-    ...equipment,
-    [type]: {
-      ...itemToUpgrade,
-      name: itemToUpgrade.nextLevel.name,
-      level: itemToUpgrade.level + 1,
-      effect: itemToUpgrade.nextLevel.effect,
-      nextLevel: newNextLevel
-    }
-  });
-
-  toast({
-    title: "Equipment Upgraded!",
-    description: `Your ${type} has been upgraded to ${itemToUpgrade.nextLevel.name}!`
-  });
-
-  setShowUpgradeModal(null);
+  
+  // Process transaction
+  const success = await handleTransaction(item.nextLevel.cost, `Upgrading ${type}`);
+  
+  if (success) {
+    // Update equipment
+    const updatedEquipment = {
+      ...equipment,
+      [type]: {
+        ...item,
+        level: item.level + 1,
+        name: item.nextLevel.name,
+        effect: item.nextLevel.effect,
+        nextLevel: null, // Remove next level for simplicity (in a real game, you'd fetch the next upgrade)
+      }
+    };
+    
+    // Update state
+    setEquipment(updatedEquipment);
+    setThcAmount(prevAmount => prevAmount - item.nextLevel!.cost);
+    setShowUpgradeModal(null);
+    
+    toast({
+      title: "Equipment Upgraded",
+      description: `Your ${type} has been upgraded to ${item.nextLevel.name}!`,
+    });
+  }
 };
 
 // Handle upgrading grow room capacity
@@ -176,26 +190,30 @@ export const handleUpgradeCapacity = async (
   setPlantCapacity: React.Dispatch<React.SetStateAction<number>>,
   toast: any
 ) => {
-  const cost = plantCapacity * 2; // Reduced from 200
+  // Calculate upgrade cost based on current capacity
+  const upgradeCost = plantCapacity * 15;
   
-  if (thcAmount < cost) {
+  // Check if player has enough THC
+  if (thcAmount < upgradeCost) {
     toast({
-      title: "Not Enough $THC",
-      description: `You need ${cost} $THC to expand your grow room.`,
+      title: "Not Enough THC",
+      description: `You need ${upgradeCost} THC to upgrade your grow room capacity.`,
       variant: "destructive"
     });
     return;
   }
   
   // Process transaction
-  const transactionSuccess = await handleTransaction(cost, "Expanding Grow Room");
-  if (!transactionSuccess) return;
+  const success = await handleTransaction(upgradeCost, "Upgrading Capacity");
   
-  setThcAmount(prev => prev - cost);
-  setPlantCapacity(prev => prev + 1);
-  
-  toast({
-    title: "Grow Room Expanded!",
-    description: `Your grow room can now hold ${plantCapacity + 1} plants!`
-  });
+  if (success) {
+    // Update state
+    setPlantCapacity(prevCapacity => prevCapacity + 1);
+    setThcAmount(prevAmount => prevAmount - upgradeCost);
+    
+    toast({
+      title: "Capacity Upgraded",
+      description: `Your grow room capacity has been increased to ${plantCapacity + 1}!`,
+    });
+  }
 };

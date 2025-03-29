@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useWeb3 } from '@/contexts/Web3Context';
+import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { sendTransaction } from '@/lib/web3';
 import { 
   GrowthStage, 
@@ -40,6 +41,7 @@ export const useGrowRoom = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const { toast } = useToast();
+  const { recordPlantHarvest } = useLeaderboard();
   
   // Load game state from localStorage on component mount
   useEffect(() => {
@@ -158,7 +160,11 @@ export const useGrowRoom = () => {
       equipment,
       setThcAmount,
       setPlants,
-      toast
+      toast,
+      // Add the callback to record the harvest for leaderboard
+      (plant, thcProduced, equipment) => {
+        recordPlantHarvest(plant, thcProduced, equipment);
+      }
     );
   };
 
