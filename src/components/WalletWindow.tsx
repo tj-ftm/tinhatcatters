@@ -1,11 +1,13 @@
 
 import React, { useEffect, useState } from 'react';
-import { X, Minus } from 'lucide-react';
+import { X, Minus, Network } from 'lucide-react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import WalletConnector from './WalletConnector';
 import { ScrollArea } from './ui/scroll-area';
-import { fetchTinHatCattersFromSonicscan } from '@/lib/web3';
+import { fetchTinHatCattersFromSonicscan, switchToSonicNetwork } from '@/lib/web3';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
+import { Button } from './ui/button';
+import { toast } from '@/hooks/use-toast';
 
 interface WalletWindowProps {
   onClose: () => void;
@@ -22,6 +24,7 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
   const [nftData, setNftData] = useState<NFTData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [imageLoadErrors, setImageLoadErrors] = useState<Record<string, boolean>>({});
+  const [isCorrectNetwork, setIsCorrectNetwork] = useState<boolean>(true);
   
   useEffect(() => {
     const loadNFTData = async () => {
@@ -46,6 +49,26 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
       ...prev,
       [nftId]: true
     }));
+  };
+  
+  const handleSwitchNetwork = async () => {
+    try {
+      const success = await switchToSonicNetwork();
+      if (success) {
+        setIsCorrectNetwork(true);
+        toast({
+          title: 'Network Changed',
+          description: 'Successfully connected to Sonic Network',
+        });
+      }
+    } catch (error) {
+      console.error("Error switching network:", error);
+      toast({
+        title: 'Network Switch Failed',
+        description: 'Failed to switch to Sonic Network. Please try again.',
+        variant: 'destructive'
+      });
+    }
   };
   
   return (
@@ -84,11 +107,20 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
           </div>
         ) : (
           <div>
-            <div className="mb-3">
-              <div className="text-xs font-bold mb-1">Address:</div>
-              <div className="win95-inset p-1 text-xs overflow-hidden text-overflow-ellipsis font-bold text-black">
-                {address}
+            <div className="flex justify-between items-center mb-3">
+              <div className="flex-grow">
+                <div className="text-xs font-bold mb-1">Address:</div>
+                <div className="win95-inset p-1 text-xs overflow-hidden text-overflow-ellipsis font-bold text-black">
+                  {address}
+                </div>
               </div>
+              <Button 
+                className="win95-button w-8 h-8 flex items-center justify-center ml-2 flex-shrink-0"
+                title="Switch to Sonic Network"
+                onClick={handleSwitchNetwork}
+              >
+                <Network className="h-4 w-4" />
+              </Button>
             </div>
             
             <div className="grid grid-cols-2 gap-2 mb-3">

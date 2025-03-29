@@ -43,7 +43,7 @@ export const useNFTs = () => {
 
       // If user is connected, fetch their owned NFTs
       if (address) {
-        // Set wallet address for RLS - fixing the type issue
+        // Set wallet address for RLS - fixing the type issue with proper typing
         await supabase.rpc(
           'set_wallet_address', 
           { wallet_address: address } as Record<string, unknown>
@@ -94,7 +94,7 @@ export const useNFTs = () => {
     }
 
     try {
-      // Set wallet address for RLS - fixing the type issue here too
+      // Set wallet address for RLS - fixing the type issue with proper typing
       await supabase.rpc(
         'set_wallet_address', 
         { wallet_address: address } as Record<string, unknown>
