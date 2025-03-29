@@ -25,7 +25,7 @@ export const getBalance = async (address: string | null): Promise<string> => {
   }
 };
 
-// Function to get the THC balance (assuming it's a ERC-20 token)
+// Function to get the THC balance using the correct contract address
 export const getTHCBalance = async (address: string | null): Promise<string> => {
   if (!address) {
     console.warn('No address provided to getTHCBalance');
@@ -44,7 +44,7 @@ export const getTHCBalance = async (address: string | null): Promise<string> => 
     const provider = new ethers.BrowserProvider(window.ethereum);
     
     // Use the specific contract address provided
-    const tokenAddress = '0xae8e9b2222031c464342dbfab7433b64eb5c15cf';
+    const tokenAddress = '0x17Af1Df44444AB9091622e4Aa66dB5BB34E51aD5';
     
     console.log('Using token contract address:', tokenAddress);
     
@@ -69,26 +69,35 @@ export const getTHCBalance = async (address: string | null): Promise<string> => 
       console.warn('Failed to get decimals, using default of 18:', err);
     }
     
-    // Get balance with timeout
+    // Get balance with timeout and retry logic
     console.log('Fetching balance for address:', address);
     
-    // Set a timeout promise to handle slow responses
-    const timeoutPromise = new Promise<string>((_, reject) => {
-      setTimeout(() => reject(new Error('Balance fetch timeout')), 5000);
-    });
+    let attempts = 0;
+    const maxAttempts = 3;
+    const retryDelay = 1000; // 1 second
     
-    // Actual balance fetch
-    const balancePromise = async (): Promise<string> => {
-      const balance = await tokenContract.balanceOf(address);
-      console.log('Raw balance:', balance.toString());
-      const formattedBalance = ethers.formatUnits(balance, decimals);
-      console.log('Formatted THC balance:', formattedBalance);
-      return formattedBalance;
-    };
+    while (attempts < maxAttempts) {
+      try {
+        const balance = await tokenContract.balanceOf(address);
+        console.log('Raw balance:', balance.toString());
+        const formattedBalance = ethers.formatUnits(balance, decimals);
+        console.log('Formatted THC balance:', formattedBalance);
+        return formattedBalance;
+      } catch (err) {
+        attempts++;
+        console.warn(`THC balance fetch attempt ${attempts} failed:`, err);
+        
+        if (attempts >= maxAttempts) {
+          console.error('Max retries reached for THC balance fetch');
+          return '0';
+        }
+        
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      }
+    }
     
-    // Race between timeout and actual fetch
-    const formattedBalance = await Promise.race([balancePromise(), timeoutPromise]);
-    return formattedBalance;
+    return '0'; // Should not reach here due to the while loop, but TypeScript wants a return
   } catch (error: any) {
     console.error('Error getting THC balance:', error);
     console.error('Error details:', error.message);

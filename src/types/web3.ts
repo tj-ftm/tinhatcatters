@@ -10,4 +10,5 @@ export interface Web3ContextType {
   disconnect: () => void;
   refreshBalance: () => Promise<void>;
   refreshNFTs: () => Promise<void>;
+  isRefreshingBalance?: boolean;
 }

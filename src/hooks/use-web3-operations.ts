@@ -20,6 +20,7 @@ export function useWeb3Operations() {
   const [tinHatCatters, setTinHatCatters] = useState<any[]>([]);
   const [snacks, setSnacks] = useState<any[]>([]);
   const [connectedWalletType, setConnectedWalletType] = useState<string | null>(null);
+  const [isRefreshingBalance, setIsRefreshingBalance] = useState<boolean>(false);
 
   // Connect wallet
   const connect = async (walletType?: string) => {
@@ -90,47 +91,35 @@ export function useWeb3Operations() {
     });
   };
 
-  // Refresh balance with retry logic
+  // Refresh balance with improved retry logic and error handling
   const refreshBalance = async () => {
-    if (address) {
+    if (!address || isRefreshingBalance) return;
+    
+    setIsRefreshingBalance(true);
+    try {
+      // Ensure on Sonic network before refreshing balance
       try {
-        // Ensure on Sonic network before refreshing balance
-        try {
-          await switchToSonicNetwork();
-        } catch (error) {
-          console.error('Error switching to Sonic network:', error);
-          // Continue with balance check anyway
-        }
-        
-        // Get ETH balance
-        const newBalance = await getBalance(address);
-        setBalance(newBalance);
-        
-        // Get THC token balance with retry
-        let attempts = 0;
-        let thcSuccess = false;
-        let newThcBalance = '0';
-        
-        while (attempts < 3 && !thcSuccess) {
-          try {
-            console.log(`Attempting to get THC balance, attempt ${attempts + 1}`);
-            newThcBalance = await getTHCBalance(address);
-            thcSuccess = true;
-          } catch (error) {
-            console.warn(`THC balance attempt ${attempts + 1} failed:`, error);
-            attempts++;
-            // Short delay before retry
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-        }
-        
-        console.log("THC balance updated:", newThcBalance);
-        setThcBalance(newThcBalance);
-        
+        await switchToSonicNetwork();
       } catch (error) {
-        console.error('Error in refreshBalance:', error);
-        // Don't throw the error further, just log it
+        console.error('Error switching to Sonic network:', error);
+        // Continue with balance check anyway
       }
+      
+      // Get ETH balance
+      const newBalance = await getBalance(address);
+      setBalance(newBalance);
+      
+      // Get THC token balance with retry logic built into the function
+      const newThcBalance = await getTHCBalance(address);
+      
+      console.log("THC balance updated:", newThcBalance);
+      setThcBalance(newThcBalance);
+      
+    } catch (error) {
+      console.error('Error in refreshBalance:', error);
+      // Don't throw the error further, just log it
+    } finally {
+      setIsRefreshingBalance(false);
     }
   };
 
@@ -170,6 +159,7 @@ export function useWeb3Operations() {
     refreshBalance,
     refreshNFTs,
     connectedWalletType,
-    setAddress
+    setAddress,
+    isRefreshingBalance
   };
 }

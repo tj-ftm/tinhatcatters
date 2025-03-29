@@ -17,6 +17,7 @@ const Web3Context = createContext<Web3ContextType>({
   disconnect: () => {},
   refreshBalance: async () => {},
   refreshNFTs: async () => {},
+  isRefreshingBalance: false
 });
 
 export const useWeb3 = () => useContext(Web3Context);
@@ -33,7 +34,8 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
     disconnect,
     refreshBalance,
     refreshNFTs,
-    setAddress
+    setAddress,
+    isRefreshingBalance
   } = useWeb3Operations();
   
   // Check network on initial load - safely
@@ -73,7 +75,8 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
         connect, 
         disconnect,
         refreshBalance,
-        refreshNFTs 
+        refreshNFTs,
+        isRefreshingBalance
       }}
     >
       {children}

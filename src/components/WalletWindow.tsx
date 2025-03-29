@@ -1,11 +1,13 @@
+
 import React, { useEffect, useState } from 'react';
-import { X, Minus, Image, FileImage } from 'lucide-react';
+import { X, Minus, Image, FileImage, RefreshCw } from 'lucide-react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import WalletConnector from './WalletConnector';
 import { ScrollArea } from './ui/scroll-area';
 import { fetchNFTsFromContract } from '@/lib/web3';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 import { toast } from '@/hooks/use-toast';
+import { Button } from './ui/button';
 
 interface WalletWindowProps {
   onClose: () => void;
@@ -23,7 +25,7 @@ interface NFTData {
 }
 
 const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
-  const { address, balance, thcBalance, tinHatCatters, refreshNFTs, refreshBalance } = useWeb3();
+  const { address, balance, thcBalance, tinHatCatters, refreshNFTs, refreshBalance, isRefreshingBalance } = useWeb3();
   const [nftData, setNftData] = useState<NFTData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,7 +88,7 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
         refreshBalance().catch(e => console.error("Error refreshing balance:", e));
         setLastRefresh(Date.now());
       }
-    }, 10000);
+    }, 15000); // Refresh every 15 seconds
     
     return () => clearInterval(refreshInterval);
   }, [address, refreshBalance]);
@@ -228,9 +230,22 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
               </div>
               
               <div>
-                <div className="text-xs font-bold mb-1">THC Balance:</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-bold mb-1">THC Balance:</div>
+                  <Button 
+                    className="win95-button h-4 w-4 p-0 mb-1"
+                    onClick={refreshBalance}
+                    disabled={isRefreshingBalance}
+                  >
+                    <RefreshCw className="h-2 w-2" />
+                  </Button>
+                </div>
                 <div className="win95-inset p-1 text-xs font-bold text-black">
-                  {thcBalance ? parseFloat(thcBalance).toFixed(2) : '0.00'} THC
+                  {isRefreshingBalance ? (
+                    <span className="text-gray-600">Loading...</span>
+                  ) : (
+                    `${thcBalance ? parseFloat(thcBalance).toFixed(2) : '0.00'} THC`
+                  )}
                 </div>
               </div>
             </div>
@@ -239,10 +254,11 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
               <div className="flex justify-between items-center">
                 <div className="text-xs font-bold mb-1">Your Tin Hat Catters:</div>
                 <button 
-                  className="win95-button text-[8px] p-0.5 h-5 mb-1"
+                  className="win95-button text-[8px] p-0.5 h-5 mb-1 flex items-center"
                   onClick={handleManualRefresh}
                   disabled={loading}
                 >
+                  <RefreshCw className="h-2 w-2 mr-1" />
                   {loading ? 'Refreshing...' : 'Refresh'}
                 </button>
               </div>
