@@ -51,17 +51,17 @@ const NFTCard: React.FC<NFTCardProps> = ({
     <div 
       className={cn(
         "win95-window p-0 transition-transform hover:scale-105",
-        selected ? "ring-4 ring-[#FFFF00]" : "",
+        selected ? "ring-2 ring-[#FFFF00]" : "",
         className
       )}
     >
-      <div className="win95-title-bar mb-0">
-        <span className="truncate max-w-40">{name}</span>
+      <div className="win95-title-bar mb-0 text-xs">
+        <span className="truncate max-w-24">{name}</span>
       </div>
       
-      <div className="p-3 flex flex-col items-center">
+      <div className="p-2 flex flex-col items-center">
         {/* NFT Image */}
-        <div className="win95-inset w-full aspect-square flex items-center justify-center mb-3 overflow-hidden">
+        <div className="win95-inset w-full aspect-square flex items-center justify-center mb-2 overflow-hidden">
           {image ? (
             <img 
               src={image} 
@@ -77,8 +77,8 @@ const NFTCard: React.FC<NFTCardProps> = ({
         
         {/* Boost Info */}
         {boost && (
-          <div className="w-full text-center mb-3">
-            <div className="win95-inset p-1 text-xs font-bold">
+          <div className="w-full text-center mb-2">
+            <div className="win95-inset p-1 text-[10px] font-bold">
               {getBoostText()}
             </div>
           </div>
@@ -86,18 +86,18 @@ const NFTCard: React.FC<NFTCardProps> = ({
         
         {/* Price (for shop items) */}
         {price !== undefined && (
-          <div className="w-full text-center mb-3">
-            <div className="win95-inset p-1 text-xs font-bold">
+          <div className="w-full text-center mb-2">
+            <div className="win95-inset p-1 text-[10px] font-bold">
               {price} S
             </div>
           </div>
         )}
         
         {/* Action Buttons */}
-        <div className="w-full flex gap-2">
+        <div className="w-full flex gap-1">
           {onSelect && (
             <Button 
-              className="win95-button flex-1 text-xs py-1 h-8" 
+              className="win95-button flex-1 text-[10px] py-0.5 h-6" 
               onClick={onSelect}
             >
               Select
@@ -106,7 +106,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
           
           {onUse && (
             <Button 
-              className="win95-button flex-1 text-xs py-1 h-8" 
+              className="win95-button flex-1 text-[10px] py-0.5 h-6" 
               onClick={onUse}
             >
               Use
@@ -115,7 +115,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
           
           {onPurchase && (
             <Button 
-              className="win95-button flex-1 text-xs py-1 h-8" 
+              className="win95-button flex-1 text-[10px] py-0.5 h-6" 
               onClick={onPurchase}
             >
               Buy

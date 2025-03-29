@@ -5,6 +5,7 @@ import Game from '../pages/Game';
 import Shop from '../pages/Shop';
 import Index from '../pages/Index';
 import GrowRoom from './GrowRoom';
+import { ScrollArea } from './ui/scroll-area';
 
 interface WindowManagerProps {
   activeWindows: string[];
@@ -319,40 +320,32 @@ const WindowManager: React.FC<WindowManagerProps> = ({
               </div>
             </div>
             
-            <div className="p-1 bg-[#c0c0c0] h-[calc(100%-24px)] overflow-auto">
-              {windowId === 'game' && <Game />}
-              {windowId === 'shop' && <Shop />}
-              {windowId === 'growroom' && <GrowRoom />}
-              {windowId === 'computer' && (
-                <div className="p-4">
-                  <h2 className="text-lg font-bold mb-4">My Computer</h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    <FileIcon label="Reptilian Attack" icon="🎮" onClick={() => {
-                      navigate('/game');
-                      handleClose('computer');
-                      closeWindow('computer');
-                    }} />
-                    <FileIcon label="NFT Shop" icon="🛒" onClick={() => {
-                      navigate('/shop');
-                      handleClose('computer');
-                      closeWindow('computer');
-                    }} />
-                    <FileIcon label="THC Grow Room" icon="🌿" onClick={() => {
-                      closeWindow('computer');
-                      handleClose('computer');
-                    }} />
-                    <FileIcon label="Recycle Bin" icon="🗑️" onClick={() => {
-                      closeWindow('computer');
-                    }} />
-                  </div>
+            <div className="bg-[#c0c0c0] h-[calc(100%-24px)]">
+              <ScrollArea className="h-full w-full">
+                <div className="p-1">
+                  {windowId === 'game' && <Game />}
+                  {windowId === 'shop' && <Shop />}
+                  {windowId === 'growroom' && <GrowRoom />}
+                  {windowId === 'computer' && (
+                    <div className="p-4">
+                      <h2 className="text-lg font-bold mb-4">My Computer</h2>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <FileIcon label="Reptilian Attack" icon="🎮" onClick={() => {
+                          navigate('/game');
+                          handleClose('computer');
+                        }} />
+                        <FileIcon label="NFT Shop" icon="🛒" onClick={() => {
+                          navigate('/shop');
+                          handleClose('computer');
+                        }} />
+                        <FileIcon label="THC Grow Room" icon="🌿" onClick={() => {
+                          closeWindow('computer');
+                        }} />
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-              {windowId === 'recyclebin' && (
-                <div className="p-4">
-                  <h2 className="text-lg font-bold mb-4">Recycle Bin</h2>
-                  <p>The Recycle Bin is empty.</p>
-                </div>
-              )}
+              </ScrollArea>
             </div>
             
             {!maximized && (

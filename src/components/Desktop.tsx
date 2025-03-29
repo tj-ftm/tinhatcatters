@@ -4,6 +4,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import Taskbar from './Taskbar';
 import WindowManager from './WindowManager';
 import WalletWindow from './WalletWindow';
+import { ScrollArea } from './ui/scroll-area';
 
 const Desktop: React.FC = () => {
   const [activeWindows, setActiveWindows] = useState<string[]>([]);
@@ -43,7 +44,7 @@ const Desktop: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#008080] relative">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#0000FF] relative">
       <div className="flex-grow relative">
         {/* Desktop Icons */}
         <div className="absolute top-2 left-2 flex flex-col items-center gap-6">
@@ -51,11 +52,6 @@ const Desktop: React.FC = () => {
             label="My Computer" 
             icon="💻" 
             onClick={() => handleIconClick('computer')} 
-          />
-          <DesktopIcon 
-            label="Recycle Bin" 
-            icon="🗑️" 
-            onClick={() => handleIconClick('recyclebin')} 
           />
           <DesktopIcon 
             label="Reptilian Attack" 
@@ -128,6 +124,7 @@ const DesktopIcon: React.FC<{
     <div 
       className="flex flex-col items-center cursor-pointer w-16 group"
       onClick={onClick}
+      onDoubleClick={onClick}
     >
       <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">{icon}</div>
       <span className="text-white text-xs text-center bg-win95-blue/80 px-1 py-0.5 w-full">

@@ -2,9 +2,11 @@
 import React from 'react';
 import NFTShop from '@/components/NFTShop';
 import { useWeb3 } from '@/contexts/Web3Context';
+import { usePoints } from '@/hooks/use-points';
 
 const Shop: React.FC = () => {
   const { address } = useWeb3();
+  const { getPoints } = usePoints();
   
   return (
     <div className="w-full min-h-screen p-4">
@@ -13,10 +15,15 @@ const Shop: React.FC = () => {
           NFT Snack Shop
         </h1>
         
-        <div className="win95-panel p-4 mb-8">
-          <p className="text-center">
-            Purchase snack NFTs to enhance your gameplay experience! Each snack provides unique boosts to help you achieve higher scores.
+        <div className="win95-panel p-4 mb-4 flex justify-between items-center">
+          <p>
+            Purchase snack NFTs to enhance your gameplay experience!
           </p>
+          {address && (
+            <div className="win95-inset p-2 text-sm">
+              <span className="font-bold">Your Points:</span> {getPoints(address)}
+            </div>
+          )}
         </div>
         
         <NFTShop />
