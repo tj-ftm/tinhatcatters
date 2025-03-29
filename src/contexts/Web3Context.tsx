@@ -73,6 +73,11 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
       await refreshBalance();
       await refreshNFTs();
       
+      setTimeout(async () => {
+        await refreshBalance();
+        await refreshNFTs();
+      }, 1000);
+      
       const walletName = walletType ? walletType.charAt(0).toUpperCase() + walletType.slice(1) : 'Wallet';
       toast({
         title: `${walletName} Connected`,
