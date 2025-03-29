@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,16 +53,14 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
-				}
+				sonicPink: '#FF69B4',
+				sonicBlack: '#000000',
+				sonicYellow: '#FFFF00',
+				win95: {
+          gray: '#C0C0C0',
+          darkGray: '#808080',
+          blue: '#000080',
+        }
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,11 +83,33 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
+				},
+        'run': {
+          '0%': { backgroundPosition: '0px' },
+          '100%': { backgroundPosition: '-1200px' }
+        },
+        'float': {
+          '0%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-10px)' },
+          '100%': { transform: 'translateY(0px)' }
+        },
+        'spin-slow': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' }
+        },
+        'sparkle': {
+          '0%': { opacity: '0' },
+          '50%': { opacity: '1' },
+          '100%': { opacity: '0' }
+        }
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+        'run': 'run 0.8s steps(8) infinite',
+        'float': 'float 2s ease-in-out infinite',
+        'spin-slow': 'spin-slow 6s linear infinite',
+        'sparkle': 'sparkle 1.5s ease-in-out infinite'
 			}
 		}
 	},
