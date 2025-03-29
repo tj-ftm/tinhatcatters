@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { 
@@ -24,7 +23,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useWeb3 } from '@/contexts/Web3Context';
-import { Trophy, Plant, Cannabis, Clock, TrendingUp, Users } from 'lucide-react';
+import { Trophy, Sprout, Cannabis, Clock, TrendingUp, Users } from 'lucide-react';
 import { 
   ChartContainer, 
   ChartTooltip, 
@@ -155,7 +154,7 @@ const Leaderboard = () => {
             <StatCard 
               title="Total Plants Grown" 
               value={aggregateStats.totalPlantsGrown.toString()} 
-              icon={<Plant className="h-4 w-4" />} 
+              icon={<Sprout className="h-4 w-4" />} 
             />
             <StatCard 
               title="Total THC Produced" 
@@ -295,7 +294,7 @@ const Leaderboard = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
-                      <Plant className="h-4 w-4 mr-2" />
+                      <Sprout className="h-4 w-4 mr-2" />
                       Top Plant Growers
                     </CardTitle>
                     <CardDescription>Players who have grown the most plants</CardDescription>
@@ -420,7 +419,7 @@ const Leaderboard = () => {
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis dataKey="name" />
                               <YAxis />
-                              <Tooltip formatter={(value) => [`${value.toFixed(1)} minutes`, 'Growth Time']} />
+                              <Tooltip formatter={(value: any) => [`${Number(value).toFixed(1)} minutes`, 'Growth Time']} />
                               <Line
                                 type="monotone"
                                 dataKey="time"
