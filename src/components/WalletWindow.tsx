@@ -17,7 +17,7 @@ interface NFTData {
 }
 
 const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
-  const { address, balance, thcBalance, tinHatCatters } = useWeb3();
+  const { address, balance, thcBalance, tinHatCatters, sonicNFTs } = useWeb3();
   const [nftData, setNftData] = useState<NFTData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -140,6 +140,39 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
                 </ScrollArea>
               </div>
             </div>
+            
+            {/* Sonic NFTs Preview */}
+            {sonicNFTs.length > 0 && (
+              <div className="mb-2">
+                <div className="text-xs font-bold mb-1">Your Sonic NFTs:</div>
+                <div className="win95-inset p-1 max-h-24 overflow-y-auto">
+                  <ScrollArea className="h-full">
+                    <div className="grid grid-cols-2 gap-1">
+                      {sonicNFTs.slice(0, 4).map((nft) => (
+                        <div key={nft.id} className="text-xs p-1 bg-white/50 rounded flex flex-col items-center">
+                          <img 
+                            src={nft.image || '/placeholder.svg'} 
+                            alt={nft.name}
+                            className="w-full h-auto object-contain mb-1 border border-gray-300"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = '/placeholder.svg';
+                            }}
+                          />
+                          <span className="font-bold text-black text-center text-[10px] truncate w-full">
+                            {nft.name || `#${nft.id}`}
+                          </span>
+                        </div>
+                      ))}
+                      {sonicNFTs.length > 4 && (
+                        <div className="text-xs p-1 flex items-center justify-center">
+                          <span className="text-[10px] text-black">+{sonicNFTs.length - 4} more</span>
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+              </div>
+            )}
             
             <div className="flex justify-center">
               <WalletConnector />

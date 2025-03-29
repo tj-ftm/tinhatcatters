@@ -10,6 +10,7 @@ import {
   switchToSonicNetwork
 } from '@/lib/web3';
 import { toast } from '@/hooks/use-toast';
+import { fetchOwnedNFTs, NFTMetadata } from '@/lib/web3/nftImport';
 
 interface Web3ContextType {
   address: string | null;
@@ -18,6 +19,7 @@ interface Web3ContextType {
   connecting: boolean;
   tinHatCatters: any[];
   snacks: any[];
+  sonicNFTs: NFTMetadata[];
   connect: (walletType?: string) => Promise<void>;
   disconnect: () => void;
   refreshBalance: () => Promise<void>;
@@ -31,6 +33,7 @@ const Web3Context = createContext<Web3ContextType>({
   connecting: false,
   tinHatCatters: [],
   snacks: [],
+  sonicNFTs: [],
   connect: async () => {},
   disconnect: () => {},
   refreshBalance: async () => {},
@@ -46,6 +49,7 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [connecting, setConnecting] = useState<boolean>(false);
   const [tinHatCatters, setTinHatCatters] = useState<any[]>([]);
   const [snacks, setSnacks] = useState<any[]>([]);
+  const [sonicNFTs, setSonicNFTs] = useState<NFTMetadata[]>([]);
   const [connectedWalletType, setConnectedWalletType] = useState<string | null>(null);
 
   const connect = async (walletType?: string) => {
@@ -95,6 +99,7 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setThcBalance(null);
     setTinHatCatters([]);
     setSnacks([]);
+    setSonicNFTs([]);
     setConnectedWalletType(null);
     
     toast({
@@ -122,6 +127,13 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       const ownedSnacks = await getOwnedSnacks(address);
       setSnacks(ownedSnacks);
+      
+      try {
+        const sonicNfts = await fetchOwnedNFTs(address);
+        setSonicNFTs(sonicNfts);
+      } catch (error) {
+        console.error('Error fetching Sonic NFTs:', error);
+      }
     }
   };
 
@@ -176,6 +188,7 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
         connecting,
         tinHatCatters,
         snacks,
+        sonicNFTs,
         connect, 
         disconnect,
         refreshBalance,
