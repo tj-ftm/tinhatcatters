@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   Dialog,
@@ -33,16 +34,17 @@ const walletOptions: WalletOption[] = [
     primary: true
   },
   {
+    id: 'brave',
+    name: 'Brave Wallet',
+    icon: <Chrome className="h-6 w-6 text-red-500" />,
+    description: 'Use Brave browser\'s built-in wallet',
+    primary: true
+  },
+  {
     id: 'rabby',
     name: 'Rabby',
     icon: <Shield className="h-6 w-6 text-purple-500" />,
     description: 'Connect using Rabby wallet'
-  },
-  {
-    id: 'brave',
-    name: 'Brave',
-    icon: <Chrome className="h-6 w-6 text-red-500" />,
-    description: 'Use Brave browser wallet'
   },
   {
     id: 'walletconnect',

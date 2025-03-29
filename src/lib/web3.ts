@@ -1,4 +1,3 @@
-
 import { ethers } from 'ethers';
 import { toast } from '@/hooks/use-toast';
 import { EthereumProvider } from '@walletconnect/ethereum-provider';
@@ -55,7 +54,7 @@ async function initWalletConnectProvider() {
         projectId: WC_PROJECT_ID,
         chains: [Number(parseInt(SONIC_NETWORK.chainId, 16))],
         optionalChains: [Number(parseInt(SONIC_NETWORK.chainId, 16))],
-        showQrModal: false,
+        showQrModal: true,
         rpcMap: {
           [Number(parseInt(SONIC_NETWORK.chainId, 16))]: SONIC_NETWORK.rpcUrl,
         },
@@ -64,17 +63,6 @@ async function initWalletConnectProvider() {
           description: "TinHatCatters App",
           url: window.location.origin,
           icons: [`${window.location.origin}/favicon.ico`],
-        },
-      });
-
-      // Initialize WalletConnect Modal
-      walletConnectModal = new WalletConnectModal({
-        projectId: WC_PROJECT_ID,
-        themeMode: 'light',
-        themeVariables: {
-          '--wcm-font-family': 'MS Sans Serif, sans-serif',
-          '--wcm-background-color': '#c0c0c0',
-          '--wcm-accent-color': '#000080',
         },
       });
 
@@ -132,37 +120,48 @@ export async function connectWallet(walletType?: string): Promise<string> {
         throw new Web3Error('Failed to initialize WalletConnect.');
       }
       
-      // Open modal to scan QR code
-      if (walletConnectModal) {
-        walletConnectModal.openModal();
+      try {
+        // Connect to WalletConnect
+        const accounts = await wcProvider.connect();
+        
+        if (accounts.length === 0) {
+          throw new Web3Error('No accounts found. Please connect your wallet.');
+        }
+        
+        provider = new ethers.BrowserProvider(wcProvider as any);
+        
+        // Check if user is on Sonic network
+        await switchToSonicNetwork(provider, true);
+        
+        return accounts[0];
+      } catch (error) {
+        console.error('Error connecting with WalletConnect:', error);
+        throw new Web3Error('Failed to connect with WalletConnect. Please try again.');
       }
-      
-      // Connect to WalletConnect
-      const accounts = await wcProvider.enable();
-      
-      if (walletConnectModal) {
-        walletConnectModal.closeModal();
-      }
-      
-      if (accounts.length === 0) {
-        throw new Web3Error('No accounts found. Please connect your wallet.');
-      }
-      
-      provider = new ethers.BrowserProvider(wcProvider as any);
-      
-      // Check if user is on Sonic network
-      await switchToSonicNetwork(provider, true);
-      
-      return accounts[0];
-    } else if (walletType === 'metamask' || walletType === 'brave' || walletType === 'rabby' || walletType === 'other') {
+    } else if (walletType === 'metamask' || walletType === 'brave' || walletType === 'rabby' || walletType === 'other' || walletType === 'coinbase') {
       // For browser wallets like MetaMask, Brave, etc.
       if (!window.ethereum) {
         throw new Web3Error(`${walletType} wallet not detected. Please install it.`);
       }
       
-      // For specific wallets, we would implement specific logic here
-      // This is a simplified version
-      provider = new ethers.BrowserProvider(window.ethereum);
+      // For specific wallets, we need to target their specific providers
+      let targetProvider;
+      
+      if (walletType === 'brave' && window.ethereum.isBraveWallet) {
+        targetProvider = window.ethereum;
+      } else if (walletType === 'metamask' && window.ethereum.isMetaMask) {
+        targetProvider = window.ethereum;
+      } else if (walletType === 'coinbase' && window.ethereum.isCoinbaseWallet) {
+        targetProvider = window.ethereum;
+      } else if (walletType === 'rabby' && window.ethereum.isRabby) {
+        targetProvider = window.ethereum;
+      } else {
+        // Default to window.ethereum for 'other' or if specific detection fails
+        targetProvider = window.ethereum;
+      }
+      
+      // Request account access from the specific provider
+      provider = new ethers.BrowserProvider(targetProvider);
       
       // Request account access
       const accounts = await provider.send('eth_requestAccounts', []);
