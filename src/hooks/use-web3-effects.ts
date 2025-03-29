@@ -20,7 +20,10 @@ export function useWeb3Effects({
   // Listen for account changes and network changes
   useEffect(() => {
     if (isWeb3Available() && window.ethereum) {
+      console.log('Setting up Web3 event listeners');
+      
       const handleAccountsChanged = (accounts: string[]) => {
+        console.log('Accounts changed:', accounts);
         if (accounts.length === 0) {
           // User disconnected
           disconnect();
@@ -33,6 +36,7 @@ export function useWeb3Effects({
       };
       
       const handleChainChanged = () => {
+        console.log('Chain changed event triggered');
         // When chain changes, ensure we're on Sonic network
         switchToSonicNetwork().then(() => {
           if (address) {
@@ -41,14 +45,16 @@ export function useWeb3Effects({
         }).catch(e => console.error('Error switching to Sonic network:', e));
       };
 
+      // Add event listeners
       window.ethereum.on('accountsChanged', handleAccountsChanged);
       window.ethereum.on('chainChanged', handleChainChanged);
       
-      // Check network on initial load
+      // Initial check for network
       switchToSonicNetwork().catch(e => console.error('Error switching to Sonic network on initial load:', e));
       
-      // Cleanup
+      // Cleanup function
       return () => {
+        console.log('Removing Web3 event listeners');
         window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
         window.ethereum.removeListener('chainChanged', handleChainChanged);
       };
@@ -57,12 +63,21 @@ export function useWeb3Effects({
 
   // Periodically refresh balance
   useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    
     if (address) {
-      const interval = setInterval(() => {
+      console.log('Setting up periodic balance refresh for address:', address);
+      interval = setInterval(() => {
+        console.log('Periodic balance refresh');
         refreshBalance().catch(e => console.error('Error in periodic balance refresh:', e));
       }, 10000); // Refresh every 10 seconds
-      
-      return () => clearInterval(interval);
     }
+    
+    return () => {
+      if (interval) {
+        console.log('Clearing periodic balance refresh');
+        clearInterval(interval);
+      }
+    };
   }, [address, refreshBalance]);
 }
