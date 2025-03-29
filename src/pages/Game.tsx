@@ -322,7 +322,7 @@ const Game: React.FC = () => {
     
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     
-    ctx.fillStyle = '#87CEEB';
+    ctx.fillStyle = '#008080';
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     
     gameState.terrain.forEach(block => {
