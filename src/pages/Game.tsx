@@ -335,20 +335,22 @@ const Game: React.FC = () => {
           </div>
         </div>
 
-        {/* Game container - modified to take all available vertical space */}
-        <div className="win95-inset p-1 w-full flex-grow flex flex-col" ref={gameContainerRef} style={{ minHeight: "0" }}>
-          <canvas
-            ref={canvasRef}
-            className="w-full h-full object-contain"
-          />
+        {/* Game container - takes all available vertical space */}
+        <div className="flex-grow flex flex-col" style={{ minHeight: "0", display: "flex", flex: "1 1 auto" }}>
+          <div className="win95-inset p-1 w-full h-full" ref={gameContainerRef}>
+            <canvas
+              ref={canvasRef}
+              className="w-full h-full object-contain"
+            />
+          </div>
         </div>
         
-        {/* Moved upgrades to bottom and made thinner */}
+        {/* Upgrades bar - thin bar at bottom */}
         <div className="win95-panel p-1 w-full mt-2 h-auto">
-          <div className="flex justify-center gap-2 items-center h-10">
+          <div className="flex justify-center gap-2 items-center h-8">
             <span className="font-bold text-black text-sm mr-1">Upgrades:</span>
             
-            <div className="win95-inset p-1 flex flex-row items-center gap-2 w-full h-8">
+            <div className="win95-inset p-1 flex flex-row items-center gap-2 w-full h-6">
               <div className="flex flex-1 items-center gap-1">
                 <Zap size={16} className="text-yellow-500 shrink-0" />
                 <div className="flex-1">
