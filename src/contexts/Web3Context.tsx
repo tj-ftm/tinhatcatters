@@ -1,16 +1,19 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
   connectWallet, 
   getBalance, 
   getOwnedTinHatCatters, 
   getOwnedSnacks,
-  isWeb3Available
+  isWeb3Available,
+  getThcBalance,
 } from '@/lib/web3';
 import { toast } from '@/hooks/use-toast';
 
 interface Web3ContextType {
   address: string | null;
   balance: string;
+  thcBalance: string | null;
   connecting: boolean;
   tinHatCatters: any[];
   snacks: any[];
@@ -23,6 +26,7 @@ interface Web3ContextType {
 const Web3Context = createContext<Web3ContextType>({
   address: null,
   balance: '0',
+  thcBalance: null,
   connecting: false,
   tinHatCatters: [],
   snacks: [],
@@ -37,6 +41,7 @@ export const useWeb3 = () => useContext(Web3Context);
 export const Web3Provider = ({ children }: { children: ReactNode }) => {
   const [address, setAddress] = useState<string | null>(null);
   const [balance, setBalance] = useState<string>('0');
+  const [thcBalance, setThcBalance] = useState<string | null>(null);
   const [connecting, setConnecting] = useState<boolean>(false);
   const [tinHatCatters, setTinHatCatters] = useState<any[]>([]);
   const [snacks, setSnacks] = useState<any[]>([]);
@@ -80,6 +85,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
   const disconnect = () => {
     setAddress(null);
     setBalance('0');
+    setThcBalance(null);
     setTinHatCatters([]);
     setSnacks([]);
     toast({
@@ -93,6 +99,10 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
     if (address) {
       const newBalance = await getBalance(address);
       setBalance(newBalance);
+      
+      // Get THC token balance
+      const newThcBalance = await getThcBalance(address);
+      setThcBalance(newThcBalance);
     }
   };
 
@@ -147,6 +157,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
       value={{ 
         address, 
         balance, 
+        thcBalance,
         connecting,
         tinHatCatters,
         snacks,

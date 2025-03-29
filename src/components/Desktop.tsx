@@ -3,10 +3,12 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Taskbar from './Taskbar';
 import WindowManager from './WindowManager';
+import WalletWindow from './WalletWindow';
 
 const Desktop: React.FC = () => {
   const [activeWindows, setActiveWindows] = useState<string[]>([]);
   const [windowsMinimized, setWindowsMinimized] = useState<Record<string, boolean>>({});
+  const [showWalletWindow, setShowWalletWindow] = useState(true);
 
   const addWindow = (windowId: string) => {
     if (!activeWindows.includes(windowId)) {
@@ -44,6 +46,18 @@ const Desktop: React.FC = () => {
           <DesktopIcon label="Shop" icon="🛒" onClick={() => addWindow('shop')} />
         </div>
         
+        {/* Wallet Window */}
+        {showWalletWindow && (
+          <WalletWindow 
+            onClose={() => setShowWalletWindow(false)} 
+            onMinimize={() => {
+              addWindow('wallet');
+              setWindowsMinimized(prev => ({ ...prev, wallet: true }));
+              setShowWalletWindow(false);
+            }}
+          />
+        )}
+        
         <WindowManager 
           activeWindows={activeWindows} 
           windowsMinimized={windowsMinimized}
@@ -62,6 +76,14 @@ const Desktop: React.FC = () => {
         windowsMinimized={windowsMinimized}
         addWindow={addWindow}
         restoreWindow={restoreWindow}
+        onWalletClick={() => {
+          if (activeWindows.includes('wallet')) {
+            restoreWindow('wallet');
+            setShowWalletWindow(false);
+          } else {
+            setShowWalletWindow(true);
+          }
+        }}
       />
     </div>
   );

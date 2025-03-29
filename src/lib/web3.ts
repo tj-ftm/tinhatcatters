@@ -1,4 +1,3 @@
-
 import { ethers } from 'ethers';
 import { toast } from '@/hooks/use-toast';
 
@@ -17,6 +16,17 @@ export const SONIC_NETWORK = {
 // NFT contract addresses (placeholder - would be replaced with actual contract addresses)
 export const TIN_HAT_CATTERS_ADDRESS = '0x123456789abcdef123456789abcdef123456789a';
 export const SNACK_NFT_ADDRESS = '0xabcdef123456789abcdef123456789abcdef1234';
+export const THC_TOKEN_ADDRESS = '0x17Af1Df44444AB9091622e4Aa66dB5BB34E51aD5';
+
+// ERC20 ABI for the THC token
+const ERC20_ABI = [
+  "function balanceOf(address owner) view returns (uint256)",
+  "function decimals() view returns (uint8)",
+  "function symbol() view returns (string)",
+  "function name() view returns (string)",
+  "function transfer(address to, uint amount) returns (bool)",
+  "event Transfer(address indexed from, address indexed to, uint amount)"
+];
 
 // Custom error for Web3 related issues
 export class Web3Error extends Error {
@@ -90,6 +100,32 @@ export async function getBalance(address: string): Promise<string> {
     return ethers.formatEther(balance);
   } catch (error) {
     console.error('Error getting balance:', error);
+    return '0';
+  }
+}
+
+// Get user's THC token balance
+export async function getThcBalance(address: string): Promise<string> {
+  if (!isWeb3Available() || !address) {
+    return '0';
+  }
+
+  try {
+    const provider = getProvider();
+    if (!provider) {
+      throw new Web3Error('Cannot initialize Web3 provider.');
+    }
+
+    const signer = await provider.getSigner();
+    const tokenContract = new ethers.Contract(THC_TOKEN_ADDRESS, ERC20_ABI, signer);
+    
+    const balance = await tokenContract.balanceOf(address);
+    const decimals = await tokenContract.decimals();
+    
+    // Format the balance with the appropriate decimals
+    return ethers.formatUnits(balance, decimals);
+  } catch (error) {
+    console.error('Error getting THC balance:', error);
     return '0';
   }
 }

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Computer, ShoppingCart, Gamepad2, Home } from 'lucide-react';
+import { Computer, ShoppingCart, Gamepad2, Home, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface TaskbarProps {
@@ -8,13 +8,15 @@ interface TaskbarProps {
   windowsMinimized: Record<string, boolean>;
   addWindow: (windowId: string) => void;
   restoreWindow: (windowId: string) => void;
+  onWalletClick: () => void;
 }
 
 const Taskbar: React.FC<TaskbarProps> = ({ 
   activeWindows, 
   windowsMinimized,
   addWindow,
-  restoreWindow 
+  restoreWindow,
+  onWalletClick
 }) => {
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -60,6 +62,17 @@ const Taskbar: React.FC<TaskbarProps> = ({
 
       <div className="border-l border-win95-darkGray mx-1 my-1"></div>
 
+      {/* Wallet quick access button */}
+      <button 
+        className="win95-button px-2 py-1 h-8 my-auto text-sm flex items-center mr-1"
+        onClick={onWalletClick}
+      >
+        <Wallet className="h-4 w-4 mr-1" />
+        Wallet
+      </button>
+
+      <div className="border-l border-win95-darkGray mx-1 my-1"></div>
+
       {/* Window buttons */}
       <div className="flex-grow flex items-center px-1 space-x-1 overflow-x-auto">
         {activeWindows.map(window => (
@@ -72,6 +85,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
             {window === 'shop' && <ShoppingCart className="h-4 w-4 mr-1" />}
             {window === 'computer' && <Computer className="h-4 w-4 mr-1" />}
             {window === 'home' && <Home className="h-4 w-4 mr-1" />}
+            {window === 'wallet' && <Wallet className="h-4 w-4 mr-1" />}
             {window.charAt(0).toUpperCase() + window.slice(1)}
           </button>
         ))}
@@ -111,6 +125,14 @@ const Taskbar: React.FC<TaskbarProps> = ({
                 icon={<ShoppingCart className="h-4 w-4" />}
                 label="NFT Shop"
                 onClick={() => handleItemClick('/shop', 'shop')}
+              />
+              <StartMenuItem 
+                icon={<Wallet className="h-4 w-4" />}
+                label="Wallet"
+                onClick={() => {
+                  setStartMenuOpen(false);
+                  onWalletClick();
+                }}
               />
               
               <div className="border-t border-win95-darkGray my-1"></div>
