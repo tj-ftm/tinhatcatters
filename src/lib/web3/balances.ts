@@ -33,44 +33,43 @@ export const getTHCBalance = async (address: string | null): Promise<string> => 
       return '0';
     }
 
-    if (typeof window.ethereum !== 'undefined') {
-      // Update for ethers v6
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      
-      // Use the specific contract address provided
-      const tokenAddress = '0xae8e9b2222031c464342dbfab7433b64eb5c15cf';
-      
-      const abi = [
-        "function balanceOf(address) view returns (uint)",
-        "function decimals() view returns (uint8)",
-        "function symbol() view returns (string)"
-      ];
-      
-      const tokenContract = new ethers.Contract(
-        tokenAddress,
-        abi,
-        provider
-      );
-      
-      console.log("Fetching THC balance for address:", address);
-      console.log("Using token contract:", tokenAddress);
-      
-      // Get token decimals
-      const decimals = await tokenContract.decimals();
-      console.log("Token decimals:", decimals);
-      
-      // Get balance
-      const balance = await tokenContract.balanceOf(address);
-      console.log("Raw balance:", balance.toString());
-      
-      const formattedBalance = ethers.formatUnits(balance, decimals);
-      console.log("Formatted balance:", formattedBalance);
-      
-      return formattedBalance;
-    } else {
-      console.error('MetaMask or compatible wallet not detected!');
+    if (!isWeb3Available()) {
+      console.error('Web3 is not available');
       return '0';
     }
+
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    
+    // Use the specific contract address provided
+    const tokenAddress = '0xae8e9b2222031c464342dbfab7433b64eb5c15cf';
+    
+    const abi = [
+      "function balanceOf(address) view returns (uint)",
+      "function decimals() view returns (uint8)",
+      "function symbol() view returns (string)"
+    ];
+    
+    const tokenContract = new ethers.Contract(
+      tokenAddress,
+      abi,
+      provider
+    );
+    
+    console.log("Fetching THC balance for address:", address);
+    console.log("Using token contract:", tokenAddress);
+    
+    // Get token decimals
+    const decimals = await tokenContract.decimals();
+    console.log("Token decimals:", decimals);
+    
+    // Get balance
+    const balance = await tokenContract.balanceOf(address);
+    console.log("Raw balance:", balance.toString());
+    
+    const formattedBalance = ethers.formatUnits(balance, decimals);
+    console.log("Formatted balance:", formattedBalance);
+    
+    return formattedBalance;
   } catch (error: any) {
     console.error('Error getting THC balance:', error);
     console.error('Error details:', error.message);

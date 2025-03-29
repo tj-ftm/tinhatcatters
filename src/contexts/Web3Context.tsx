@@ -68,8 +68,18 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const userAddress = await connectWallet(walletType);
       setAddress(userAddress);
       setConnectedWalletType(walletType || 'unknown');
-      await refreshBalance();
-      await refreshNFTs();
+      
+      try {
+        await refreshBalance();
+      } catch (error) {
+        console.error('Error refreshing balance:', error);
+      }
+      
+      try {
+        await refreshNFTs();
+      } catch (error) {
+        console.error('Error refreshing NFTs:', error);
+      }
       
       const walletName = walletType ? walletType.charAt(0).toUpperCase() + walletType.slice(1) : 'Wallet';
       toast({
@@ -111,27 +121,37 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Refresh balance
   const refreshBalance = async () => {
     if (address) {
-      // Ensure on Sonic network before refreshing balance
-      await switchToSonicNetwork();
-      
-      const newBalance = await getBalance(address);
-      setBalance(newBalance);
-      
-      // Get THC token balance - using correct function name
-      const newThcBalance = await getTHCBalance(address);
-      console.log("THC balance updated:", newThcBalance);
-      setThcBalance(newThcBalance);
+      try {
+        // Ensure on Sonic network before refreshing balance
+        await switchToSonicNetwork();
+        
+        const newBalance = await getBalance(address);
+        setBalance(newBalance);
+        
+        // Get THC token balance
+        const newThcBalance = await getTHCBalance(address);
+        console.log("THC balance updated:", newThcBalance);
+        setThcBalance(newThcBalance);
+      } catch (error) {
+        console.error('Error in refreshBalance:', error);
+        // Don't throw the error further, just log it
+      }
     }
   };
 
   // Refresh NFTs
   const refreshNFTs = async () => {
     if (address) {
-      const cats = await getOwnedTinHatCatters(address);
-      setTinHatCatters(cats);
-      
-      const ownedSnacks = await getOwnedSnacks(address);
-      setSnacks(ownedSnacks);
+      try {
+        const cats = await getOwnedTinHatCatters(address);
+        setTinHatCatters(cats);
+        
+        const ownedSnacks = await getOwnedSnacks(address);
+        setSnacks(ownedSnacks);
+      } catch (error) {
+        console.error('Error in refreshNFTs:', error);
+        // Don't throw the error further, just log it
+      }
     }
   };
 
@@ -145,8 +165,8 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } else if (accounts[0] !== address) {
           // Account changed
           setAddress(accounts[0]);
-          refreshBalance();
-          refreshNFTs();
+          refreshBalance().catch(e => console.error('Error refreshing balance after account change:', e));
+          refreshNFTs().catch(e => console.error('Error refreshing NFTs after account change:', e));
         }
       };
       
@@ -154,16 +174,16 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // When chain changes, ensure we're on Sonic network
         switchToSonicNetwork().then(() => {
           if (address) {
-            refreshBalance();
+            refreshBalance().catch(e => console.error('Error refreshing balance after chain change:', e));
           }
-        });
+        }).catch(e => console.error('Error switching to Sonic network:', e));
       };
 
       window.ethereum.on('accountsChanged', handleAccountsChanged);
       window.ethereum.on('chainChanged', handleChainChanged);
       
       // Check network on initial load
-      switchToSonicNetwork();
+      switchToSonicNetwork().catch(e => console.error('Error switching to Sonic network on initial load:', e));
       
       // Cleanup
       return () => {
@@ -177,7 +197,7 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     if (address) {
       const interval = setInterval(() => {
-        refreshBalance();
+        refreshBalance().catch(e => console.error('Error in periodic balance refresh:', e));
       }, 10000); // Refresh every 10 seconds
       
       return () => clearInterval(interval);
