@@ -43,8 +43,10 @@ export const useNFTs = () => {
 
       // If user is connected, fetch their owned NFTs
       if (address) {
-        // Set current wallet address for RLS policies
-        await supabase.rpc('set_wallet_address', { wallet_address: address });
+        // Set current wallet address for RLS policies using a type assertion to avoid TypeScript error
+        await supabase.rpc('set_wallet_address', { 
+          wallet_address: address 
+        } as any);
 
         const { data: userNftsData, error: userNftsError } = await supabase
           .from('user_nfts')
@@ -91,8 +93,10 @@ export const useNFTs = () => {
     }
 
     try {
-      // Set current wallet address for RLS policies
-      await supabase.rpc('set_wallet_address', { wallet_address: address });
+      // Set current wallet address for RLS policies using a type assertion to avoid TypeScript error
+      await supabase.rpc('set_wallet_address', { 
+        wallet_address: address 
+      } as any);
 
       // Check if user already owns this NFT
       const { data: existingNft } = await supabase
