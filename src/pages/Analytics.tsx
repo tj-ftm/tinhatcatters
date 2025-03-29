@@ -25,7 +25,8 @@ import {
   AreaChart,
   Area,
   ComposedChart,
-  Scatter
+  Scatter,
+  ScatterChart
 } from 'recharts';
 import {
   Card,
@@ -66,7 +67,9 @@ import {
   Timer,
   RefreshCw,
   Users,
-  Download
+  Download,
+  Trophy,
+  Clock
 } from 'lucide-react';
 import { format, subDays, formatDistance } from 'date-fns';
 import { Plant, EquipmentType } from '@/types/growRoom';
