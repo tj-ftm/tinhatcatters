@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Dialog,
@@ -94,9 +95,9 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
   // If we're using this as a standalone dialog
   if (open) {
     return (
-      <div className="flex-grow flex flex-col bg-[#c0c0c0] p-2 h-[400px] w-[320px]">
-        <div className="win95-panel mb-2 p-2 text-xs">
-          Connected as: <span className="font-bold">{address || anonymousId}</span>
+      <div className="flex-grow flex flex-col bg-[#c0c0c0] p-2 h-[280px] w-[280px]">
+        <div className="win95-panel mb-2 p-1 text-xs">
+          <span className="font-bold">{address || anonymousId}</span>
         </div>
         
         <ScrollArea className="win95-inset flex-grow p-2 bg-white">
@@ -104,13 +105,13 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
             {messages.map((message) => (
               <div 
                 key={message.id} 
-                className={`flex flex-col p-2 rounded ${message.sender === (address || anonymousId) ? 'bg-[#e0e0e0]' : 'bg-white border border-gray-300'}`}
+                className={`flex flex-col p-1 rounded ${message.sender === (address || anonymousId) ? 'bg-[#e0e0e0]' : 'bg-white border border-gray-300'}`}
               >
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-xs truncate max-w-[200px]">{message.sender}</span>
+                  <span className="font-bold text-xs truncate max-w-[180px]">{message.sender}</span>
                   <span className="text-xs text-gray-500">{formatTimestamp(message.timestamp)}</span>
                 </div>
-                <p className="text-sm mt-1">{message.content}</p>
+                <p className="text-xs mt-1">{message.content}</p>
               </div>
             ))}
             <div ref={messagesEndRef} />
@@ -119,7 +120,7 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
         
         <div className="mt-2 flex gap-2">
           <Input
-            className="win95-inset flex-grow"
+            className="win95-inset flex-grow h-8 text-xs"
             placeholder="Type your message..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
@@ -130,11 +131,11 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
             }}
           />
           <Button 
-            className="win95-button"
+            className="win95-button h-8 w-8 p-0 flex items-center justify-center"
             onClick={handleSendMessage}
             disabled={newMessage.trim() === ''}
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-3 w-3" />
           </Button>
         </div>
       </div>
@@ -144,7 +145,7 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
   // Otherwise, use the Dialog component
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="win95-window border-2 border-gray-400 p-0 max-w-md rounded-none h-[500px] flex flex-col" style={{ zIndex: 9999 }}>
+      <DialogContent className="win95-window border-2 border-gray-400 p-0 max-w-md rounded-none h-[400px] flex flex-col" style={{ zIndex: 9999 }}>
         <div className="win95-title-bar flex justify-between items-center">
           <DialogTitle className="text-white text-lg px-2 flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />

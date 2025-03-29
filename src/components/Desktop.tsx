@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Taskbar from './Taskbar';
@@ -20,7 +19,6 @@ const Desktop: React.FC = () => {
       setActiveWindows(prev => [...prev, windowId]);
       setWindowsMinimized(prev => ({ ...prev, [windowId]: false }));
     } else {
-      // If window exists but is minimized, restore it
       if (windowsMinimized[windowId]) {
         setWindowsMinimized(prev => ({ ...prev, [windowId]: false }));
       }
@@ -103,7 +101,7 @@ const Desktop: React.FC = () => {
         
         {/* Chat Dialog */}
         {showChatDialog && (
-          <div className="absolute top-2 right-2 mt-[320px] z-50">
+          <div className="absolute top-2 right-2 mt-[280px] z-50">
             <div className="win95-window shadow-lg">
               <div className="win95-title-bar flex justify-between items-center">
                 <span className="text-white font-bold px-2 flex items-center gap-2">
