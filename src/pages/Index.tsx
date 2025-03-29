@@ -16,12 +16,12 @@ const Index = () => {
           
           <div className="animate-float mb-6">
             <img 
-              src="/assets/sonic-logo.png" 
+              src="/assets/game/reptilian-logo.png" 
               alt="Reptilian" 
               className="w-48 h-48 object-contain"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><text x='20' y='100' font-size='24'>Reptilian Logo</text></svg>";
+                target.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><text x='20' y='100' font-size='24'>Reptilian Attack</text></svg>";
               }}
             />
           </div>
