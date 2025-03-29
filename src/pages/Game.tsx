@@ -180,21 +180,16 @@ const Game: React.FC = () => {
         const containerWidth = container.clientWidth;
         const containerHeight = container.clientHeight;
         
-        const size = Math.min(containerWidth, containerHeight);
         const padding = 10;
         
-        if (containerWidth > containerHeight) {
-          canvasRef.current.width = size - padding * 2;
-          canvasRef.current.height = size - padding * 2;
-          canvasRef.current.style.marginLeft = `${(containerWidth - (size - padding * 2)) / 2}px`;
-          canvasRef.current.style.marginTop = '0';
-        } 
-        else {
-          canvasRef.current.width = size - padding * 2;
-          canvasRef.current.height = size - padding * 2;
-          canvasRef.current.style.marginLeft = '0';
-          canvasRef.current.style.marginTop = `${(containerHeight - (size - padding * 2)) / 2}px`;
-        }
+        const targetHeight = containerHeight - padding * 2;
+        const targetWidth = Math.min(targetHeight, containerWidth - padding * 2);
+        
+        canvasRef.current.width = targetWidth;
+        canvasRef.current.height = targetHeight;
+        
+        canvasRef.current.style.marginLeft = `${(containerWidth - targetWidth) / 2}px`;
+        canvasRef.current.style.marginTop = '0';
         
         if (gameEngineRef.current) {
           gameEngineRef.current.render();
