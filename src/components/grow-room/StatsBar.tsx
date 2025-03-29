@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { CircleDollarSign, Leaf, Sprout } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface StatsBarProps {
   thcAmount: number;
@@ -21,10 +22,11 @@ const StatsBar: React.FC<StatsBarProps> = ({
   // Format the THC amount to display only 2 decimal places
   const formattedThcAmount = thcAmount.toFixed(2);
   const seedCost = 0.1; // Constant for seed cost
+  const isMobile = useIsMobile();
   
   return (
     <div className="win95-window p-2 mb-4">
-      <div className="flex justify-between items-center">
+      <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'justify-between items-center'}`}>
         <div className="flex items-center">
           <CircleDollarSign className="w-5 h-5 mr-1 text-green-600" />
           <span className="font-bold">{formattedThcAmount} $THC</span>

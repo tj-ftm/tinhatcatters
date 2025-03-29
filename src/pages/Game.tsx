@@ -7,6 +7,7 @@ import { sendTransaction } from '@/lib/web3';
 import LoadingOverlay from '@/components/grow-room/LoadingOverlay';
 import ReptilianAttackEngine from '@/game/ReptilianAttackEngine';
 import { Shield, Zap, Heart } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const RECIPIENT_ADDRESS = '0x097766e8dE97A0A53B3A31AB4dB02d0004C8cc4F';
 const GAME_START_COST = 0.1;
@@ -30,6 +31,7 @@ const Game: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [windowIsMaximized, setWindowIsMaximized] = useState(false);
+  const isMobile = useIsMobile();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameContainerRef = useRef<HTMLDivElement>(null);
@@ -188,6 +190,32 @@ const Game: React.FC = () => {
       }
     };
 
+    const handleTouchStart = (e: TouchEvent) => {
+      if (!gameState.gameStarted || gameState.gameOver || gameState.paused) return;
+      
+      const touch = e.touches[0];
+      const touchX = touch.clientX;
+      const screenWidth = window.innerWidth;
+      
+      if (touchX < screenWidth / 2) {
+        mouseState.current.left = true;
+      } else {
+        mouseState.current.right = true;
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length === 0) {
+        mouseState.current.left = false;
+        mouseState.current.right = false;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      mouseState.current.position = { x: touch.clientX, y: touch.clientY };
+    };
+
     const handleMouseDown = (e: MouseEvent) => {
       if (e.button === 0) mouseState.current.left = true;
       if (e.button === 2) mouseState.current.right = true;
@@ -207,6 +235,13 @@ const Game: React.FC = () => {
     };
 
     window.addEventListener('resize', handleResize);
+    
+    if (isMobile) {
+      window.addEventListener('touchstart', handleTouchStart);
+      window.addEventListener('touchend', handleTouchEnd);
+      window.addEventListener('touchmove', handleTouchMove);
+    }
+    
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('mousemove', handleMouseMove);
@@ -215,13 +250,18 @@ const Game: React.FC = () => {
     handleResize();
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.addEventListener('resize', handleResize);
+      if (isMobile) {
+        window.removeEventListener('touchstart', handleTouchStart);
+        window.removeEventListener('touchend', handleTouchEnd);
+        window.removeEventListener('touchmove', handleTouchMove);
+      }
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('contextmenu', handleContextMenu);
     };
-  }, []);
+  }, [gameState.gameStarted, gameState.gameOver, gameState.paused, isMobile]);
 
   useEffect(() => {
     if (gameState.gameStarted && !gameState.gameOver && !gameState.paused) {
@@ -275,11 +315,17 @@ const Game: React.FC = () => {
     }
   };
 
+  const MobileControlsHelp = () => (
+    <div className="absolute top-2 left-2 right-2 bg-black bg-opacity-70 text-white p-2 rounded text-xs z-10">
+      <p>Touch left side to shoot. Touch right side to jump.</p>
+    </div>
+  );
+
   return (
     <div className="win95-window w-full h-full overflow-hidden flex flex-col">
       <div className="p-2 bg-[#c0c0c0] flex flex-col h-full">
-        <div className="w-full mb-2 win95-panel p-2 flex justify-between items-center">
-          <div className="flex items-center gap-2">
+        <div className={`w-full mb-2 win95-panel p-2 ${isMobile ? 'flex flex-col gap-2' : 'flex justify-between items-center'}`}>
+          <div className={`${isMobile ? 'flex justify-between' : 'flex items-center gap-2'}`}>
             <div className="win95-inset px-3 py-1 flex items-center">
               <span className="font-bold mr-2 text-black">Score:</span>
               <span className="text-black">{gameState.score}</span>
@@ -301,7 +347,7 @@ const Game: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className={`${isMobile ? 'flex justify-between mt-2' : 'flex items-center gap-2'}`}>
             {address && (
               <div className="win95-inset px-3 py-1">
                 <span className="font-bold mr-1 text-black">THC:</span>
@@ -335,22 +381,25 @@ const Game: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex-grow flex flex-col" style={{ minHeight: "0", display: "flex", flex: "1 1 auto" }}>
+        <div className="flex-grow flex flex-col relative" style={{ minHeight: "0", display: "flex", flex: "1 1 auto" }}>
           <div className="win95-inset p-1 w-full h-full" ref={gameContainerRef}>
             <canvas
               ref={canvasRef}
               className="w-full h-full object-contain"
             />
+            {isMobile && gameState.gameStarted && !gameState.paused && !gameState.gameOver && (
+              <MobileControlsHelp />
+            )}
           </div>
         </div>
       </div>
       
       <div className="win95-panel p-1 w-full mt-auto bg-[#c0c0c0]">
-        <div className="flex justify-center gap-2 items-center h-8">
+        <div className={`${isMobile ? 'flex flex-col gap-2' : 'flex justify-center gap-2 items-center h-8'}`}>
           <span className="font-bold text-black text-sm mr-1">Upgrades:</span>
           
-          <div className="win95-inset p-1 flex flex-row items-center gap-2 w-full h-6">
-            <div className="flex flex-1 items-center gap-1">
+          <div className={`win95-inset p-1 ${isMobile ? 'flex flex-col gap-2' : 'flex flex-row items-center gap-2'} w-full ${isMobile ? '' : 'h-6'}`}>
+            <div className={`${isMobile ? 'flex' : 'flex flex-1'} items-center gap-1`}>
               <Zap size={16} className="text-yellow-500 shrink-0" />
               <div className="flex-1">
                 <div className="w-full h-3 win95-inset overflow-hidden">
@@ -366,7 +415,7 @@ const Game: React.FC = () => {
               </Button>
             </div>
             
-            <div className="flex flex-1 items-center gap-1">
+            <div className={`${isMobile ? 'flex' : 'flex flex-1'} items-center gap-1`}>
               <Shield size={16} className="text-blue-500 shrink-0" />
               <div className="flex-1">
                 <div className="w-full h-3 win95-inset overflow-hidden">
@@ -382,7 +431,7 @@ const Game: React.FC = () => {
               </Button>
             </div>
             
-            <div className="flex flex-1 items-center gap-1">
+            <div className={`${isMobile ? 'flex' : 'flex flex-1'} items-center gap-1`}>
               <Heart size={16} className="text-red-500 shrink-0" />
               <div className="flex-1">
                 <div className="w-full h-3 win95-inset overflow-hidden">

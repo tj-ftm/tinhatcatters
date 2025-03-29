@@ -7,9 +7,11 @@ import EquipmentArea from './grow-room/EquipmentArea';
 import LoadingOverlay from './grow-room/LoadingOverlay';
 import UpgradeModal from './grow-room/UpgradeModal';
 import { useWindowManagement } from '@/hooks/useWindowManagement';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const GrowRoom: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
   
   const {
     thcAmount,
@@ -38,7 +40,18 @@ const GrowRoom: React.FC = () => {
   return (
     <div className="h-full flex flex-col" ref={containerRef}>
       <div className="flex-1 flex flex-col gap-4 overflow-hidden">
-        {/* Growing Area - Now takes more space */}
+        {/* Stats Bar - Now at the top for mobile */}
+        {isMobile && (
+          <StatsBar 
+            thcAmount={thcAmount}
+            plantCount={plants.length}
+            plantCapacity={plantCapacity}
+            isLoading={isLoading}
+            onPlantSeed={plantSeed}
+          />
+        )}
+        
+        {/* Growing Area */}
         <GrowingArea 
           plants={plants}
           plantCapacity={plantCapacity}
@@ -47,25 +60,29 @@ const GrowRoom: React.FC = () => {
           getGrowthColor={getGrowthColor}
           onPlantSeed={plantSeed}
           onHarvestPlant={harvestPlant}
+          isMobile={isMobile}
         />
         
-        {/* Equipment Area - Now at the bottom and more square */}
+        {/* Equipment Area */}
         <EquipmentArea 
           equipment={equipment}
           plantCapacity={plantCapacity}
           isLoading={isLoading}
           onShowUpgradeModal={setShowUpgradeModal}
           onUpgradeCapacity={upgradeCapacity}
+          isMobile={isMobile}
         />
 
-        {/* Stats Bar - Now at the very bottom */}
-        <StatsBar 
-          thcAmount={thcAmount}
-          plantCount={plants.length}
-          plantCapacity={plantCapacity}
-          isLoading={isLoading}
-          onPlantSeed={plantSeed}
-        />
+        {/* Stats Bar - At the bottom for desktop */}
+        {!isMobile && (
+          <StatsBar 
+            thcAmount={thcAmount}
+            plantCount={plants.length}
+            plantCapacity={plantCapacity}
+            isLoading={isLoading}
+            onPlantSeed={plantSeed}
+          />
+        )}
       </div>
       
       {/* Modals and Overlays */}

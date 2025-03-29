@@ -11,6 +11,7 @@ interface EquipmentAreaProps {
   isLoading: boolean;
   onShowUpgradeModal: (type: EquipmentType) => void;
   onUpgradeCapacity: () => void;
+  isMobile?: boolean;
 }
 
 const EquipmentArea: React.FC<EquipmentAreaProps> = ({
@@ -18,7 +19,8 @@ const EquipmentArea: React.FC<EquipmentAreaProps> = ({
   plantCapacity,
   isLoading,
   onShowUpgradeModal,
-  onUpgradeCapacity
+  onUpgradeCapacity,
+  isMobile = false
 }) => {
   // Fixed expansion cost at 2 THC
   const expansionCost = 2;
@@ -29,7 +31,7 @@ const EquipmentArea: React.FC<EquipmentAreaProps> = ({
         <span>Equipment</span>
       </div>
       
-      <div className="grid grid-cols-5 gap-2">
+      <div className={`grid ${isMobile ? 'grid-cols-2 gap-2' : 'grid-cols-5 gap-2'}`}>
         {/* Light */}
         <EquipmentItem
           type={EquipmentType.Light}
@@ -68,9 +70,8 @@ const EquipmentArea: React.FC<EquipmentAreaProps> = ({
           equipment={equipment[EquipmentType.Automation]}
           isLoading={isLoading}
           onUpgrade={() => onShowUpgradeModal(EquipmentType.Automation)}
+          className={isMobile ? "col-span-2" : ""}
         />
-        
-        {/* Capacity Upgrade is now shown in the same grid */}
       </div>
       
       {/* Capacity Upgrade Button */}
