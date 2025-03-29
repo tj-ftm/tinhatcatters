@@ -50,7 +50,9 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   AreaChart,
-  Area
+  Area,
+  ScatterChart,
+  Scatter
 } from 'recharts';
 import { formatDistance, format } from 'date-fns';
 import { EquipmentType } from '@/types/growRoom';
