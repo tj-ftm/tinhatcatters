@@ -78,10 +78,8 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
       
       <div className="p-3 bg-[#c0c0c0]">
         {!address ? (
-          <div className="p-2">
-            <div className="z-30">
-              <WalletConnector />
-            </div>
+          <div className="flex justify-center">
+            <WalletConnector />
           </div>
         ) : (
           <div>
@@ -143,7 +141,7 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
               </div>
             </div>
             
-            <div className="flex justify-center z-30">
+            <div className="flex justify-center">
               <WalletConnector />
             </div>
           </div>

@@ -38,7 +38,7 @@ const WalletConnector: React.FC = () => {
     return (
       <>
         <Button 
-          className="sonic-btn whitespace-nowrap flex-shrink-0 cursor-pointer" 
+          className="sonic-btn whitespace-nowrap flex items-center justify-center"
           onClick={handleConnectClick} 
           disabled={connecting}
         >
