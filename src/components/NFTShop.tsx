@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import NFTCard from './NFTCard';
@@ -154,6 +155,50 @@ const AVAILABLE_SNACKS = {
       price: 10,
       boost: { type: 'hydration', value: 75, duration: 0 }
     }
+  ],
+  thc: [
+    {
+      id: 'thcfert',
+      name: 'Premium THC Fertilizer',
+      image: '/assets/snacks/growfood.png',
+      price: 20,
+      boost: { type: 'growth', value: 50, duration: 0 }
+    },
+    {
+      id: 'thcseed',
+      name: 'THC Premium Seeds',
+      image: '/assets/snacks/seeds.png',
+      price: 30,
+      boost: { type: 'planting', value: 3, duration: 0 }
+    },
+    {
+      id: 'hydrokit',
+      name: 'Hydroponic System',
+      image: '/assets/snacks/water.png',
+      price: 50,
+      boost: { type: 'hydration', value: 100, duration: 0 }
+    },
+    {
+      id: 'ledlight',
+      name: 'LED Grow Light',
+      image: '/assets/snacks/shield.png',
+      price: 40,
+      boost: { type: 'lighting', value: 75, duration: 0 }
+    },
+    {
+      id: 'autofeeder',
+      name: 'Auto Feeding System',
+      image: '/assets/snacks/speedpotion.png',
+      price: 35,
+      boost: { type: 'feeding', value: 60, duration: 0 }
+    },
+    {
+      id: 'climatectrl',
+      name: 'Climate Control System',
+      image: '/assets/snacks/jetpack.png',
+      price: 45,
+      boost: { type: 'environment', value: 80, duration: 0 }
+    }
   ]
 };
 
@@ -279,10 +324,10 @@ const NFTShop: React.FC = () => {
               Health Items
             </TabsTrigger>
             <TabsTrigger 
-              value="growing" 
+              value="thc" 
               className="flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black"
             >
-              Growing Items
+              THC Grow Items
             </TabsTrigger>
           </TabsList>
           
@@ -334,9 +379,9 @@ const NFTShop: React.FC = () => {
             </div>
           </TabsContent>
           
-          <TabsContent value="growing" className="m-0">
+          <TabsContent value="thc" className="m-0">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {AVAILABLE_SNACKS.growing.map((snack) => (
+              {AVAILABLE_SNACKS.thc.map((snack) => (
                 <NFTCard
                   key={snack.id}
                   id={snack.id}

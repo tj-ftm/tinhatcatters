@@ -11,17 +11,17 @@ const Index = () => {
     <div className="flex flex-col h-full">
       <div className="flex-grow flex flex-col items-center justify-center p-4">
         <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold mb-2">Welcome to Sonic Sidescroller Adventure</h1>
+          <h1 className="text-2xl font-bold mb-2">Welcome to Reptilian Attack</h1>
           <p className="text-sm mb-4">Windows 95 Edition</p>
           
           <div className="animate-float mb-6">
             <img 
               src="/assets/sonic-logo.png" 
-              alt="Sonic" 
+              alt="Reptilian" 
               className="w-48 h-48 object-contain"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><text x='20' y='100' font-size='24'>Sonic Logo</text></svg>";
+                target.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><text x='20' y='100' font-size='24'>Reptilian Logo</text></svg>";
               }}
             />
           </div>
@@ -53,7 +53,7 @@ const Index = () => {
       </div>
       
       <footer className="win95-panel p-2 text-center text-xs">
-        Sonic Sidescroller Adventure - Windows 95 Edition - Copyright © 2023
+        Reptilian Attack - Windows 95 Edition - Copyright © 2023
       </footer>
     </div>
   );

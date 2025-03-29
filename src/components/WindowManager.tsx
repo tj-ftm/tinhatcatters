@@ -42,6 +42,7 @@ const WindowManager: React.FC<WindowManagerProps> = ({
   const [preMaximizeState, setPreMaximizeState] = useState<Record<string, { position: Position, size: Size }>>({});
   
   const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const dragRef = useRef<{ x: number; y: number } | null>(null);
   const resizeStartPos = useRef<{ x: number; y: number } | null>(null);
@@ -50,23 +51,42 @@ const WindowManager: React.FC<WindowManagerProps> = ({
   const getInitialPosition = (windowId: string): Position => {
     if (positions[windowId]) return positions[windowId];
     
-    const baseOffset = 50;
+    const container = containerRef.current;
+    const containerWidth = container?.clientWidth || window.innerWidth;
+    const containerHeight = container?.clientHeight || window.innerHeight - 40;
+    
+    const baseOffsetX = Math.min(50, containerWidth * 0.05);
+    const baseOffsetY = Math.min(50, containerHeight * 0.05);
     const windowCount = Object.keys(positions).length;
+    
     return {
-      x: baseOffset + (windowCount * 20) % 100,
-      y: baseOffset + (windowCount * 20) % 100
+      x: baseOffsetX + (windowCount * 20) % Math.max(100, containerWidth * 0.1),
+      y: baseOffsetY + (windowCount * 20) % Math.max(100, containerHeight * 0.1)
     };
   };
 
   const getWindowSize = (windowId: string): Size => {
     if (sizes[windowId]) return sizes[windowId];
     
+    const container = containerRef.current;
+    const containerWidth = container?.clientWidth || window.innerWidth;
+    const containerHeight = container?.clientHeight || window.innerHeight - 40;
+    
     if (windowId === 'game' || windowId === 'growroom') {
-      return { width: window.innerWidth * 0.8, height: window.innerHeight * 0.8 };
+      return { 
+        width: Math.min(containerWidth * 0.8, 1200), 
+        height: Math.min(containerHeight * 0.8, 800) 
+      };
     } else if (windowId === 'shop') {
-      return { width: window.innerWidth * 0.8, height: window.innerHeight * 0.7 };
+      return { 
+        width: Math.min(containerWidth * 0.8, 1000), 
+        height: Math.min(containerHeight * 0.7, 700) 
+      };
     } else {
-      return { width: window.innerWidth * 0.6, height: window.innerHeight * 0.5 };
+      return { 
+        width: Math.min(containerWidth * 0.6, 800), 
+        height: Math.min(containerHeight * 0.5, 600) 
+      };
     }
   };
 
@@ -203,21 +223,46 @@ const WindowManager: React.FC<WindowManagerProps> = ({
         [windowId]: { position: currentPosition, size: currentSize }
       }));
       
+      const container = containerRef.current;
+      const containerWidth = container?.clientWidth || window.innerWidth;
+      const containerHeight = container?.clientHeight || window.innerHeight - 40;
+      
       setPositions(prev => ({ 
         ...prev, 
         [windowId]: { x: 0, y: 0 } 
       }));
       setSizes(prev => ({ 
         ...prev, 
-        [windowId]: { width: window.innerWidth, height: window.innerHeight - 40 } 
+        [windowId]: { width: containerWidth, height: containerHeight } 
       }));
     }
     
     setIsMaximized(prev => ({ ...prev, [windowId]: !currentlyMaximized }));
   };
 
+  React.useEffect(() => {
+    const handleResize = () => {
+      Object.entries(isMaximized).forEach(([windowId, maximized]) => {
+        if (maximized) {
+          const container = containerRef.current;
+          const containerWidth = container?.clientWidth || window.innerWidth;
+          const containerHeight = container?.clientHeight || window.innerHeight - 40;
+          
+          setSizes(prev => ({ 
+            ...prev, 
+            [windowId]: { width: containerWidth, height: containerHeight } 
+          }));
+        }
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMaximized]);
+
   return (
     <div 
+      ref={containerRef}
       className="absolute inset-0"
       onMouseMove={(dragging || resizing) ? onDrag : resizing ? onResize : undefined}
       onMouseUp={dragging ? stopDrag : resizing ? stopResize : undefined}
@@ -280,27 +325,14 @@ const WindowManager: React.FC<WindowManagerProps> = ({
               {windowId === 'growroom' && <GrowRoom />}
               {windowId === 'computer' && (
                 <div className="p-4">
-                  <h2 className="text-lg font-bold mb-4">My Computer</h2>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="flex flex-col items-center">
-                      <div className="text-2xl mb-1">💾</div>
-                      <span className="text-xs">3½ Floppy (A:)</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <div className="text-2xl mb-1">💽</div>
-                      <span className="text-xs">Hard Disk (C:)</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <div className="text-2xl mb-1">📀</div>
-                      <span className="text-xs">CD Drive (D:)</span>
-                    </div>
+                  <h2 className="text-lg font-bold mb-4">File Explorer</h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <NavigationIcon label="Home" icon="🏠" path="/" />
+                    <NavigationIcon label="Reptilian Attack" icon="🎮" path="/game" />
+                    <NavigationIcon label="NFT Shop" icon="🛒" path="/shop" />
+                    <NavigationIcon label="THC Grow Room" icon="🌿" path="/growroom" />
+                    <NavigationIcon label="Recycle Bin" icon="🗑️" path="#" />
                   </div>
-                </div>
-              )}
-              {windowId === 'network' && (
-                <div className="p-4">
-                  <h2 className="text-lg font-bold mb-4">Network Neighborhood</h2>
-                  <p>No network connections available.</p>
                 </div>
               )}
               {windowId === 'recyclebin' && (
@@ -339,6 +371,30 @@ const WindowManager: React.FC<WindowManagerProps> = ({
           </div>
         );
       })}
+    </div>
+  );
+};
+
+const NavigationIcon: React.FC<{ 
+  label: string; 
+  icon: string; 
+  path: string;
+}> = ({ label, icon, path }) => {
+  const navigate = useNavigate();
+  
+  const handleClick = () => {
+    if (path !== '#') {
+      navigate(path);
+    }
+  };
+  
+  return (
+    <div 
+      className="flex flex-col items-center cursor-pointer p-2 hover:bg-gray-200"
+      onClick={handleClick}
+    >
+      <div className="text-2xl mb-1">{icon}</div>
+      <span className="text-xs text-center">{label}</span>
     </div>
   );
 };

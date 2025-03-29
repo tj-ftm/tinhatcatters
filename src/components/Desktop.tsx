@@ -37,26 +37,28 @@ const Desktop: React.FC = () => {
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#008080] relative">
       <div className="flex-grow relative">
-        {/* Desktop Icons would go here */}
+        {/* Desktop Icons */}
         <div className="absolute top-2 left-2 flex flex-col items-center gap-6">
-          <DesktopIcon label="My Computer" icon="💻" onClick={() => addWindow('computer')} />
-          <DesktopIcon label="Network" icon="🌐" onClick={() => addWindow('network')} />
+          <DesktopIcon label="File Explorer" icon="💻" onClick={() => addWindow('computer')} />
           <DesktopIcon label="Recycle Bin" icon="🗑️" onClick={() => addWindow('recyclebin')} />
-          <DesktopIcon label="Sonic Game" icon="🎮" onClick={() => addWindow('game')} />
-          <DesktopIcon label="THC Grow" icon="🌿" onClick={() => addWindow('growroom')} />
-          <DesktopIcon label="Shop" icon="🛒" onClick={() => addWindow('shop')} />
+          <DesktopIcon label="Reptilian Attack" icon="🎮" onClick={() => addWindow('game')} />
+          <DesktopIcon label="THC Grow Room" icon="🌿" onClick={() => addWindow('growroom')} />
+          <DesktopIcon label="NFT Shop" icon="🛒" onClick={() => addWindow('shop')} />
+          <DesktopIcon label="Home" icon="🏠" onClick={() => addWindow('home')} />
         </div>
         
         {/* Wallet Window */}
         {showWalletWindow && (
-          <WalletWindow 
-            onClose={() => setShowWalletWindow(false)} 
-            onMinimize={() => {
-              addWindow('wallet');
-              setWindowsMinimized(prev => ({ ...prev, wallet: true }));
-              setShowWalletWindow(false);
-            }}
-          />
+          <div className="absolute top-2 right-2">
+            <WalletWindow 
+              onClose={() => setShowWalletWindow(false)} 
+              onMinimize={() => {
+                addWindow('wallet');
+                setWindowsMinimized(prev => ({ ...prev, wallet: true }));
+                setShowWalletWindow(false);
+              }}
+            />
+          </div>
         )}
         
         <WindowManager 

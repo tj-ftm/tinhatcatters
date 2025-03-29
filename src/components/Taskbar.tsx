@@ -109,7 +109,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
           </div>
 
           <div className="pl-8 py-1">
-            <div className="p-1 font-bold text-lg mb-1">Sonic Adventure</div>
+            <div className="p-1 font-bold text-lg mb-1">Tin Hat Catters</div>
             
             <div className="flex flex-col">
               <StartMenuItem 
@@ -132,7 +132,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
                   <div className="py-1">
                     <StartMenuItem 
                       icon={<Gamepad2 className="h-4 w-4" />} 
-                      label="Sonic Sidescroller"
+                      label="Reptilian Attack"
                       onClick={() => handleItemClick('/game', 'game')}
                     />
                     <StartMenuItem 
@@ -156,6 +156,11 @@ const Taskbar: React.FC<TaskbarProps> = ({
                   setStartMenuOpen(false);
                   onWalletClick();
                 }}
+              />
+              <StartMenuItem 
+                icon={<Computer className="h-4 w-4" />}
+                label="File Explorer"
+                onClick={() => handleItemClick('/', 'computer')}
               />
               
               <div className="border-t border-win95-darkGray my-1"></div>
