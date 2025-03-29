@@ -13,14 +13,26 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
   const { address, balance, thcBalance, tinHatCatters } = useWeb3();
   
   return (
-    <div className="win95-window w-80 shadow-lg">
+    <div className="win95-window w-80 shadow-lg z-20">
       <div className="win95-title-bar flex justify-between items-center">
         <span className="text-white font-bold">Wallet</span>
         <div className="flex">
-          <button className="text-white hover:bg-blue-800 px-1" onClick={onMinimize}>
+          <button 
+            className="text-white hover:bg-blue-800 px-1 cursor-pointer z-30" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onMinimize();
+            }}
+          >
             <Minus className="h-3 w-3" />
           </button>
-          <button className="text-white hover:bg-red-500 px-1" onClick={onClose}>
+          <button 
+            className="text-white hover:bg-red-500 px-1 cursor-pointer z-30" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+          >
             <X className="h-3 w-3" />
           </button>
         </div>
@@ -30,7 +42,9 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
         {!address ? (
           <div className="p-2">
             <p className="text-center mb-3 text-sm">Connect your wallet to see your assets</p>
-            <WalletConnector />
+            <div className="z-30">
+              <WalletConnector />
+            </div>
           </div>
         ) : (
           <div>
@@ -74,7 +88,7 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
               </div>
             </div>
             
-            <div className="flex justify-center">
+            <div className="flex justify-center z-30">
               <WalletConnector />
             </div>
           </div>

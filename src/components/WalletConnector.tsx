@@ -31,7 +31,8 @@ const WalletConnector: React.FC = () => {
     };
   }, []);
   
-  const handleConnectClick = () => {
+  const handleConnectClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setShowWalletDialog(true);
   };
   
@@ -53,7 +54,7 @@ const WalletConnector: React.FC = () => {
     return (
       <>
         <Button 
-          className="sonic-btn whitespace-nowrap flex-shrink-0" 
+          className="sonic-btn whitespace-nowrap flex-shrink-0 cursor-pointer" 
           onClick={handleConnectClick} 
           disabled={connecting}
         >
@@ -72,10 +73,13 @@ const WalletConnector: React.FC = () => {
   
   // If connected, show dropdown
   return (
-    <div className="relative flex-shrink-0" ref={dropdownRef}>
+    <div className="relative flex-shrink-0 z-30" ref={dropdownRef}>
       <Button 
-        className="sonic-btn flex items-center whitespace-nowrap" 
-        onClick={() => setIsOpen(!isOpen)}
+        className="sonic-btn flex items-center whitespace-nowrap cursor-pointer" 
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
       >
         {displayAddress}
         {isOpen ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
@@ -86,8 +90,11 @@ const WalletConnector: React.FC = () => {
           <div className="win95-title-bar mb-2">
             <span>Wallet Info</span>
             <button 
-              className="text-white hover:text-gray-300"
-              onClick={() => setIsOpen(false)}
+              className="text-white hover:text-gray-300 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsOpen(false);
+              }}
             >
               x
             </button>
@@ -102,8 +109,9 @@ const WalletConnector: React.FC = () => {
               <p className="text-xs win95-inset p-1">{parseFloat(balance).toFixed(4)} S</p>
             </div>
             <Button 
-              className="win95-button w-full flex items-center justify-center" 
-              onClick={() => {
+              className="win95-button w-full flex items-center justify-center cursor-pointer" 
+              onClick={(e) => {
+                e.stopPropagation();
                 disconnect();
                 setIsOpen(false);
               }}

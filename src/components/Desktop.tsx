@@ -49,7 +49,7 @@ const Desktop: React.FC = () => {
         
         {/* Wallet Window */}
         {showWalletWindow && (
-          <div className="absolute top-2 right-2">
+          <div className="absolute top-2 right-2 z-20">
             <WalletWindow 
               onClose={() => setShowWalletWindow(false)} 
               onMinimize={() => {
