@@ -76,7 +76,6 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
       <div className="p-3 bg-[#c0c0c0]">
         {!address ? (
           <div className="p-2">
-            <p className="text-center mb-3 text-sm">Connect your wallet to see your assets</p>
             <div className="z-30">
               <WalletConnector />
             </div>
