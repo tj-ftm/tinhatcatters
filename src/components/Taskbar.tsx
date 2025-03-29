@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Computer, ShoppingCart, Gamepad2, Home, Wallet, Cannabis } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -63,15 +62,6 @@ const Taskbar: React.FC<TaskbarProps> = ({
 
       <div className="border-l border-win95-darkGray mx-1 my-1"></div>
 
-      {/* Wallet quick access button */}
-      <button 
-        className="win95-button px-2 py-1 h-8 my-auto text-sm flex items-center mr-1"
-        onClick={onWalletClick}
-      >
-        <Wallet className="h-4 w-4 mr-1" />
-        Wallet
-      </button>
-
       <div className="border-l border-win95-darkGray mx-1 my-1"></div>
 
       {/* Window buttons */}
@@ -96,11 +86,6 @@ const Taskbar: React.FC<TaskbarProps> = ({
       {/* Clock */}
       <div className="win95-panel px-2 flex items-center text-xs mr-1">
         <Clock />
-      </div>
-
-      {/* Wallet Connector */}
-      <div className="ml-1">
-        <WalletConnector />
       </div>
 
       {/* Start Menu - Now with higher z-index to ensure it's always on top */}

@@ -5,7 +5,7 @@ import { useWeb3 } from '@/contexts/Web3Context';
 import { usePoints } from '@/hooks/use-points';
 
 const Shop: React.FC = () => {
-  const { address } = useWeb3();
+  const { address, thcBalance } = useWeb3();
   const { getPoints } = usePoints();
   
   return (
@@ -19,6 +19,12 @@ const Shop: React.FC = () => {
           {address && (
             <div className="win95-inset p-2 text-sm">
               <span className="font-bold">Your Points:</span> {getPoints(address)}
+            </div>
+          )}
+          
+          {address && (
+            <div className="win95-inset p-2 text-sm">
+              <span className="font-bold">$THC Balance:</span> {thcBalance || '0'}
             </div>
           )}
         </div>

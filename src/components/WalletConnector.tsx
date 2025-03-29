@@ -7,7 +7,7 @@ import WalletSelectDialog from './WalletSelectDialog';
 import { toast } from '@/hooks/use-toast';
 
 const WalletConnector: React.FC = () => {
-  const { address, balance, connecting, connect, disconnect } = useWeb3();
+  const { address, thcBalance, connecting, connect, disconnect } = useWeb3();
   const [isOpen, setIsOpen] = useState(false);
   const [showWalletDialog, setShowWalletDialog] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -105,8 +105,8 @@ const WalletConnector: React.FC = () => {
               <p className="text-xs win95-inset p-1 break-all">{address}</p>
             </div>
             <div className="mb-4">
-              <p className="text-sm font-bold mb-1">Balance:</p>
-              <p className="text-xs win95-inset p-1">{parseFloat(balance).toFixed(4)} S</p>
+              <p className="text-sm font-bold mb-1">$THC Balance:</p>
+              <p className="text-xs win95-inset p-1">{parseFloat(thcBalance || '0').toFixed(4)} $THC</p>
             </div>
             <Button 
               className="win95-button w-full flex items-center justify-center cursor-pointer" 

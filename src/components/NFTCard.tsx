@@ -88,7 +88,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
         {price !== undefined && (
           <div className="w-full text-center mb-2">
             <div className="win95-inset p-1 text-[10px] font-bold">
-              {price} S
+              {price} $THC
             </div>
           </div>
         )}

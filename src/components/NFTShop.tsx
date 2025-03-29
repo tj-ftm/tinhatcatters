@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import NFTCard from './NFTCard';
@@ -204,7 +205,7 @@ const AVAILABLE_SNACKS = {
 };
 
 const NFTShop: React.FC = () => {
-  const { address, balance, refreshNFTs, connect } = useWeb3();
+  const { address, thcBalance, refreshNFTs, connect } = useWeb3();
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('speed');
   const [showWalletDialog, setShowWalletDialog] = useState(false);
@@ -253,10 +254,10 @@ const NFTShop: React.FC = () => {
     if (!snack) return;
     
     // Check if user has enough balance
-    if (parseFloat(balance) < snack.price) {
+    if (parseFloat(thcBalance || '0') < snack.price) {
       toast({
         title: 'Insufficient Balance',
-        description: `You need at least ${snack.price} S to purchase this item.`,
+        description: `You need at least ${snack.price} $THC to purchase this item.`,
         variant: 'destructive'
       });
       return;
@@ -299,8 +300,8 @@ const NFTShop: React.FC = () => {
           <div className="win95-panel">
             {address ? (
               <>
-                <p className="text-xs font-bold mb-1">Your Balance:</p>
-                <p className="win95-inset p-1 text-sm">{parseFloat(balance).toFixed(4)} S</p>
+                <p className="text-xs font-bold mb-1">Your $THC Balance:</p>
+                <p className="win95-inset p-1 text-sm">{parseFloat(thcBalance || '0').toFixed(4)} $THC</p>
               </>
             ) : (
               <div className="text-center">
@@ -316,6 +317,13 @@ const NFTShop: React.FC = () => {
             </p>
           </div>
         </div>
+        
+        {!address && (
+          <div className="win95-panel p-3 mb-4 text-center">
+            <p className="mb-2">Connect your wallet to purchase items:</p>
+            <WalletConnector />
+          </div>
+        )}
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
           <TabsList className="win95-window p-0 flex w-full mb-4">
@@ -344,13 +352,6 @@ const NFTShop: React.FC = () => {
               THC Grow Items
             </TabsTrigger>
           </TabsList>
-          
-          {!address && (
-            <div className="win95-panel p-3 mb-4 text-center">
-              <p className="mb-2">Connect your wallet to purchase items:</p>
-              <WalletConnector />
-            </div>
-          )}
           
           <TabsContent value="speed" className="m-0">
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">

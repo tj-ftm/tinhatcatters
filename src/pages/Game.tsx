@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import WalletConnector from '@/components/WalletConnector';
 
 interface GameState {
   score: number;
@@ -120,7 +120,7 @@ const Game: React.FC = () => {
     if (!address) {
       toast({
         title: "Wallet Required",
-        description: "Please connect your wallet to play and earn $CONE",
+        description: "Please connect your wallet to play and earn $THC",
         variant: "destructive"
       });
       return;
@@ -165,17 +165,13 @@ const Game: React.FC = () => {
       return;
     }
 
-    // Calculate delta time for smooth animation
     const deltaTime = timestamp - (lastFrameTime.current || timestamp);
     lastFrameTime.current = timestamp;
-    const delta = deltaTime / 16.67; // normalize to ~60fps
+    const delta = deltaTime / 16.67;
 
-    // Update game state
     setGameState(prevState => {
-      // Handle character movement and jumping
       let updatedCharacter = { ...prevState.character };
       
-      // Handle jumping
       if (keysPressed.current['ArrowUp'] || keysPressed.current[' ']) {
         if (!updatedCharacter.jumping) {
           updatedCharacter.jumping = true;
@@ -183,12 +179,10 @@ const Game: React.FC = () => {
         }
       }
       
-      // Handle shooting
       if (keysPressed.current['Control'] || keysPressed.current['x']) {
         if (!updatedCharacter.shooting) {
           updatedCharacter.shooting = true;
           
-          // Create a new projectile
           const newProjectile: Projectile = {
             id: `proj-${Date.now()}-${Math.random()}`,
             x: updatedCharacter.x + CHARACTER_WIDTH,
@@ -205,11 +199,9 @@ const Game: React.FC = () => {
         updatedCharacter.shooting = false;
       }
       
-      // Apply gravity if jumping
       if (updatedCharacter.jumping) {
         updatedCharacter.y += GRAVITY * delta;
         
-        // Check if landed on ground
         const groundY = CANVAS_HEIGHT - GROUND_HEIGHT - CHARACTER_HEIGHT;
         if (updatedCharacter.y >= groundY) {
           updatedCharacter.y = groundY;
@@ -217,7 +209,6 @@ const Game: React.FC = () => {
         }
       }
       
-      // Update projectiles
       const updatedProjectiles = prevState.projectiles
         .map(proj => ({
           ...proj,
@@ -225,7 +216,6 @@ const Game: React.FC = () => {
         }))
         .filter(proj => proj.x > 0 && proj.x < CANVAS_WIDTH);
       
-      // Update enemies
       const updatedEnemies = prevState.enemies
         .map(enemy => ({
           ...enemy,
@@ -233,8 +223,7 @@ const Game: React.FC = () => {
         }))
         .filter(enemy => enemy.x > -enemy.width);
       
-      // Spawn new enemies
-      if (timestamp - prevState.lastEnemySpawn > 2000) { // every 2 seconds
+      if (timestamp - prevState.lastEnemySpawn > 2000) {
         const enemyTypes = ['lizard', 'croc', 'snake'];
         const randomType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)] as 'lizard' | 'croc' | 'snake';
         
@@ -242,7 +231,7 @@ const Game: React.FC = () => {
           id: `enemy-${Date.now()}`,
           type: randomType,
           x: CANVAS_WIDTH,
-          y: CANVAS_HEIGHT - GROUND_HEIGHT - 48, // enemy height
+          y: CANVAS_HEIGHT - GROUND_HEIGHT - 48,
           health: randomType === 'snake' ? 2 : 1,
           speed: 2 + Math.random() * 2,
           width: 32,
@@ -255,12 +244,10 @@ const Game: React.FC = () => {
         prevState.lastEnemySpawn = timestamp;
       }
       
-      // Check collisions
       let updatedLives = prevState.lives;
       let updatedScore = prevState.score;
       let updatedConeBalance = prevState.coneBalance;
       
-      // Projectile-enemy collisions
       const projectilesAfterCollision = [...updatedProjectiles];
       const enemiesAfterCollision = updatedEnemies.map(enemy => {
         let enemyHealth = enemy.health;
@@ -271,49 +258,41 @@ const Game: React.FC = () => {
               proj.x + proj.width > enemy.x &&
               proj.y < enemy.y + enemy.height &&
               proj.y + proj.height > enemy.y) {
-            // Collision detected
             enemyHealth--;
-            projectilesAfterCollision[idx] = { ...proj, x: -100 }; // Mark for removal
+            projectilesAfterCollision[idx] = { ...proj, x: -100 };
           }
         });
         
-        // If enemy defeated
         if (enemyHealth <= 0) {
           updatedScore += 10;
-          updatedConeBalance += Math.floor(Math.random() * 5) + 1; // 1-5 $CONE
-          return { ...enemy, health: 0, x: -100 }; // Mark for removal
+          updatedConeBalance += Math.floor(Math.random() * 5) + 1;
+          return { ...enemy, health: 0, x: -100 };
         }
         
         return { ...enemy, health: enemyHealth };
       }).filter(enemy => enemy.x > -enemy.width);
       
-      // Character-enemy collisions
       let characterHit = false;
       enemiesAfterCollision.forEach(enemy => {
         if (updatedCharacter.x < enemy.x + enemy.width &&
             updatedCharacter.x + CHARACTER_WIDTH > enemy.x &&
             updatedCharacter.y < enemy.y + enemy.height &&
             updatedCharacter.y + CHARACTER_HEIGHT > enemy.y) {
-          // Collision detected
           characterHit = true;
         }
       });
       
       if (characterHit) {
         updatedLives--;
-        // Push character back and make temporarily invulnerable
         updatedCharacter.x = 50;
       }
       
-      // Increase score based on distance
       updatedScore += 0.1 * delta;
       
-      // Add occasional $CONE for distance
       if (Math.floor(prevState.score / 100) < Math.floor(updatedScore / 100)) {
         updatedConeBalance += 1;
       }
       
-      // Check game over
       const gameOver = updatedLives <= 0;
       
       return {
@@ -329,10 +308,8 @@ const Game: React.FC = () => {
       };
     });
 
-    // Render game
     renderGame();
     
-    // Continue loop
     animationFrameRef.current = requestAnimationFrame(gameLoop);
   };
 
@@ -343,26 +320,21 @@ const Game: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Clear canvas
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     
-    // Draw background
-    ctx.fillStyle = '#87CEEB'; // Sky blue
+    ctx.fillStyle = '#87CEEB';
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     
-    // Draw terrain
     gameState.terrain.forEach(block => {
       if (block.type === 'ground') {
-        ctx.fillStyle = '#8B4513'; // Brown
+        ctx.fillStyle = '#8B4513';
         ctx.fillRect(block.x, block.y, block.width, block.height);
         
-        // Grass on top of ground
-        ctx.fillStyle = '#32CD32'; // Lime green
+        ctx.fillStyle = '#32CD32';
         ctx.fillRect(block.x, block.y, block.width, 5);
       } else if (block.type === 'spike') {
-        ctx.fillStyle = '#696969'; // Dark gray
+        ctx.fillStyle = '#696969';
         
-        // Draw triangle spikes
         const spikeWidth = 10;
         const spikes = Math.floor(block.width / spikeWidth);
         
@@ -377,8 +349,7 @@ const Game: React.FC = () => {
       }
     });
     
-    // Draw character
-    ctx.fillStyle = '#FF69B4'; // Pink
+    ctx.fillStyle = '#FF69B4';
     ctx.fillRect(
       gameState.character.x,
       gameState.character.y,
@@ -386,12 +357,9 @@ const Game: React.FC = () => {
       CHARACTER_HEIGHT
     );
     
-    // Draw projectiles
     gameState.projectiles.forEach(proj => {
       if (proj.fromPlayer) {
-        ctx.fillStyle = '#FFA500'; // Orange (ice cream cone)
-        
-        // Draw a cone-like shape
+        ctx.fillStyle = '#FFA500';
         ctx.beginPath();
         ctx.moveTo(proj.x, proj.y);
         ctx.lineTo(proj.x + proj.width, proj.y + proj.height / 2);
@@ -399,37 +367,28 @@ const Game: React.FC = () => {
         ctx.closePath();
         ctx.fill();
       } else {
-        ctx.fillStyle = '#00FF00'; // Green (enemy projectile)
+        ctx.fillStyle = '#00FF00';
         ctx.fillRect(proj.x, proj.y, proj.width, proj.height);
       }
     });
     
-    // Draw enemies
     gameState.enemies.forEach(enemy => {
       if (enemy.type === 'lizard') {
-        ctx.fillStyle = '#008000'; // Green
+        ctx.fillStyle = '#008000';
       } else if (enemy.type === 'croc') {
-        ctx.fillStyle = '#006400'; // Dark green
+        ctx.fillStyle = '#006400';
       } else if (enemy.type === 'snake') {
-        ctx.fillStyle = '#800080'; // Purple
+        ctx.fillStyle = '#800080';
       }
       
       ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
     });
     
-    // Draw UI
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '16px "Press Start 2P", monospace';
     ctx.fillText(`Score: ${Math.floor(gameState.score)}`, 20, 30);
-    ctx.fillText(`$CONE: ${gameState.coneBalance}`, 20, 60);
+    ctx.fillText(`$THC: ${gameState.coneBalance}`, 20, 60);
     
-    // Draw lives
-    for (let i = 0; i < gameState.lives; i++) {
-      ctx.fillStyle = '#FF0000';
-      ctx.fillRect(CANVAS_WIDTH - 40 - (i * 30), 20, 20, 20);
-    }
-    
-    // Draw Game Over
     if (gameState.gameOver) {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
       ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -441,13 +400,12 @@ const Game: React.FC = () => {
       
       ctx.font = '16px "Press Start 2P", monospace';
       ctx.fillText(`Final Score: ${Math.floor(gameState.score)}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 10);
-      ctx.fillText(`$CONE Earned: ${gameState.coneBalance}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 40);
+      ctx.fillText(`$THC Earned: ${gameState.coneBalance}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 40);
       
       ctx.textAlign = 'start';
     }
   };
 
-  // Setup key listeners
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       keysPressed.current[e.key] = true;
@@ -466,7 +424,6 @@ const Game: React.FC = () => {
     };
   }, []);
 
-  // Start/stop game loop
   useEffect(() => {
     if (gameState.gameStarted && !gameState.gameOver && !gameState.paused) {
       lastFrameTime.current = 0;
@@ -480,18 +437,15 @@ const Game: React.FC = () => {
     };
   }, [gameState.gameStarted, gameState.gameOver, gameState.paused]);
 
-  // Render initial game screen
   useEffect(() => {
     renderGame();
   }, []);
 
-  // Update THC balance when game ends
   useEffect(() => {
     if (gameState.gameOver && gameState.coneBalance > 0 && address) {
-      // Here we would call a function to update the blockchain
       toast({
         title: "Crypto Earned!",
-        description: `${gameState.coneBalance} $CONE added to your wallet!`,
+        description: `${gameState.coneBalance} $THC added to your wallet!`,
       });
     }
   }, [gameState.gameOver, gameState.coneBalance, address]);
@@ -515,9 +469,7 @@ const Game: React.FC = () => {
           {!gameState.gameStarted ? (
             <>
               {!address ? (
-                <Button onClick={() => connect()} className="win95-button">
-                  Connect Wallet to Play
-                </Button>
+                <WalletConnector />
               ) : (
                 <Button onClick={startGame} className="win95-button">
                   Start Game
@@ -544,8 +496,8 @@ const Game: React.FC = () => {
           <ul className="text-sm space-y-1">
             <li>• Use <span className="font-bold">UP ARROW</span> or <span className="font-bold">SPACE</span> to jump</li>
             <li>• Use <span className="font-bold">CTRL</span> or <span className="font-bold">X</span> to shoot ice cream cones</li>
-            <li>• Survive as long as possible and defeat enemies to earn $CONE</li>
-            <li>• $CONE can be used to purchase upgrades in the NFT Shop</li>
+            <li>• Survive as long as possible and defeat enemies to earn $THC</li>
+            <li>• $THC can be used to purchase upgrades in the NFT Shop</li>
           </ul>
         </div>
         
@@ -557,7 +509,7 @@ const Game: React.FC = () => {
             </div>
             <div>
               <span className="text-sm font-bold">THC Balance:</span>
-              <div className="text-xs">{thcBalance || '0'} THC</div>
+              <div className="text-xs">{thcBalance || '0'} $THC</div>
             </div>
           </div>
         )}
