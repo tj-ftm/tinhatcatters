@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { Button } from '@/components/ui/button';
@@ -40,13 +39,11 @@ const Game: React.FC = () => {
   const lastFrameTime = useRef<number>(0);
   const { toast } = useToast();
 
-  // Ensure the game window maximizes on load
   useEffect(() => {
     const windowElement = document.querySelector('.window[data-id="game"]');
     if (windowElement && !windowIsMaximized) {
       const maximizeButton = windowElement.querySelector('.maximize-button') as HTMLButtonElement;
       if (maximizeButton) {
-        // Slight delay to ensure the window is fully mounted
         setTimeout(() => {
           maximizeButton.click();
           setWindowIsMaximized(true);
@@ -179,8 +176,25 @@ const Game: React.FC = () => {
   useEffect(() => {
     const handleResize = () => {
       if (canvasRef.current && gameContainerRef.current) {
-        canvasRef.current.width = gameContainerRef.current.clientWidth;
-        canvasRef.current.height = gameContainerRef.current.clientHeight;
+        const container = gameContainerRef.current;
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
+        
+        const size = Math.min(containerWidth, containerHeight);
+        const padding = 10;
+        
+        if (containerWidth > containerHeight) {
+          canvasRef.current.width = size - padding * 2;
+          canvasRef.current.height = size - padding * 2;
+          canvasRef.current.style.marginLeft = `${(containerWidth - (size - padding * 2)) / 2}px`;
+          canvasRef.current.style.marginTop = '0';
+        } 
+        else {
+          canvasRef.current.width = size - padding * 2;
+          canvasRef.current.height = size - padding * 2;
+          canvasRef.current.style.marginLeft = '0';
+          canvasRef.current.style.marginTop = `${(containerHeight - (size - padding * 2)) / 2}px`;
+        }
         
         if (gameEngineRef.current) {
           gameEngineRef.current.render();
@@ -278,7 +292,6 @@ const Game: React.FC = () => {
   return (
     <div className="win95-window w-full h-full overflow-hidden flex flex-col">
       <div className="p-2 bg-[#c0c0c0] flex flex-col h-full">
-        {/* Score and control panel */}
         <div className="w-full mb-2 win95-panel p-2 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="win95-inset px-3 py-1 flex items-center">
@@ -336,18 +349,20 @@ const Game: React.FC = () => {
           </div>
         </div>
 
-        {/* Game container - takes all available vertical space */}
-        <div className="flex-grow flex flex-col" style={{ minHeight: "0", display: "flex", flex: "1 1 auto" }}>
-          <div className="win95-inset p-1 w-full h-full" ref={gameContainerRef}>
+        <div 
+          className="flex-grow flex justify-center items-center" 
+          style={{ minHeight: "0", display: "flex", flex: "1 1 auto" }}
+          ref={gameContainerRef}
+        >
+          <div className="win95-inset p-1 w-full h-full flex justify-center items-center">
             <canvas
               ref={canvasRef}
-              className="w-full h-full object-contain"
+              className="object-contain"
             />
           </div>
         </div>
       </div>
       
-      {/* Moved upgrades bar to the bottom, outside the main game container */}
       <div className="win95-panel p-1 w-full mt-auto bg-[#c0c0c0]">
         <div className="flex justify-center gap-2 items-center h-8">
           <span className="font-bold text-black text-sm mr-1">Upgrades:</span>
