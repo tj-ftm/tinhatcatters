@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Gamepad2, ShoppingCart, Cannabis, Wallet, ExternalLink } from 'lucide-react';
 import FileIcon from './FileIcon';
 
 interface ComputerContentProps {
@@ -25,27 +24,27 @@ const ComputerContent: React.FC<ComputerContentProps> = ({ handleOpenWindow }) =
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         <FileIcon 
           label="Reptilian Attack" 
-          icon={<img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" alt="Game" className="h-5 w-5" />} 
+          icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/game-controller-5679567-4730291.png" alt="Game" className="h-8 w-8" />} 
           onClick={() => handleOpenWindow('game', '/game')} 
         />
         <FileIcon 
           label="NFT Shop" 
-          icon={<img src="/lovable-uploads/e03a9f53-e89d-4a06-aa83-0c24bf7db8db.jpg" alt="Shop" className="h-5 w-5" />} 
+          icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/shopping-cart-5679599-4730323.png" alt="Shop" className="h-8 w-8" />} 
           onClick={() => handleOpenWindow('shop', '/shop')} 
         />
         <FileIcon 
           label="THC Grow Room" 
-          icon={<img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" alt="THC" className="h-5 w-5" />} 
+          icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/cannabis-5679566-4730290.png" alt="THC" className="h-8 w-8" />} 
           onClick={() => handleOpenWindow('growroom', '/growroom')} 
         />
         <FileIcon 
           label="Wallet" 
-          icon={<img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" alt="Wallet" className="h-5 w-5" />} 
+          icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/wallet-5679597-4730321.png" alt="Wallet" className="h-8 w-8" />} 
           onClick={() => handleOpenWindow('wallet')} 
         />
         <FileIcon 
           label="Buy $THC" 
-          icon={<img src="/favicon.png" alt="Buy THC" className="h-5 w-5" />} 
+          icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/dollar-5769602-4828561.png" alt="Buy THC" className="h-8 w-8" />} 
           onClick={openBuyTHC}
         />
       </div>

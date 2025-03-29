@@ -21,13 +21,9 @@ const Header: React.FC = () => {
       <div className="win95-title-bar flex justify-between items-center">
         <div className="flex items-center">
           <img 
-            src="/favicon.png" 
+            src="https://cdn3d.iconscout.com/3d/free/thumb/free-windows-2-4659893-3866197.png" 
             alt="TinHatCatters" 
             className="h-5 w-5 mr-2"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" fill="lightgray"/></svg>';
-            }}
           />
           <span className="text-lg">Sonic Sidescroller Adventure</span>
         </div>
@@ -51,49 +47,33 @@ const Header: React.FC = () => {
         <nav className="flex flex-wrap gap-2">
           <Link to="/" className="win95-button flex items-center">
             <img 
-              src="/favicon.png" 
+              src="https://cdn3d.iconscout.com/3d/free/thumb/free-home-3544420-2969700.png" 
               alt="Home" 
               className="h-4 w-4 mr-1"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><rect width="16" height="16" fill="darkgray"/><text x="8" y="9" font-family="sans-serif" font-size="8" text-anchor="middle" fill="white">H</text></svg>';
-              }}
             />
             Home
           </Link>
           <Link to="/game" className="win95-button flex items-center">
             <img 
-              src="/windows-logo.svg" 
+              src="https://cdn3d.iconscout.com/3d/premium/thumb/game-controller-5679567-4730291.png" 
               alt="Game" 
               className="h-4 w-4 mr-1"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><rect width="16" height="16" fill="darkgray"/><text x="8" y="9" font-family="sans-serif" font-size="8" text-anchor="middle" fill="white">G</text></svg>';
-              }}
             />
             Play Game
           </Link>
           <Link to="/shop" className="win95-button flex items-center">
             <img 
-              src="/windows-logo.svg" 
+              src="https://cdn3d.iconscout.com/3d/premium/thumb/shopping-cart-5679599-4730323.png" 
               alt="Shop" 
               className="h-4 w-4 mr-1"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><rect width="16" height="16" fill="darkgray"/><text x="8" y="9" font-family="sans-serif" font-size="8" text-anchor="middle" fill="white">S</text></svg>';
-              }}
             />
             NFT Shop
           </Link>
           <Link to="/growroom" className="win95-button flex items-center">
             <img 
-              src="/windows-logo.svg" 
+              src="https://cdn3d.iconscout.com/3d/premium/thumb/cannabis-5679566-4730290.png" 
               alt="THC" 
               className="h-4 w-4 mr-1"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><rect width="16" height="16" fill="darkgray"/><text x="8" y="9" font-family="sans-serif" font-size="8" text-anchor="middle" fill="white">T</text></svg>';
-              }}
             />
             THC Grow Room
           </Link>
