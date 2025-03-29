@@ -33,7 +33,7 @@ const Index = () => {
             className="win95-button h-auto py-4 flex flex-col items-center"
             onClick={() => navigate('/game')}
           >
-            <span className="text-2xl mb-2">🎮</span>
+            <img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" alt="Game" className="w-8 h-8 mb-2" />
             <span className="font-bold">Play Game</span>
             <span className="text-xs mt-1">Start your adventure!</span>
           </Button>
@@ -42,7 +42,7 @@ const Index = () => {
             className="win95-button h-auto py-4 flex flex-col items-center"
             onClick={() => navigate('/shop')}
           >
-            <span className="text-2xl mb-2">🛒</span>
+            <img src="/lovable-uploads/e03a9f53-e89d-4a06-aa83-0c24bf7db8db.jpg" alt="Shop" className="w-8 h-8 mb-2" />
             <span className="font-bold">NFT Shop</span>
             <span className="text-xs mt-1">Buy awesome items!</span>
           </Button>
@@ -51,7 +51,7 @@ const Index = () => {
             className="win95-button h-auto py-4 flex flex-col items-center"
             onClick={() => navigate('/growroom')}
           >
-            <span className="text-2xl mb-2">🌿</span>
+            <img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" alt="THC" className="w-8 h-8 mb-2" />
             <span className="font-bold">THC Grow Room</span>
             <span className="text-xs mt-1">Grow plants & earn $THC!</span>
           </Button>

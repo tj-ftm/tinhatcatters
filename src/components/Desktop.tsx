@@ -73,22 +73,22 @@ const Desktop: React.FC = () => {
           />
           <DesktopIcon 
             label="Reptilian Attack" 
-            icon="🎮" 
+            icon={<img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" alt="Game" className="h-8 w-8" />} 
             onClick={() => handleIconClick('game', '/game')} 
           />
           <DesktopIcon 
             label="THC Grow Room" 
-            icon="🌿" 
+            icon={<img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" alt="THC" className="h-8 w-8" />} 
             onClick={() => handleIconClick('growroom', '/growroom')} 
           />
           <DesktopIcon 
             label="NFT Shop" 
-            icon="🛒" 
+            icon={<img src="/lovable-uploads/e03a9f53-e89d-4a06-aa83-0c24bf7db8db.jpg" alt="Shop" className="h-8 w-8" />} 
             onClick={() => handleIconClick('shop', '/shop')} 
           />
           <DesktopIcon 
             label="Community Chat" 
-            icon="💬" 
+            icon={<img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" alt="Chat" className="h-8 w-8" />} 
             onClick={handleChatClick} 
           />
         </div>

@@ -27,6 +27,9 @@ const App = () => {
       newFavicon.href = "/favicon.png";
       document.head.appendChild(newFavicon);
     }
+    
+    // Set document title
+    document.title = "TinHatCatters Game";
   }, []);
 
   return (

@@ -56,8 +56,8 @@ const Taskbar: React.FC<TaskbarProps> = ({
       >
         <span className="text-sm font-bold flex items-center">
           <img 
-            src="/windows-logo.png" 
-            alt="Windows" 
+            src="/favicon.png" 
+            alt="TinHatCatters" 
             className="h-5 w-5 mr-1"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -80,11 +80,11 @@ const Taskbar: React.FC<TaskbarProps> = ({
             className={`win95-button px-2 py-1 h-8 text-sm flex items-center ${!windowsMinimized[window] ? 'border-inset' : ''}`}
             onClick={() => handleWindowButtonClick(window)}
           >
-            {window === 'game' && <Gamepad2 className="h-4 w-4 mr-1" />}
-            {window === 'shop' && <ShoppingCart className="h-4 w-4 mr-1" />}
+            {window === 'game' && <img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" className="h-4 w-4 mr-1" alt="Game" />}
+            {window === 'shop' && <img src="/lovable-uploads/e03a9f53-e89d-4a06-aa83-0c24bf7db8db.jpg" className="h-4 w-4 mr-1" alt="Shop" />}
             {window === 'computer' && <img src="/favicon.png" alt="Computer" className="h-4 w-4 mr-1" />}
-            {window === 'wallet' && <Wallet className="h-4 w-4 mr-1" />}
-            {window === 'growroom' && <Cannabis className="h-4 w-4 mr-1" />}
+            {window === 'wallet' && <img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" className="h-4 w-4 mr-1" alt="Wallet" />}
+            {window === 'growroom' && <img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" className="h-4 w-4 mr-1" alt="THC" />}
             {window === 'chat' && <MessageSquare className="h-4 w-4 mr-1" />}
             {window.charAt(0).toUpperCase() + window.slice(1)}
           </button>
@@ -100,7 +100,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
       {startMenuOpen && (
         <div className="fixed left-0 bottom-11 win95-window w-56 border-2 z-[9999]">
           <div className="p-1">
-            <div className="p-1 font-bold text-lg mb-1 flex items-center">
+            <div className="p-1 text-lg mb-1 flex items-center">
               <img src="/favicon.png" alt="TinHatCatters" className="h-6 w-6 mr-2" />
               TinHatCatters
             </div>
@@ -110,7 +110,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
               <div className="relative group">
                 <div className="flex items-center p-1 hover:bg-win95-blue hover:text-white cursor-pointer">
                   <div className="w-6 h-6 flex items-center justify-center mr-2">
-                    <Gamepad2 className="h-4 w-4" />
+                    <img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" className="h-4 w-4" alt="Games" />
                   </div>
                   <span>Games</span>
                   <span className="ml-auto">▶</span>
@@ -119,12 +119,12 @@ const Taskbar: React.FC<TaskbarProps> = ({
                 <div className="hidden group-hover:block absolute left-full top-0 win95-window w-48 border-2 z-[9999]">
                   <div className="py-1">
                     <StartMenuItem 
-                      icon={<Gamepad2 className="h-4 w-4" />} 
+                      icon={<img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" className="h-4 w-4" alt="Game" />} 
                       label="Reptilian Attack"
                       onClick={() => handleItemClick('/game', 'game')}
                     />
                     <StartMenuItem 
-                      icon={<Cannabis className="h-4 w-4" />} 
+                      icon={<img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" className="h-4 w-4" alt="THC" />} 
                       label="THC Grow Room"
                       onClick={() => handleItemClick('/growroom', 'growroom')}
                     />
@@ -133,12 +133,12 @@ const Taskbar: React.FC<TaskbarProps> = ({
               </div>
               
               <StartMenuItem 
-                icon={<ShoppingCart className="h-4 w-4" />}
+                icon={<img src="/lovable-uploads/e03a9f53-e89d-4a06-aa83-0c24bf7db8db.jpg" className="h-4 w-4" alt="Shop" />}
                 label="NFT Shop"
                 onClick={() => handleItemClick('/shop', 'shop')}
               />
               <StartMenuItem 
-                icon={<Wallet className="h-4 w-4" />}
+                icon={<img src="/lovable-uploads/a55fa30c-e72d-45cc-a0fa-02d7143baa9b.jpg" className="h-4 w-4" alt="Wallet" />}
                 label="Wallet"
                 onClick={() => {
                   setStartMenuOpen(false);
@@ -162,7 +162,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
               <div className="border-t border-win95-darkGray my-1"></div>
               
               <StartMenuItem 
-                icon={<ExternalLink className="h-4 w-4" />} 
+                icon={<img src="/favicon.png" alt="Buy THC" className="h-4 w-4" />} 
                 label="Buy $THC"
                 onClick={openBuyTHC}
               />
