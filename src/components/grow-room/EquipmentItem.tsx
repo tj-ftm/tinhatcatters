@@ -15,15 +15,15 @@ const EquipmentItem: React.FC<EquipmentItemProps> = ({ type, equipment, isLoadin
   const getIcon = () => {
     switch (type) {
       case EquipmentType.Light:
-        return <Sun className="w-5 h-5 text-yellow-500" />;
+        return <Sun className="w-8 h-8 text-yellow-500" />;
       case EquipmentType.Pot:
-        return <div className="w-5 h-5 flex items-center justify-center">🪴</div>;
+        return <div className="w-8 h-8 flex items-center justify-center text-xl">🪴</div>;
       case EquipmentType.Nutrients:
-        return <Droplets className="w-5 h-5 text-blue-500" />;
+        return <Droplets className="w-8 h-8 text-blue-500" />;
       case EquipmentType.Ventilation:
-        return <Fan className="w-5 h-5 text-gray-500" />;
+        return <Fan className="w-8 h-8 text-gray-500" />;
       case EquipmentType.Automation:
-        return <div className="w-5 h-5 flex items-center justify-center">💧</div>;
+        return <div className="w-8 h-8 flex items-center justify-center text-xl">💧</div>;
       default:
         return null;
     }
@@ -47,7 +47,7 @@ const EquipmentItem: React.FC<EquipmentItemProps> = ({ type, equipment, isLoadin
   return (
     <div className="win95-window p-2 aspect-square flex flex-col">
       <div className="flex flex-col h-full">
-        <div className="flex items-center justify-center mb-2">
+        <div className="flex items-center justify-center mb-1">
           <div className="flex flex-col items-center">
             {getIcon()}
             <div className="font-bold text-center mt-1">{equipment.name}</div>
@@ -58,7 +58,7 @@ const EquipmentItem: React.FC<EquipmentItemProps> = ({ type, equipment, isLoadin
         </div>
         {equipment.nextLevel && (
           <Button
-            className="win95-button px-2 py-1 text-xs mt-2"
+            className="win95-button px-2 py-1 text-xs mt-1"
             onClick={onUpgrade}
             disabled={isLoading}
           >

@@ -106,40 +106,7 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
               </div>
             </div>
             
-            <div className="mb-2">
-              <div className="text-xs font-bold mb-1">Your Tin Hat Catter:</div>
-              <div className="win95-inset p-1 max-h-24 overflow-y-auto">
-                <ScrollArea className="h-full">
-                  {loading ? (
-                    <div className="text-xs text-center py-1 font-bold text-black">Loading NFTs...</div>
-                  ) : error ? (
-                    <div className="text-xs text-center py-1 font-bold text-red-600">{error}</div>
-                  ) : nftData && nftData.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-1">
-                      {nftData.map((nft) => (
-                        <div key={nft.id} className="text-xs p-1 bg-white/50 rounded flex flex-col items-center">
-                          {nft.image && !imageLoadErrors[nft.id] ? (
-                            <img 
-                              src={nft.image} 
-                              alt={`THC #${nft.id}`} 
-                              className="w-full h-auto object-contain mb-1 border border-gray-300"
-                              onError={() => handleImageError(nft.id)}
-                            />
-                          ) : (
-                            <div className="w-full h-12 bg-gray-200 flex items-center justify-center">
-                              <span className="text-[10px]">THC #{nft.id}</span>
-                            </div>
-                          )}
-                          <span className="font-bold text-black text-center text-[10px]">THC #{nft.id}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-xs text-center py-1 font-bold text-black">No NFTs found</div>
-                  )}
-                </ScrollArea>
-              </div>
-            </div>
+            {/* Removed "Your Tin Hat Catter" section */}
             
             {/* Sonic NFTs Preview */}
             {sonicNFTs.length > 0 && (
