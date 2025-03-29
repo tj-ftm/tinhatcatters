@@ -4,12 +4,15 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import Taskbar from './Taskbar';
 import WindowManager from './WindowManager';
 import WalletWindow from './WalletWindow';
+import ChatButton from './ChatButton';
+import ChatDialog from './ChatDialog';
 import { ScrollArea } from './ui/scroll-area';
 
 const Desktop: React.FC = () => {
   const [activeWindows, setActiveWindows] = useState<string[]>([]);
   const [windowsMinimized, setWindowsMinimized] = useState<Record<string, boolean>>({});
   const [showWalletWindow, setShowWalletWindow] = useState(true);
+  const [showChatDialog, setShowChatDialog] = useState(false);
   const navigate = useNavigate();
 
   const addWindow = (windowId: string) => {
@@ -43,6 +46,15 @@ const Desktop: React.FC = () => {
     }
   };
 
+  const handleChatClick = () => {
+    if (activeWindows.includes('chat')) {
+      restoreWindow('chat');
+      setShowChatDialog(false);
+    } else {
+      setShowChatDialog(true);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#1AB0ED] relative">
       <div className="flex-grow relative">
@@ -68,6 +80,11 @@ const Desktop: React.FC = () => {
             icon="🛒" 
             onClick={() => handleIconClick('shop', '/shop')} 
           />
+          <DesktopIcon 
+            label="Community Chat" 
+            icon="💬" 
+            onClick={handleChatClick} 
+          />
         </div>
         
         {/* Wallet Window */}
@@ -81,6 +98,40 @@ const Desktop: React.FC = () => {
                 setShowWalletWindow(false);
               }}
             />
+          </div>
+        )}
+        
+        {/* Chat Dialog */}
+        {showChatDialog && (
+          <div className="absolute top-2 right-2 mt-[320px] z-50">
+            <div className="win95-window shadow-lg">
+              <div className="win95-title-bar flex justify-between items-center">
+                <span className="text-white font-bold px-2 flex items-center gap-2">
+                  <span className="text-white">Community Chat</span>
+                </span>
+                <div className="flex">
+                  <button 
+                    className="text-white hover:bg-blue-800 px-1 cursor-pointer z-30" 
+                    onClick={() => {
+                      addWindow('chat');
+                      setWindowsMinimized(prev => ({ ...prev, chat: true }));
+                      setShowChatDialog(false);
+                    }}
+                  >
+                    <span className="text-xs">_</span>
+                  </button>
+                  <button 
+                    className="text-white hover:bg-red-500 px-1 cursor-pointer z-30" 
+                    onClick={() => setShowChatDialog(false)}
+                  >
+                    <span className="text-xs">x</span>
+                  </button>
+                </div>
+              </div>
+              <div className="p-0">
+                <ChatDialog open={true} onOpenChange={setShowChatDialog} />
+              </div>
+            </div>
           </div>
         )}
         
@@ -110,6 +161,7 @@ const Desktop: React.FC = () => {
             setShowWalletWindow(true);
           }
         }}
+        onChatClick={handleChatClick}
       />
     </div>
   );

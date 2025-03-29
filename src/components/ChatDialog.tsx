@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Dialog,
@@ -92,6 +91,57 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  // If we're using this as a standalone dialog
+  if (open) {
+    return (
+      <div className="flex-grow flex flex-col bg-[#c0c0c0] p-2 h-[400px] w-[320px]">
+        <div className="win95-panel mb-2 p-2 text-xs">
+          Connected as: <span className="font-bold">{address || anonymousId}</span>
+        </div>
+        
+        <ScrollArea className="win95-inset flex-grow p-2 bg-white">
+          <div className="space-y-2">
+            {messages.map((message) => (
+              <div 
+                key={message.id} 
+                className={`flex flex-col p-2 rounded ${message.sender === (address || anonymousId) ? 'bg-[#e0e0e0]' : 'bg-white border border-gray-300'}`}
+              >
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-xs truncate max-w-[200px]">{message.sender}</span>
+                  <span className="text-xs text-gray-500">{formatTimestamp(message.timestamp)}</span>
+                </div>
+                <p className="text-sm mt-1">{message.content}</p>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+        </ScrollArea>
+        
+        <div className="mt-2 flex gap-2">
+          <Input
+            className="win95-inset flex-grow"
+            placeholder="Type your message..."
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleSendMessage();
+              }
+            }}
+          />
+          <Button 
+            className="win95-button"
+            onClick={handleSendMessage}
+            disabled={newMessage.trim() === ''}
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Otherwise, use the Dialog component
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="win95-window border-2 border-gray-400 p-0 max-w-md rounded-none h-[500px] flex flex-col" style={{ zIndex: 9999 }}>

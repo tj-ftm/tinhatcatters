@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Computer, ShoppingCart, Gamepad2, Home, Wallet, Cannabis } from 'lucide-react';
+import { Computer, ShoppingCart, Gamepad2, Home, Wallet, Cannabis, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import WalletConnector from './WalletConnector';
 
@@ -9,6 +10,7 @@ interface TaskbarProps {
   addWindow: (windowId: string) => void;
   restoreWindow: (windowId: string) => void;
   onWalletClick: () => void;
+  onChatClick: () => void;
 }
 
 const Taskbar: React.FC<TaskbarProps> = ({ 
@@ -16,7 +18,8 @@ const Taskbar: React.FC<TaskbarProps> = ({
   windowsMinimized,
   addWindow,
   restoreWindow,
-  onWalletClick
+  onWalletClick,
+  onChatClick
 }) => {
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -78,6 +81,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
             {window === 'home' && <Home className="h-4 w-4 mr-1" />}
             {window === 'wallet' && <Wallet className="h-4 w-4 mr-1" />}
             {window === 'growroom' && <Cannabis className="h-4 w-4 mr-1" />}
+            {window === 'chat' && <MessageSquare className="h-4 w-4 mr-1" />}
             {window.charAt(0).toUpperCase() + window.slice(1)}
           </button>
         ))}
@@ -146,6 +150,14 @@ const Taskbar: React.FC<TaskbarProps> = ({
                 onClick={() => {
                   setStartMenuOpen(false);
                   onWalletClick();
+                }}
+              />
+              <StartMenuItem 
+                icon={<MessageSquare className="h-4 w-4" />}
+                label="Community Chat"
+                onClick={() => {
+                  setStartMenuOpen(false);
+                  onChatClick();
                 }}
               />
               <StartMenuItem 
