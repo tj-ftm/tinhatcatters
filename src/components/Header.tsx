@@ -12,6 +12,12 @@ const Header: React.FC = () => {
   // Only show the exit button if we're not already on the homepage
   const showExitButton = location.pathname !== '/';
   
+  // Set the title based on the current route
+  const getTitle = () => {
+    if (location.pathname === '/game') return 'Reptilian Attack';
+    return 'Sonic Sidescroller Adventure';
+  };
+  
   const handleExit = () => {
     navigate('/');
   };
@@ -19,7 +25,7 @@ const Header: React.FC = () => {
   return (
     <header className="win95-window sticky top-0 z-50">
       <div className="win95-title-bar flex justify-between items-center">
-        <span className="text-lg">Sonic Sidescroller Adventure</span>
+        <span className="text-lg">{getTitle()}</span>
         <div className="flex items-center gap-2">
           {showExitButton && (
             <Button 
