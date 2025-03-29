@@ -53,12 +53,12 @@ const EquipmentItem: React.FC<EquipmentItemProps> = ({ type, equipment, isLoadin
             <div className="font-bold text-center mt-1">{equipment.name}</div>
           </div>
         </div>
-        <div className="text-xs text-center mb-auto">
+        <div className="text-xs text-center mb-1">
           {getDisplayMetric()}
         </div>
         {equipment.nextLevel && (
           <Button
-            className="win95-button px-2 py-1 text-xs mt-2"
+            className="win95-button px-2 py-1 text-xs mt-1"
             onClick={onUpgrade}
             disabled={isLoading}
           >

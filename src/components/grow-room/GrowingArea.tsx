@@ -26,11 +26,7 @@ const GrowingArea: React.FC<GrowingAreaProps> = ({
 }) => {
   return (
     <div className="win95-window p-2 flex-1">
-      <div className="win95-title-bar mb-2">
-        <span>Grow Room</span>
-      </div>
-      
-      <div className="p-2 win95-inset h-[calc(100%-40px)] overflow-auto">
+      <div className="p-2 win95-inset h-full overflow-auto">
         {plants.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center">
             <Sprout className="w-12 h-12 mb-2 text-green-600" />

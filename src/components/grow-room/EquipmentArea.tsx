@@ -25,10 +25,6 @@ const EquipmentArea: React.FC<EquipmentAreaProps> = ({
   
   return (
     <div className="win95-window p-2 w-full">
-      <div className="win95-title-bar mb-2">
-        <span>Equipment</span>
-      </div>
-      
       <div className="grid grid-cols-5 gap-2">
         {/* Light */}
         <EquipmentItem
@@ -69,8 +65,6 @@ const EquipmentArea: React.FC<EquipmentAreaProps> = ({
           isLoading={isLoading}
           onUpgrade={() => onShowUpgradeModal(EquipmentType.Automation)}
         />
-        
-        {/* Capacity Upgrade is now shown in the same grid */}
       </div>
       
       {/* Capacity Upgrade Button */}
