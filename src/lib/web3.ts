@@ -15,7 +15,7 @@ export const SONIC_NETWORK = {
 };
 
 // NFT contract addresses (placeholder - would be replaced with actual contract addresses)
-export const TIN_HAT_CATTERS_ADDRESS = '0x123456789abcdef123456789abcdef123456789a';
+export const TIN_HAT_CATTERS_ADDRESS = '0x2dc1886d67001d5d6a80feaa51513f7bb5a591fd';
 export const SNACK_NFT_ADDRESS = '0xabcdef123456789abcdef123456789abcdef1234';
 export const THC_TOKEN_ADDRESS = '0x17Af1Df44444AB9091622e4Aa66dB5BB34E51aD5';
 
@@ -291,34 +291,47 @@ export async function switchToSonicNetwork(
   }
 }
 
-// Get owned TinHatCatters NFTs
+// Function to fetch Tin Hat Catter NFTs from Sonicscan
+export async function fetchTinHatCattersFromSonicscan(address: string) {
+  try {
+    // We'll use the Sonicscan API to fetch NFTs owned by the address
+    // For demonstration purposes, we'll return mock data based on the contract
+    
+    // In a real implementation, you would fetch this data from Sonicscan's API
+    // For example:
+    // const response = await fetch(`https://api.sonicscan.org/api/v1/nfts?address=${address}&contract=${TIN_HAT_CATTERS_ADDRESS}`);
+    // const data = await response.json();
+    
+    // For now, let's simulate some NFT data
+    const mockNFTs = [
+      {
+        id: "128",
+        image: "https://ipfs.io/ipfs/QmPbxeGcXhYQQNgsC6a36dDyYUcHgMLnGKnF8pVFmGsvqi/128.jpg"
+      },
+      {
+        id: "256",
+        image: "https://ipfs.io/ipfs/QmPbxeGcXhYQQNgsC6a36dDyYUcHgMLnGKnF8pVFmGsvqi/256.jpg"
+      }
+    ];
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    return mockNFTs;
+  } catch (error) {
+    console.error("Error fetching NFTs from Sonicscan:", error);
+    return [];
+  }
+}
+
+// Get owned TinHatCatters NFTs (updated)
 export async function getOwnedTinHatCatters(address: string): Promise<any[]> {
   if (!isWeb3Available() || !address) {
     return [];
   }
 
   try {
-    const provider = getProvider();
-    if (!provider) {
-      throw new Web3Error('Cannot initialize Web3 provider.');
-    }
-
-    // This is a simplified version - in a real app, we would query the NFT contract
-    // For now, we'll return mock data
-    return [
-      {
-        id: 1,
-        name: 'TinHatCatter #1',
-        image: '/assets/tinhats/tinhat1.png',
-        boost: { type: 'speed', value: 10 }
-      },
-      {
-        id: 2,
-        name: 'TinHatCatter #2',
-        image: '/assets/tinhats/tinhat2.png',
-        boost: { type: 'jump', value: 15 }
-      }
-    ];
+    return fetchTinHatCattersFromSonicscan(address);
   } catch (error) {
     console.error('Error getting TinHatCatters:', error);
     return [];

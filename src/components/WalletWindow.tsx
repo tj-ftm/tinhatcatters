@@ -1,16 +1,43 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Minus } from 'lucide-react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import WalletConnector from './WalletConnector';
+import { ScrollArea } from './ui/scroll-area';
+import { fetchTinHatCattersFromSonicscan } from '@/lib/web3';
 
 interface WalletWindowProps {
   onClose: () => void;
   onMinimize: () => void;
 }
 
+interface NFTData {
+  id: string;
+  image: string;
+}
+
 const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
   const { address, balance, thcBalance, tinHatCatters } = useWeb3();
+  const [nftData, setNftData] = useState<NFTData[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  
+  useEffect(() => {
+    const loadNFTData = async () => {
+      if (address) {
+        setLoading(true);
+        try {
+          const data = await fetchTinHatCattersFromSonicscan(address);
+          setNftData(data);
+        } catch (error) {
+          console.error("Error fetching NFT data:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    
+    loadNFTData();
+  }, [address]);
   
   return (
     <div className="win95-window w-80 shadow-lg z-20">
@@ -72,19 +99,37 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
             </div>
             
             <div className="mb-2">
-              <div className="text-xs font-bold mb-1">Your THC NFTs:</div>
+              <div className="text-xs font-bold mb-1">Your Tin Hat Catter:</div>
               <div className="win95-inset p-1 max-h-24 overflow-y-auto">
-                {tinHatCatters && tinHatCatters.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-1">
-                    {tinHatCatters.map((cat, index) => (
-                      <div key={index} className="text-xs p-1 bg-white/50 rounded font-bold text-black">
-                        THC #{cat.id}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-xs text-center py-1 font-bold text-black">No NFTs found</div>
-                )}
+                <ScrollArea className="h-full">
+                  {loading ? (
+                    <div className="text-xs text-center py-1 font-bold text-black">Loading NFTs...</div>
+                  ) : nftData && nftData.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-1">
+                      {nftData.map((nft) => (
+                        <div key={nft.id} className="text-xs p-1 bg-white/50 rounded flex flex-col items-center">
+                          {nft.image ? (
+                            <img 
+                              src={nft.image} 
+                              alt={`THC #${nft.id}`} 
+                              className="w-full h-auto object-contain mb-1 border border-gray-300"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = '/placeholder.svg';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-12 bg-gray-200 flex items-center justify-center">
+                              <span className="text-xs">No Image</span>
+                            </div>
+                          )}
+                          <span className="font-bold text-black text-center">THC #{nft.id}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-center py-1 font-bold text-black">No NFTs found</div>
+                  )}
+                </ScrollArea>
               </div>
             </div>
             
