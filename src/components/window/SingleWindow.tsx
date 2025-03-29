@@ -31,6 +31,7 @@ interface SingleWindowProps {
   bringToFront: (windowId: string) => void;
   handleOpenWindow: (windowId: string, path?: string) => void;
   resizing?: { windowId: string, direction: ResizeDirection } | null;
+  isResizable?: boolean;
 }
 
 const SingleWindow: React.FC<SingleWindowProps> = ({
@@ -47,7 +48,8 @@ const SingleWindow: React.FC<SingleWindowProps> = ({
   startResize,
   bringToFront,
   handleOpenWindow,
-  resizing
+  resizing,
+  isResizable = true
 }) => {
   return (
     <div 
@@ -77,7 +79,7 @@ const SingleWindow: React.FC<SingleWindowProps> = ({
         handleOpenWindow={handleOpenWindow}
       />
       
-      {!isMaximized && (
+      {!isMaximized && isResizable && (
         <WindowResizeHandles
           windowId={windowId}
           startResize={startResize}

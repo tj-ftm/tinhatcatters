@@ -61,7 +61,10 @@ const WindowManager: React.FC<WindowManagerProps> = ({
     <div 
       ref={containerRef}
       className="absolute inset-0"
-      onMouseMove={(dragging || resizing) ? onDrag : resizing ? onResize : undefined}
+      onMouseMove={(dragging || resizing) ? (e) => {
+        if (dragging) onDrag(e);
+        if (resizing) onResize(e);
+      } : undefined}
       onMouseUp={dragging ? stopDrag : resizing ? stopResize : undefined}
       onMouseLeave={dragging ? stopDrag : resizing ? stopResize : undefined}
     >
@@ -90,6 +93,7 @@ const WindowManager: React.FC<WindowManagerProps> = ({
             bringToFront={bringToFront}
             handleOpenWindow={handleOpenWindow}
             resizing={resizing}
+            isResizable={true}
           />
         );
       })}
