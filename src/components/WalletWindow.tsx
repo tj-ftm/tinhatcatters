@@ -1,12 +1,10 @@
+
 import React, { useEffect, useState } from 'react';
-import { X, Minus, Image, FileImage, RefreshCw } from 'lucide-react';
+import { X, Minus } from 'lucide-react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import WalletConnector from './WalletConnector';
 import { ScrollArea } from './ui/scroll-area';
-import { fetchNFTsFromContract } from '@/lib/web3';
-import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
-import { toast } from '@/hooks/use-toast';
-import { Button } from './ui/button';
+import { fetchTinHatCattersFromSonicscan } from '@/lib/web3';
 
 interface WalletWindowProps {
   onClose: () => void;
@@ -16,155 +14,40 @@ interface WalletWindowProps {
 interface NFTData {
   id: string;
   image: string;
-  name: string;
-  fallbackImage?: string;
-  secondaryFallback?: string;
-  description?: string;
-  attributes?: Array<{trait_type: string, value: string}>;
 }
 
 const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
-  const { address, balance, thcBalance, tinHatCatters, refreshNFTs, refreshBalance, isRefreshingBalance } = useWeb3();
+  const { address, balance, thcBalance, tinHatCatters } = useWeb3();
   const [nftData, setNftData] = useState<NFTData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [imageLoadErrors, setImageLoadErrors] = useState<Record<string, boolean>>({});
-  const [lastRefresh, setLastRefresh] = useState<number>(Date.now());
   
   useEffect(() => {
-    const loadWalletData = async () => {
+    const loadNFTData = async () => {
       if (address) {
         setLoading(true);
         setError(null);
-        
         try {
-          await refreshBalance();
-          
-          try {
-            await refreshNFTs();
-            
-            if (tinHatCatters && tinHatCatters.length > 0) {
-              console.log("Using NFTs from context:", tinHatCatters);
-              setNftData(tinHatCatters);
-            } else {
-              console.log("No NFTs found in context, showing empty state");
-            }
-          } catch (nftError) {
-            console.error("Error fetching NFTs:", nftError);
-            toast({
-              title: "NFT Loading Issue",
-              description: "Unable to load NFTs. Please try again later.",
-              variant: "destructive"
-            });
-          }
+          const data = await fetchTinHatCattersFromSonicscan(address);
+          setNftData(data);
         } catch (error) {
-          console.error("Error loading wallet data:", error);
-          setError("Failed to load wallet data. Please try again.");
+          console.error("Error fetching NFT data:", error);
+          setError("Failed to load NFT data. Please try again later.");
         } finally {
           setLoading(false);
-          setLastRefresh(Date.now());
         }
       }
     };
     
-    loadWalletData();
-    
-    const refreshInterval = setInterval(() => {
-      if (address) {
-        refreshBalance().catch(e => console.error("Error refreshing balance:", e));
-        setLastRefresh(Date.now());
-      }
-    }, 15000);
-    
-    return () => clearInterval(refreshInterval);
-  }, [address, refreshBalance]);
+    loadNFTData();
+  }, [address]);
   
-  useEffect(() => {
-    if (tinHatCatters && tinHatCatters.length > 0) {
-      console.log("Updated NFT data from context:", tinHatCatters);
-      setNftData(tinHatCatters);
-    }
-  }, [tinHatCatters]);
-  
-  const handleManualRefresh = async () => {
-    if (!address) return;
-    
-    setLoading(true);
-    try {
-      toast({
-        title: "Refreshing",
-        description: "Updating wallet data...",
-      });
-      
-      await refreshBalance();
-      await refreshNFTs();
-      
-      toast({
-        title: "Refresh Complete",
-        description: "Wallet data has been updated.",
-      });
-    } catch (error) {
-      console.error("Manual refresh error:", error);
-      toast({
-        title: "Refresh Failed",
-        description: "Failed to update wallet data.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-      setLastRefresh(Date.now());
-    }
-  };
-  
-  const handleImageError = (nftId: string, fallbackType: string) => {
+  const handleImageError = (nftId: string) => {
     setImageLoadErrors(prev => ({
       ...prev,
-      [`${nftId}-${fallbackType}`]: true
+      [nftId]: true
     }));
-  };
-  
-  const getNFTImage = (nft: NFTData) => {
-    if (!imageLoadErrors[`${nft.id}-primary`]) {
-      return (
-        <img 
-          src={nft.image} 
-          alt={nft.name} 
-          className="w-full h-auto object-contain mb-1 border border-gray-300"
-          onError={() => handleImageError(nft.id, 'primary')}
-        />
-      );
-    }
-    
-    if (nft.fallbackImage && !imageLoadErrors[`${nft.id}-fallback1`]) {
-      return (
-        <img 
-          src={nft.fallbackImage}
-          alt={nft.name} 
-          className="w-full h-auto object-contain mb-1 border border-gray-300"
-          onError={() => handleImageError(nft.id, 'fallback1')}
-        />
-      );
-    }
-    
-    if (nft.secondaryFallback && !imageLoadErrors[`${nft.id}-fallback2`]) {
-      return (
-        <img 
-          src={nft.secondaryFallback}
-          alt={nft.name} 
-          className="w-full h-auto object-contain mb-1 border border-gray-300"
-          onError={() => handleImageError(nft.id, 'fallback2')}
-        />
-      );
-    }
-    
-    return (
-      <div className="w-full h-16 bg-gray-200 flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <FileImage className="w-6 h-6 text-gray-500 mb-1" />
-          <span className="text-[10px] text-center">{nft.name || `THC #${nft.id}`}</span>
-        </div>
-      </div>
-    );
   };
   
   return (
@@ -202,7 +85,7 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
           <div>
             <div className="mb-3">
               <div className="text-xs font-bold mb-1">Address:</div>
-              <div className="win95-inset p-1 text-xs overflow-hidden overflow-ellipsis font-bold text-black">
+              <div className="win95-inset p-1 text-xs overflow-hidden text-overflow-ellipsis font-bold text-black">
                 {address}
               </div>
             </div>
@@ -216,53 +99,38 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
               </div>
               
               <div>
-                <div className="flex items-center justify-between">
-                  <div className="text-xs font-bold mb-1">THC Balance:</div>
-                  <Button 
-                    className="win95-button h-4 w-4 p-0 mb-1"
-                    onClick={refreshBalance}
-                    disabled={isRefreshingBalance}
-                  >
-                    <RefreshCw className="h-2 w-2" />
-                  </Button>
-                </div>
+                <div className="text-xs font-bold mb-1">THC Balance:</div>
                 <div className="win95-inset p-1 text-xs font-bold text-black">
-                  {isRefreshingBalance ? (
-                    <span className="text-gray-600">Loading...</span>
-                  ) : (
-                    `${thcBalance ? parseFloat(thcBalance).toFixed(2) : '0.00'} THC`
-                  )}
+                  {thcBalance ? parseFloat(thcBalance).toFixed(2) : '0.00'} THC
                 </div>
               </div>
             </div>
             
             <div className="mb-2">
-              <div className="flex justify-between items-center">
-                <div className="text-xs font-bold mb-1">Your Tin Hat Catters:</div>
-                <button 
-                  className="win95-button text-[8px] p-0.5 h-5 mb-1 flex items-center"
-                  onClick={handleManualRefresh}
-                  disabled={loading}
-                >
-                  <RefreshCw className="h-2 w-2 mr-1" />
-                  {loading ? 'Refreshing...' : 'Refresh'}
-                </button>
-              </div>
-              
-              <div className="win95-inset p-1 max-h-36 overflow-y-auto">
-                <ScrollArea className="h-full w-full">
+              <div className="text-xs font-bold mb-1">Your Tin Hat Catter:</div>
+              <div className="win95-inset p-1 max-h-24 overflow-y-auto">
+                <ScrollArea className="h-full">
                   {loading ? (
                     <div className="text-xs text-center py-1 font-bold text-black">Loading NFTs...</div>
                   ) : error ? (
                     <div className="text-xs text-center py-1 font-bold text-red-600">{error}</div>
                   ) : nftData && nftData.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-1 p-1">
+                    <div className="grid grid-cols-2 gap-1">
                       {nftData.map((nft) => (
                         <div key={nft.id} className="text-xs p-1 bg-white/50 rounded flex flex-col items-center">
-                          {getNFTImage(nft)}
-                          <span className="font-bold text-black text-center text-[10px] truncate w-full">
-                            {nft.name || `THC #${nft.id}`}
-                          </span>
+                          {nft.image && !imageLoadErrors[nft.id] ? (
+                            <img 
+                              src={nft.image} 
+                              alt={`THC #${nft.id}`} 
+                              className="w-full h-auto object-contain mb-1 border border-gray-300"
+                              onError={() => handleImageError(nft.id)}
+                            />
+                          ) : (
+                            <div className="w-full h-12 bg-gray-200 flex items-center justify-center">
+                              <span className="text-[10px]">THC #{nft.id}</span>
+                            </div>
+                          )}
+                          <span className="font-bold text-black text-center text-[10px]">THC #{nft.id}</span>
                         </div>
                       ))}
                     </div>
@@ -273,7 +141,7 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
               </div>
             </div>
             
-            <div className="flex justify-center mt-3">
+            <div className="flex justify-center">
               <WalletConnector />
             </div>
           </div>

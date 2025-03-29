@@ -1,10 +1,28 @@
-
-import React, { createContext, useContext, ReactNode, useEffect } from 'react';
-import { Web3ContextType } from '@/types/web3';
-import { useWeb3Operations } from '@/hooks/use-web3-operations';
-import { useWeb3Effects } from '@/hooks/use-web3-effects';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { 
+  connectWallet, 
+  getBalance, 
+  getOwnedTinHatCatters, 
+  getOwnedSnacks,
+  isWeb3Available,
+  getThcBalance,
+  disconnectWalletConnect,
+  switchToSonicNetwork
+} from '@/lib/web3';
 import { toast } from '@/hooks/use-toast';
-import { isWeb3Available, switchToSonicNetwork } from '@/lib/web3';
+
+interface Web3ContextType {
+  address: string | null;
+  balance: string;
+  thcBalance: string | null;
+  connecting: boolean;
+  tinHatCatters: any[];
+  snacks: any[];
+  connect: (walletType?: string) => Promise<void>;
+  disconnect: () => void;
+  refreshBalance: () => Promise<void>;
+  refreshNFTs: () => Promise<void>;
+}
 
 const Web3Context = createContext<Web3ContextType>({
   address: null,
@@ -17,51 +35,152 @@ const Web3Context = createContext<Web3ContextType>({
   disconnect: () => {},
   refreshBalance: async () => {},
   refreshNFTs: async () => {},
-  isRefreshingBalance: false
 });
 
 export const useWeb3 = () => useContext(Web3Context);
 
 export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const {
-    address,
-    balance, 
-    thcBalance,
-    connecting,
-    tinHatCatters,
-    snacks,
-    connect,
-    disconnect,
-    refreshBalance,
-    refreshNFTs,
-    setAddress,
-    isRefreshingBalance
-  } = useWeb3Operations();
-  
-  // Check network on initial load - safely
-  useEffect(() => {
-    const checkNetwork = async () => {
-      if (isWeb3Available()) {
-        try {
-          await switchToSonicNetwork();
-        } catch (error) {
-          console.error('Failed to switch network on initial load:', error);
-          // Don't block rendering if network switch fails
-        }
-      }
-    };
+  const [address, setAddress] = useState<string | null>(null);
+  const [balance, setBalance] = useState<string>('0');
+  const [thcBalance, setThcBalance] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState<boolean>(false);
+  const [tinHatCatters, setTinHatCatters] = useState<any[]>([]);
+  const [snacks, setSnacks] = useState<any[]>([]);
+  const [connectedWalletType, setConnectedWalletType] = useState<string | null>(null);
+
+  // Connect wallet
+  const connect = async (walletType?: string) => {
+    if (!isWeb3Available()) {
+      toast({
+        title: 'Web3 Not Available',
+        description: 'Please install MetaMask or another Web3 wallet.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setConnecting(true);
+    try {
+      // Always ensure we're on Sonic network
+      await switchToSonicNetwork();
+      
+      const userAddress = await connectWallet(walletType);
+      setAddress(userAddress);
+      setConnectedWalletType(walletType || 'unknown');
+      await refreshBalance();
+      await refreshNFTs();
+      
+      const walletName = walletType ? walletType.charAt(0).toUpperCase() + walletType.slice(1) : 'Wallet';
+      toast({
+        title: `${walletName} Connected`,
+        description: 'Your wallet has been connected successfully.',
+      });
+    } catch (error) {
+      console.error('Connection error:', error);
+      toast({
+        title: 'Connection Failed',
+        description: error instanceof Error ? error.message : 'Failed to connect wallet',
+        variant: 'destructive',
+      });
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  // Disconnect wallet
+  const disconnect = () => {
+    // If using WalletConnect, disconnect properly
+    if (connectedWalletType === 'walletconnect') {
+      disconnectWalletConnect();
+    }
     
-    checkNetwork();
-  }, []);
-  
-  // Setup event listeners and periodic balance refresh
-  useWeb3Effects({
-    address,
-    refreshBalance,
-    refreshNFTs,
-    disconnect,
-    setAddress
-  });
+    setAddress(null);
+    setBalance('0');
+    setThcBalance(null);
+    setTinHatCatters([]);
+    setSnacks([]);
+    setConnectedWalletType(null);
+    
+    toast({
+      title: 'Wallet Disconnected',
+      description: 'Your wallet has been disconnected.',
+    });
+  };
+
+  // Refresh balance
+  const refreshBalance = async () => {
+    if (address) {
+      // Ensure on Sonic network before refreshing balance
+      await switchToSonicNetwork();
+      
+      const newBalance = await getBalance(address);
+      setBalance(newBalance);
+      
+      // Get THC token balance
+      const newThcBalance = await getThcBalance(address);
+      setThcBalance(newThcBalance);
+    }
+  };
+
+  // Refresh NFTs
+  const refreshNFTs = async () => {
+    if (address) {
+      const cats = await getOwnedTinHatCatters(address);
+      setTinHatCatters(cats);
+      
+      const ownedSnacks = await getOwnedSnacks(address);
+      setSnacks(ownedSnacks);
+    }
+  };
+
+  // Listen for account changes and network changes
+  useEffect(() => {
+    if (isWeb3Available() && window.ethereum) {
+      const handleAccountsChanged = (accounts: string[]) => {
+        if (accounts.length === 0) {
+          // User disconnected
+          disconnect();
+        } else if (accounts[0] !== address) {
+          // Account changed
+          setAddress(accounts[0]);
+          refreshBalance();
+          refreshNFTs();
+        }
+      };
+      
+      const handleChainChanged = () => {
+        // When chain changes, ensure we're on Sonic network
+        switchToSonicNetwork().then(() => {
+          if (address) {
+            refreshBalance();
+          }
+        });
+      };
+
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
+      
+      // Check network on initial load
+      switchToSonicNetwork();
+      
+      // Cleanup
+      return () => {
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+      };
+    }
+  }, [address]);
+
+  // Periodically refresh balance
+  useEffect(() => {
+    if (address) {
+      const interval = setInterval(() => {
+        refreshBalance();
+      }, 10000); // Refresh every 10 seconds
+      
+      return () => clearInterval(interval);
+    }
+  }, [address]);
 
   return (
     <Web3Context.Provider 
@@ -75,8 +194,7 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
         connect, 
         disconnect,
         refreshBalance,
-        refreshNFTs,
-        isRefreshingBalance
+        refreshNFTs 
       }}
     >
       {children}
