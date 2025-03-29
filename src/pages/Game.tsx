@@ -1,122 +1,110 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import WalletConnector from '@/components/WalletConnector';
+import { sendTransaction } from '@/lib/web3';
+import { LoadingOverlay } from '@/components/grow-room/LoadingOverlay';
+import ReptilianAttackEngine from '@/game/ReptilianAttackEngine';
 
-interface GameState {
-  score: number;
-  lives: number;
-  gameOver: boolean;
-  coneBalance: number;
-  gameStarted: boolean;
-  paused: boolean;
-  character: {
-    x: number;
-    y: number;
-    jumping: boolean;
-    shooting: boolean;
-    speed: number;
-    jumpPower: number;
-  };
-  enemies: Enemy[];
-  projectiles: Projectile[];
-  powerUps: PowerUp[];
-  terrain: TerrainBlock[];
-  lastEnemySpawn: number;
-  lastTerrainGeneration: number;
-  lastPowerUpSpawn: number;
-}
-
-interface Enemy {
-  id: string;
-  type: 'lizard' | 'croc' | 'snake';
-  x: number;
-  y: number;
-  health: number;
-  speed: number;
-  width: number;
-  height: number;
-  attackCooldown: number;
-  lastAttack: number;
-}
-
-interface Projectile {
-  id: string;
-  x: number;
-  y: number;
-  speed: number;
-  width: number;
-  height: number;
-  fromPlayer: boolean;
-}
-
-interface PowerUp {
-  id: string;
-  type: 'health' | 'speed' | 'cone' | 'extraLife';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-interface TerrainBlock {
-  id: string;
-  type: 'ground' | 'pit' | 'spike';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-const CANVAS_WIDTH = 800;
-const CANVAS_HEIGHT = 400;
-const GROUND_HEIGHT = 40;
-const CHARACTER_WIDTH = 32;
-const CHARACTER_HEIGHT = 48;
-const GRAVITY = 0.6;
+// Wallet address to send THC to (same as grow room)
+const RECIPIENT_ADDRESS = '0x097766e8dE97A0A53B3A31AB4dB02d0004C8cc4F';
+// Game start cost
+const GAME_START_COST = 0.1;
 
 const Game: React.FC = () => {
   const { address, thcBalance, connect } = useWeb3();
-  const [gameState, setGameState] = useState<GameState>({
+  const [gameState, setGameState] = useState({
     score: 0,
     lives: 3,
+    health: 100,
+    thcEarned: 0,
     gameOver: false,
-    coneBalance: 0,
     gameStarted: false,
     paused: false,
-    character: {
-      x: 100,
-      y: CANVAS_HEIGHT - GROUND_HEIGHT - CHARACTER_HEIGHT,
-      jumping: false,
-      shooting: false,
-      speed: 5,
-      jumpPower: 12
-    },
-    enemies: [],
-    projectiles: [],
-    powerUps: [],
-    terrain: [
-      {
-        id: 'initial-ground',
-        type: 'ground',
-        x: 0,
-        y: CANVAS_HEIGHT - GROUND_HEIGHT,
-        width: CANVAS_WIDTH * 2,
-        height: GROUND_HEIGHT
-      }
-    ],
-    lastEnemySpawn: 0,
-    lastTerrainGeneration: 0,
-    lastPowerUpSpawn: 0
+    upgrades: {
+      speed: 1,
+      fireRate: 1,
+      health: 1
+    }
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [windowIsMaximized, setWindowIsMaximized] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const gameContainerRef = useRef<HTMLDivElement>(null);
+  const gameEngineRef = useRef<ReptilianAttackEngine | null>(null);
   const animationFrameRef = useRef<number>(0);
-  const keysPressed = useRef<Record<string, boolean>>({});
+  const mouseState = useRef({ left: false, right: false, position: { x: 0, y: 0 } });
   const lastFrameTime = useRef<number>(0);
+  const { toast } = useToast();
 
-  const startGame = () => {
+  // Maximize window on load
+  useEffect(() => {
+    const windowElement = document.querySelector('.window[data-id="game"]');
+    if (windowElement && !windowIsMaximized) {
+      const maximizeButton = windowElement.querySelector('.maximize-button') as HTMLButtonElement;
+      if (maximizeButton) {
+        maximizeButton.click();
+        setWindowIsMaximized(true);
+      }
+    }
+  }, [windowIsMaximized]);
+
+  // Initialize game engine
+  useEffect(() => {
+    if (!gameEngineRef.current) {
+      gameEngineRef.current = new ReptilianAttackEngine();
+    }
+    
+    if (canvasRef.current) {
+      gameEngineRef.current.initialize(canvasRef.current);
+    }
+    
+    return () => {
+      cancelAnimationFrame(animationFrameRef.current);
+    };
+  }, []);
+
+  const handleTransaction = async (amount: number, actionType: string): Promise<boolean> => {
+    setIsLoading(true);
+    setPendingAction(actionType);
+
+    try {
+      // Send THC to the recipient address
+      const success = await sendTransaction(RECIPIENT_ADDRESS, amount.toString());
+      
+      if (success) {
+        toast({
+          title: "Transaction Successful",
+          description: `Successfully sent ${amount} THC to play the game.`,
+        });
+        return true;
+      } else {
+        toast({
+          title: "Transaction Failed",
+          description: "Failed to send THC. Please try again.",
+          variant: "destructive"
+        });
+        return false;
+      }
+    } catch (error: any) {
+      console.error('Transaction error:', error);
+      toast({
+        title: "Transaction Error",
+        description: error.message || "An error occurred during the transaction.",
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+      setPendingAction(null);
+    }
+  };
+
+  const startGame = async () => {
     if (!address) {
       toast({
         title: "Wallet Required",
@@ -126,33 +114,34 @@ const Game: React.FC = () => {
       return;
     }
 
-    setGameState(prev => ({
-      ...prev,
-      gameStarted: true,
-      gameOver: false,
-      lives: 3,
-      score: 0,
-      coneBalance: 0,
-      character: {
-        ...prev.character,
-        x: 100,
-        y: CANVAS_HEIGHT - GROUND_HEIGHT - CHARACTER_HEIGHT,
-        jumping: false
-      },
-      enemies: [],
-      projectiles: [],
-      powerUps: [],
-      terrain: [
-        {
-          id: 'initial-ground',
-          type: 'ground',
-          x: 0,
-          y: CANVAS_HEIGHT - GROUND_HEIGHT,
-          width: CANVAS_WIDTH * 2,
-          height: GROUND_HEIGHT
-        }
-      ]
-    }));
+    // Check THC balance
+    if (parseFloat(thcBalance || '0') < GAME_START_COST) {
+      toast({
+        title: "Insufficient THC",
+        description: `You need at least ${GAME_START_COST} THC to start the game.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Process the transaction
+    const success = await handleTransaction(GAME_START_COST, "Starting Game");
+    
+    if (success) {
+      if (gameEngineRef.current) {
+        gameEngineRef.current.reset(gameState.upgrades);
+      }
+      
+      setGameState(prev => ({
+        ...prev,
+        gameStarted: true,
+        gameOver: false,
+        lives: 3,
+        health: 100,
+        score: 0,
+        thcEarned: 0,
+      }));
+    }
   };
 
   const pauseGame = () => {
@@ -160,267 +149,81 @@ const Game: React.FC = () => {
   };
 
   const gameLoop = (timestamp: number) => {
-    if (!gameState.gameStarted || gameState.gameOver || gameState.paused) {
+    if (!gameState.gameStarted || gameState.gameOver || gameState.paused || !gameEngineRef.current) {
       animationFrameRef.current = requestAnimationFrame(gameLoop);
       return;
     }
 
     const deltaTime = timestamp - (lastFrameTime.current || timestamp);
     lastFrameTime.current = timestamp;
-    const delta = deltaTime / 16.67;
+    const delta = deltaTime / 16.67; // Normalize to ~60fps
 
-    setGameState(prevState => {
-      let updatedCharacter = { ...prevState.character };
-      
-      if (keysPressed.current['ArrowUp'] || keysPressed.current[' ']) {
-        if (!updatedCharacter.jumping) {
-          updatedCharacter.jumping = true;
-          updatedCharacter.y -= updatedCharacter.jumpPower;
-        }
-      }
-      
-      if (keysPressed.current['Control'] || keysPressed.current['x']) {
-        if (!updatedCharacter.shooting) {
-          updatedCharacter.shooting = true;
-          
-          const newProjectile: Projectile = {
-            id: `proj-${Date.now()}-${Math.random()}`,
-            x: updatedCharacter.x + CHARACTER_WIDTH,
-            y: updatedCharacter.y + CHARACTER_HEIGHT / 2 - 5,
-            speed: 8,
-            width: 16,
-            height: 10,
-            fromPlayer: true
-          };
-          
-          prevState.projectiles.push(newProjectile);
-        }
-      } else {
-        updatedCharacter.shooting = false;
-      }
-      
-      if (updatedCharacter.jumping) {
-        updatedCharacter.y += GRAVITY * delta;
-        
-        const groundY = CANVAS_HEIGHT - GROUND_HEIGHT - CHARACTER_HEIGHT;
-        if (updatedCharacter.y >= groundY) {
-          updatedCharacter.y = groundY;
-          updatedCharacter.jumping = false;
-        }
-      }
-      
-      const updatedProjectiles = prevState.projectiles
-        .map(proj => ({
-          ...proj,
-          x: proj.fromPlayer ? proj.x + proj.speed * delta : proj.x - proj.speed * delta
-        }))
-        .filter(proj => proj.x > 0 && proj.x < CANVAS_WIDTH);
-      
-      const updatedEnemies = prevState.enemies
-        .map(enemy => ({
-          ...enemy,
-          x: enemy.x - enemy.speed * delta
-        }))
-        .filter(enemy => enemy.x > -enemy.width);
-      
-      if (timestamp - prevState.lastEnemySpawn > 2000) {
-        const enemyTypes = ['lizard', 'croc', 'snake'];
-        const randomType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)] as 'lizard' | 'croc' | 'snake';
-        
-        const newEnemy: Enemy = {
-          id: `enemy-${Date.now()}`,
-          type: randomType,
-          x: CANVAS_WIDTH,
-          y: CANVAS_HEIGHT - GROUND_HEIGHT - 48,
-          health: randomType === 'snake' ? 2 : 1,
-          speed: 2 + Math.random() * 2,
-          width: 32,
-          height: 48,
-          attackCooldown: 3000,
-          lastAttack: 0
-        };
-        
-        updatedEnemies.push(newEnemy);
-        prevState.lastEnemySpawn = timestamp;
-      }
-      
-      let updatedLives = prevState.lives;
-      let updatedScore = prevState.score;
-      let updatedConeBalance = prevState.coneBalance;
-      
-      const projectilesAfterCollision = [...updatedProjectiles];
-      const enemiesAfterCollision = updatedEnemies.map(enemy => {
-        let enemyHealth = enemy.health;
-        
-        projectilesAfterCollision.forEach((proj, idx) => {
-          if (proj.fromPlayer && 
-              proj.x < enemy.x + enemy.width &&
-              proj.x + proj.width > enemy.x &&
-              proj.y < enemy.y + enemy.height &&
-              proj.y + proj.height > enemy.y) {
-            enemyHealth--;
-            projectilesAfterCollision[idx] = { ...proj, x: -100 };
-          }
-        });
-        
-        if (enemyHealth <= 0) {
-          updatedScore += 10;
-          updatedConeBalance += Math.floor(Math.random() * 5) + 1;
-          return { ...enemy, health: 0, x: -100 };
-        }
-        
-        return { ...enemy, health: enemyHealth };
-      }).filter(enemy => enemy.x > -enemy.width);
-      
-      let characterHit = false;
-      enemiesAfterCollision.forEach(enemy => {
-        if (updatedCharacter.x < enemy.x + enemy.width &&
-            updatedCharacter.x + CHARACTER_WIDTH > enemy.x &&
-            updatedCharacter.y < enemy.y + enemy.height &&
-            updatedCharacter.y + CHARACTER_HEIGHT > enemy.y) {
-          characterHit = true;
-        }
-      });
-      
-      if (characterHit) {
-        updatedLives--;
-        updatedCharacter.x = 50;
-      }
-      
-      updatedScore += 0.1 * delta;
-      
-      if (Math.floor(prevState.score / 100) < Math.floor(updatedScore / 100)) {
-        updatedConeBalance += 1;
-      }
-      
-      const gameOver = updatedLives <= 0;
-      
-      return {
-        ...prevState,
-        score: updatedScore,
-        lives: updatedLives,
-        coneBalance: updatedConeBalance,
-        gameOver: gameOver,
-        character: updatedCharacter,
-        projectiles: projectilesAfterCollision.filter(p => p.x > -50),
-        enemies: enemiesAfterCollision,
-        lastEnemySpawn: prevState.lastEnemySpawn
-      };
+    // Update game state
+    const updatedState = gameEngineRef.current.update(delta, {
+      left: mouseState.current.left,
+      right: mouseState.current.right
     });
-
-    renderGame();
+    
+    // Render the game
+    gameEngineRef.current.render();
+    
+    // Update React state (only properties we care about in the UI)
+    setGameState(prev => ({
+      ...prev,
+      score: updatedState.score,
+      lives: updatedState.lives,
+      health: updatedState.health,
+      thcEarned: updatedState.thcEarned,
+      gameOver: updatedState.gameOver
+    }));
     
     animationFrameRef.current = requestAnimationFrame(gameLoop);
   };
 
-  const renderGame = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    
-    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    
-    ctx.fillStyle = '#008080';
-    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    
-    gameState.terrain.forEach(block => {
-      if (block.type === 'ground') {
-        ctx.fillStyle = '#8B4513';
-        ctx.fillRect(block.x, block.y, block.width, block.height);
+  useEffect(() => {
+    const handleResize = () => {
+      if (canvasRef.current && gameContainerRef.current) {
+        canvasRef.current.width = gameContainerRef.current.clientWidth;
+        canvasRef.current.height = gameContainerRef.current.clientHeight;
         
-        ctx.fillStyle = '#32CD32';
-        ctx.fillRect(block.x, block.y, block.width, 5);
-      } else if (block.type === 'spike') {
-        ctx.fillStyle = '#696969';
-        
-        const spikeWidth = 10;
-        const spikes = Math.floor(block.width / spikeWidth);
-        
-        for (let i = 0; i < spikes; i++) {
-          ctx.beginPath();
-          ctx.moveTo(block.x + (i * spikeWidth), block.y + block.height);
-          ctx.lineTo(block.x + (i * spikeWidth) + (spikeWidth / 2), block.y);
-          ctx.lineTo(block.x + (i * spikeWidth) + spikeWidth, block.y + block.height);
-          ctx.closePath();
-          ctx.fill();
+        if (gameEngineRef.current) {
+          gameEngineRef.current.render();
         }
       }
-    });
-    
-    ctx.fillStyle = '#FF69B4';
-    ctx.fillRect(
-      gameState.character.x,
-      gameState.character.y,
-      CHARACTER_WIDTH,
-      CHARACTER_HEIGHT
-    );
-    
-    gameState.projectiles.forEach(proj => {
-      if (proj.fromPlayer) {
-        ctx.fillStyle = '#FFA500';
-        ctx.beginPath();
-        ctx.moveTo(proj.x, proj.y);
-        ctx.lineTo(proj.x + proj.width, proj.y + proj.height / 2);
-        ctx.lineTo(proj.x, proj.y + proj.height);
-        ctx.closePath();
-        ctx.fill();
-      } else {
-        ctx.fillStyle = '#00FF00';
-        ctx.fillRect(proj.x, proj.y, proj.width, proj.height);
-      }
-    });
-    
-    gameState.enemies.forEach(enemy => {
-      if (enemy.type === 'lizard') {
-        ctx.fillStyle = '#008000';
-      } else if (enemy.type === 'croc') {
-        ctx.fillStyle = '#006400';
-      } else if (enemy.type === 'snake') {
-        ctx.fillStyle = '#800080';
-      }
-      
-      ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-    });
-    
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '16px "Press Start 2P", monospace';
-    ctx.fillText(`Score: ${Math.floor(gameState.score)}`, 20, 30);
-    ctx.fillText(`$THC: ${gameState.coneBalance}`, 20, 60);
-    
-    if (gameState.gameOver) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = '30px "Press Start 2P", monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('GAME OVER', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 30);
-      
-      ctx.font = '16px "Press Start 2P", monospace';
-      ctx.fillText(`Final Score: ${Math.floor(gameState.score)}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 10);
-      ctx.fillText(`$THC Earned: ${gameState.coneBalance}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 40);
-      
-      ctx.textAlign = 'start';
-    }
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      keysPressed.current[e.key] = true;
     };
 
-    const handleKeyUp = (e: KeyboardEvent) => {
-      keysPressed.current[e.key] = false;
+    const handleMouseDown = (e: MouseEvent) => {
+      if (e.button === 0) mouseState.current.left = true;
+      if (e.button === 2) mouseState.current.right = true;
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+    const handleMouseUp = (e: MouseEvent) => {
+      if (e.button === 0) mouseState.current.left = false;
+      if (e.button === 2) mouseState.current.right = false;
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseState.current.position = { x: e.clientX, y: e.clientY };
+    };
+
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault(); // Prevent context menu from showing on right click
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('contextmenu', handleContextMenu);
+
+    handleResize();
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('contextmenu', handleContextMenu);
     };
   }, []);
 
@@ -438,30 +241,56 @@ const Game: React.FC = () => {
   }, [gameState.gameStarted, gameState.gameOver, gameState.paused]);
 
   useEffect(() => {
-    renderGame();
-  }, []);
-
-  useEffect(() => {
-    if (gameState.gameOver && gameState.coneBalance > 0 && address) {
+    // Award THC when game is over
+    if (gameState.gameOver && gameState.thcEarned > 0 && address) {
       toast({
         title: "Crypto Earned!",
-        description: `${gameState.coneBalance} $THC added to your wallet!`,
+        description: `${gameState.thcEarned.toFixed(2)} $THC added to your wallet!`,
       });
     }
-  }, [gameState.gameOver, gameState.coneBalance, address]);
+  }, [gameState.gameOver, gameState.thcEarned, address]);
+
+  const handleUpgrade = async (upgradeType: 'speed' | 'fireRate' | 'health') => {
+    const upgradeCost = 0.5;
+    
+    if (parseFloat(thcBalance || '0') < upgradeCost) {
+      toast({
+        title: "Insufficient THC",
+        description: `You need at least ${upgradeCost} THC for this upgrade.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Process the transaction
+    const success = await handleTransaction(upgradeCost, `Upgrading ${upgradeType}`);
+    
+    if (success) {
+      setGameState(prev => ({
+        ...prev,
+        upgrades: {
+          ...prev.upgrades,
+          [upgradeType]: prev.upgrades[upgradeType] + 0.25
+        }
+      }));
+      
+      toast({
+        title: "Upgrade Successful",
+        description: `Your ${upgradeType} has been upgraded!`,
+      });
+    }
+  };
 
   return (
     <div className="win95-window w-full h-full overflow-hidden">
       <div className="win95-title-bar px-2 py-1 flex justify-between items-center">
         <div className="text-white">Reptilian Attack</div>
       </div>
-      <div className="p-4 bg-[#c0c0c0] flex flex-col items-center">
-        <div className="mb-4 win95-inset p-2 w-full max-w-screen-lg">
+      <div className="p-4 bg-[#c0c0c0] flex flex-col items-center h-full">
+        <div className="mb-4 win95-inset p-2 w-full flex-grow" ref={gameContainerRef}>
           <canvas
             ref={canvasRef}
-            width={CANVAS_WIDTH}
-            height={CANVAS_HEIGHT}
-            className="border-2 border-gray-700 bg-white mx-auto"
+            className="w-full h-full object-contain"
           />
         </div>
         
@@ -472,7 +301,7 @@ const Game: React.FC = () => {
                 <WalletConnector />
               ) : (
                 <Button onClick={startGame} className="win95-button">
-                  Start Game
+                  Start Game ({GAME_START_COST} $THC)
                 </Button>
               )}
             </>
@@ -480,7 +309,7 @@ const Game: React.FC = () => {
             <>
               {gameState.gameOver ? (
                 <Button onClick={startGame} className="win95-button">
-                  Play Again
+                  Play Again ({GAME_START_COST} $THC)
                 </Button>
               ) : (
                 <Button onClick={pauseGame} className="win95-button">
@@ -491,13 +320,44 @@ const Game: React.FC = () => {
           )}
         </div>
         
+        {/* Upgrades Section */}
+        {address && !gameState.gameStarted && (
+          <div className="win95-panel p-2 w-full max-w-screen-lg mb-4">
+            <h3 className="font-bold mb-2">Upgrades:</h3>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="win95-inset p-2 flex flex-col items-center">
+                <div className="font-bold mb-1">Speed</div>
+                <div className="text-xs mb-2">Current: x{gameState.upgrades.speed.toFixed(2)}</div>
+                <Button onClick={() => handleUpgrade('speed')} className="win95-button text-xs">
+                  Upgrade (0.5 $THC)
+                </Button>
+              </div>
+              <div className="win95-inset p-2 flex flex-col items-center">
+                <div className="font-bold mb-1">Fire Rate</div>
+                <div className="text-xs mb-2">Current: x{gameState.upgrades.fireRate.toFixed(2)}</div>
+                <Button onClick={() => handleUpgrade('fireRate')} className="win95-button text-xs">
+                  Upgrade (0.5 $THC)
+                </Button>
+              </div>
+              <div className="win95-inset p-2 flex flex-col items-center">
+                <div className="font-bold mb-1">Health</div>
+                <div className="text-xs mb-2">Current: x{gameState.upgrades.health.toFixed(2)}</div>
+                <Button onClick={() => handleUpgrade('health')} className="win95-button text-xs">
+                  Upgrade (0.5 $THC)
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div className="win95-panel p-2 w-full max-w-screen-lg">
           <h3 className="font-bold mb-2">How to Play:</h3>
           <ul className="text-sm space-y-1">
-            <li>• Use <span className="font-bold">UP ARROW</span> or <span className="font-bold">SPACE</span> to jump</li>
-            <li>• Use <span className="font-bold">CTRL</span> or <span className="font-bold">X</span> to shoot ice cream cones</li>
+            <li>• <span className="font-bold">LEFT MOUSE BUTTON</span> to shoot at enemies</li>
+            <li>• <span className="font-bold">RIGHT MOUSE BUTTON</span> to jump over obstacles</li>
             <li>• Survive as long as possible and defeat enemies to earn $THC</li>
-            <li>• $THC can be used to purchase upgrades in the NFT Shop</li>
+            <li>• Buy upgrades to improve your speed, fire rate, and health</li>
+            <li>• Costs {GAME_START_COST} $THC to start a game</li>
           </ul>
         </div>
         
@@ -514,6 +374,11 @@ const Game: React.FC = () => {
           </div>
         )}
       </div>
+      
+      <LoadingOverlay 
+        isLoading={isLoading}
+        actionType={pendingAction}
+      />
     </div>
   );
 };
