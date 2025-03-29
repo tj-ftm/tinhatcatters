@@ -61,10 +61,15 @@ export const getTHCBalance = async (address: string | null): Promise<string> => 
         provider
       );
       
-      // Get token decimals
+      // Get token decimals - handle errors gracefully
       console.log('Fetching token decimals...');
-      const decimals = await tokenContract.decimals();
-      console.log('Token decimals:', decimals);
+      let decimals = 18; // Default to 18 if we can't fetch
+      try {
+        decimals = await tokenContract.decimals();
+        console.log('Token decimals:', decimals);
+      } catch (err) {
+        console.warn('Failed to get decimals, using default of 18:', err);
+      }
       
       // Get balance
       console.log('Fetching balance for address:', address);

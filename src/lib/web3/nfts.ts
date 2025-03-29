@@ -7,16 +7,34 @@ const ETHERSCAN_API_KEY = '5YNXI6EBCV3E1IZANWBC13V1ABXEVG9YFK';
 const SONIC_API_URL = 'https://api-sonic.etherscan.io/api';
 // TinHatCatter contract address on Sonic network
 const TIN_HAT_CATTER_CONTRACT = '0x2DC1886d67001d5d6A80FEaa51513f7BB5a591FD';
+// Backup API URL if Sonic's API is not responding
+const FALLBACK_API_URL = 'https://api.etherscan.io/api';
 
 // Function to fetch NFTs from the specified contract for an address
 export const fetchNFTsFromContract = async (address: string) => {
   try {
     console.log(`Fetching NFTs for address ${address} from contract ${TIN_HAT_CATTER_CONTRACT}`);
     
-    // First, get all NFT transfers for this address
-    const response = await fetch(
-      `${SONIC_API_URL}?module=account&action=tokennfttx&address=${address}&contractaddress=${TIN_HAT_CATTER_CONTRACT}&startblock=0&endblock=999999999&sort=asc&apikey=${ETHERSCAN_API_KEY}`
-    );
+    // First try Sonic network API
+    let apiUrl = SONIC_API_URL;
+    let response;
+    
+    try {
+      response = await fetch(
+        `${apiUrl}?module=account&action=tokennfttx&address=${address}&contractaddress=${TIN_HAT_CATTER_CONTRACT}&startblock=0&endblock=999999999&sort=asc&apikey=${ETHERSCAN_API_KEY}`,
+        { signal: AbortSignal.timeout(5000) } // 5 second timeout
+      );
+      
+      if (!response.ok) throw new Error(`Network response was not ok: ${response.status}`);
+    } catch (error) {
+      console.warn('Failed to fetch from Sonic API, trying fallback:', error);
+      
+      // Try fallback API
+      apiUrl = FALLBACK_API_URL;
+      response = await fetch(
+        `${apiUrl}?module=account&action=tokennfttx&address=${address}&contractaddress=${TIN_HAT_CATTER_CONTRACT}&startblock=0&endblock=999999999&sort=asc&apikey=${ETHERSCAN_API_KEY}`
+      );
+    }
     
     const data = await response.json();
     console.log('API Response:', data);
@@ -44,8 +62,10 @@ export const fetchNFTsFromContract = async (address: string) => {
             name: `Tin Hat Catter #${tokenId}`,
             // Using Sonic's block explorer for image URL if available
             image: `https://sonicscan.io/token/${TIN_HAT_CATTER_CONTRACT}/${tokenId}/image`,
-            // Fallback image construction
-            fallbackImage: `/assets/tinhats/${tokenId}.png`
+            // Provide multiple fallback images
+            fallbackImage: `/assets/tinhats/${tokenId}.png`,
+            secondaryFallback: `https://ipfs.io/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/${tokenId}`,
+            description: "A unique Tin Hat Catter NFT from the TinHatCatter collection"
           });
         }
       });
@@ -56,6 +76,23 @@ export const fetchNFTsFromContract = async (address: string) => {
     
     // If no results or error
     console.log('No NFTs found or API error:', data.message || 'Unknown error');
+    
+    // Return mock data for testing if API doesn't respond correctly
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Returning mock NFT data for development');
+      return [
+        {
+          id: '1',
+          contractAddress: TIN_HAT_CATTER_CONTRACT,
+          name: 'Tin Hat Catter #1',
+          image: `https://sonicscan.io/token/${TIN_HAT_CATTER_CONTRACT}/1/image`,
+          fallbackImage: '/assets/tinhats/1.png',
+          secondaryFallback: `https://ipfs.io/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/1`,
+          description: "A unique Tin Hat Catter NFT from the TinHatCatter collection"
+        }
+      ];
+    }
+    
     return [];
   } catch (error) {
     console.error('Error fetching NFT data from Sonic network:', error);
@@ -131,7 +168,7 @@ export const getOwnedTinHatCatters = async (address: string) => {
             return {
               ...nft,
               name: metadata.name || nft.name,
-              description: metadata.description,
+              description: metadata.description || nft.description,
               image: metadata.image || nft.image,
               attributes: metadata.attributes || []
             };

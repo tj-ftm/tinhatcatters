@@ -95,15 +95,37 @@ export function useWeb3Operations() {
     if (address) {
       try {
         // Ensure on Sonic network before refreshing balance
-        await switchToSonicNetwork();
+        try {
+          await switchToSonicNetwork();
+        } catch (error) {
+          console.error('Error switching to Sonic network:', error);
+          // Continue with balance check anyway
+        }
         
+        // Get ETH balance
         const newBalance = await getBalance(address);
         setBalance(newBalance);
         
-        // Get THC token balance
-        const newThcBalance = await getTHCBalance(address);
+        // Get THC token balance with retry
+        let attempts = 0;
+        let thcSuccess = false;
+        let newThcBalance = '0';
+        
+        while (attempts < 2 && !thcSuccess) {
+          try {
+            newThcBalance = await getTHCBalance(address);
+            thcSuccess = true;
+          } catch (error) {
+            console.warn(`THC balance attempt ${attempts + 1} failed:`, error);
+            attempts++;
+            // Short delay before retry
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+        
         console.log("THC balance updated:", newThcBalance);
         setThcBalance(newThcBalance);
+        
       } catch (error) {
         console.error('Error in refreshBalance:', error);
         // Don't throw the error further, just log it
