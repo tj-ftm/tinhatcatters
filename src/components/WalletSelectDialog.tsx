@@ -46,7 +46,7 @@ const WalletSelectDialog: React.FC<WalletSelectDialogProps> = ({
 }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="win95-window border-2 border-gray-400 p-0 max-w-md rounded-none">
+      <DialogContent className="win95-window border-2 border-gray-400 p-0 max-w-md rounded-none" style={{ zIndex: 9999 }}>
         <div className="win95-title-bar flex justify-between items-center">
           <DialogTitle className="text-white text-lg px-2">Select Wallet</DialogTitle>
           <DialogClose className="text-white hover:text-gray-300 px-2">x</DialogClose>
