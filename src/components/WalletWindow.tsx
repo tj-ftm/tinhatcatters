@@ -20,6 +20,7 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
   const { address, balance, thcBalance, tinHatCatters } = useWeb3();
   const [nftData, setNftData] = useState<NFTData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [imageLoadErrors, setImageLoadErrors] = useState<Record<string, boolean>>({});
   
   useEffect(() => {
     const loadNFTData = async () => {
@@ -38,6 +39,13 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
     
     loadNFTData();
   }, [address]);
+  
+  const handleImageError = (nftId: string) => {
+    setImageLoadErrors(prev => ({
+      ...prev,
+      [nftId]: true
+    }));
+  };
   
   return (
     <div className="win95-window w-80 shadow-lg z-20">
@@ -108,21 +116,19 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
                     <div className="grid grid-cols-2 gap-1">
                       {nftData.map((nft) => (
                         <div key={nft.id} className="text-xs p-1 bg-white/50 rounded flex flex-col items-center">
-                          {nft.image ? (
+                          {nft.image && !imageLoadErrors[nft.id] ? (
                             <img 
                               src={nft.image} 
                               alt={`THC #${nft.id}`} 
                               className="w-full h-auto object-contain mb-1 border border-gray-300"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = '/placeholder.svg';
-                              }}
+                              onError={() => handleImageError(nft.id)}
                             />
                           ) : (
                             <div className="w-full h-12 bg-gray-200 flex items-center justify-center">
-                              <span className="text-xs">No Image</span>
+                              <span className="text-[10px]">THC #{nft.id}</span>
                             </div>
                           )}
-                          <span className="font-bold text-black text-center">THC #{nft.id}</span>
+                          <span className="font-bold text-black text-center text-[10px]">THC #{nft.id}</span>
                         </div>
                       ))}
                     </div>
