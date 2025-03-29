@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useWeb3 } from '@/contexts/Web3Context';
@@ -33,7 +32,7 @@ const RECIPIENT_ADDRESS = '0x097766e8dE97A0A53B3A31AB4dB02d0004C8cc4F';
 
 export const useGrowRoom = () => {
   const { thcBalance, address } = useWeb3();
-  const [thcAmount, setThcAmount] = useState<number>(50); // Starting with 50 $THC
+  const [thcAmount, setThcAmount] = useState<number>(0);
   const [plants, setPlants] = useState<Plant[]>([]);
   const [equipment, setEquipment] = useState<Record<EquipmentType, Equipment>>(initialEquipment);
   const [plantCapacity, setPlantCapacity] = useState<number>(1);
@@ -49,17 +48,12 @@ export const useGrowRoom = () => {
     
     const result = loadGameState(address, equipment, toast);
     if (result) {
-      const { updatedPlants, updatedEquipment, updatedPlantCapacity, updatedThcAmount } = result;
+      const { updatedPlants, updatedEquipment, updatedPlantCapacity } = result;
       setPlants(updatedPlants);
       setEquipment(updatedEquipment);
       setPlantCapacity(updatedPlantCapacity);
-      
-      // Only update thcAmount from localStorage if wallet balance is not available
-      if (!thcBalance) {
-        setThcAmount(updatedThcAmount);
-      }
     }
-  }, [address, toast, thcBalance]);
+  }, [address, toast]);
   
   // Save game state to localStorage whenever important state changes
   useEffect(() => {
@@ -70,7 +64,7 @@ export const useGrowRoom = () => {
     return () => clearInterval(saveInterval);
   }, [thcAmount, plants, equipment, plantCapacity, address]);
 
-  // Update local THC amount from wallet if available
+  // Update local THC amount from wallet balance if available
   useEffect(() => {
     if (thcBalance) {
       const parsedBalance = parseFloat(thcBalance);
