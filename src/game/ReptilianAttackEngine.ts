@@ -1,591 +1,405 @@
 
-export interface GameState {
-  score: number;
-  lives: number;
-  health: number;
-  thcEarned: number;
-  gameOver: boolean;
-  paused: boolean;
-  position: {
-    x: number;
-    y: number;
-  };
-  jumping: boolean;
-  firing: boolean;
-  upgrades: {
-    speed: number;
-    fireRate: number;
-    health: number;
-  };
-  enemies: Enemy[];
-  obstacles: Obstacle[];
-  projectiles: Projectile[];
-  effects: Effect[];
-}
+// This is a stub implementation for the ReptilianAttackEngine class
+// In a real implementation, this would be a full-featured game engine
 
-export interface Enemy {
-  id: string;
-  type: 'lizard' | 'reptilian' | 'snake';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  health: number;
-  speed: number;
-  lastShot: number;
-  shotInterval: number;
-}
-
-export interface Obstacle {
-  id: string;
-  type: 'rock' | 'pit' | 'spikes';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-export interface Projectile {
-  id: string;
-  fromPlayer: boolean;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  speed: number;
-  damage: number;
-}
-
-export interface Effect {
-  id: string;
-  type: 'explosion' | 'hit' | 'powerup';
-  x: number;
-  y: number;
-  duration: number;
-  elapsed: number;
-}
-
-export default class ReptilianAttackEngine {
+class ReptilianAttackEngine {
   private canvas: HTMLCanvasElement | null = null;
-  private ctx: CanvasRenderingContext2D | null = null;
-  private state: GameState;
-  private lastFrameTime: number = 0;
-  private enemySpawnInterval: number = 2000;
-  private obstacleSpawnInterval: number = 3000;
-  private lastEnemySpawn: number = 0;
-  private lastObstacleSpawn: number = 0;
-  private groundHeight: number = 40;
-  private playerWidth: number = 32;
-  private playerHeight: number = 48;
-  private gravity: number = 0.6;
-  private jumpForce: number = 10;
-  private baseSpeed: number = 4;
-
-  constructor() {
-    this.state = this.getInitialState();
-  }
-
-  private getInitialState(): GameState {
-    return {
-      score: 0,
-      lives: 3,
-      health: 100,
-      thcEarned: 0,
-      gameOver: false,
-      paused: false,
-      position: {
-        x: 100,
-        y: 0, // Will be set correctly when canvas is initialized
-      },
-      jumping: false,
-      firing: false,
-      upgrades: {
-        speed: 1,
-        fireRate: 1,
-        health: 1,
-      },
-      enemies: [],
-      obstacles: [],
-      projectiles: [],
-      effects: []
-    };
-  }
-
-  public initialize(canvas: HTMLCanvasElement): void {
+  private context: CanvasRenderingContext2D | null = null;
+  private player = {
+    x: 100,
+    y: 200,
+    width: 30,
+    height: 50,
+    velocityY: 0,
+    isJumping: false
+  };
+  private obstacles: Array<{x: number, y: number, width: number, height: number, hit: boolean}> = [];
+  private enemies: Array<{x: number, y: number, width: number, height: number, health: number, hit: boolean}> = [];
+  private bullets: Array<{x: number, y: number, width: number, height: number, velocityX: number}> = [];
+  private enemyBullets: Array<{x: number, y: number, width: number, height: number, velocityX: number}> = [];
+  private score = 0;
+  private lives = 3;
+  private health = 100;
+  private thcEarned = 0;
+  private gameOver = false;
+  private gameSpeed = 5;
+  private lastObstacleTime = 0;
+  private lastEnemyTime = 0;
+  private lastEnemyShootTime = 0;
+  private lastShootTime = 0;
+  private upgrades = { speed: 1, fireRate: 1, health: 1 };
+  private collisionBehavior: 'immediate' | 'fade' = 'fade';
+  
+  initialize(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    this.ctx = canvas.getContext('2d');
-    this.state = this.getInitialState();
-    this.state.position.y = canvas.height - this.groundHeight - this.playerHeight;
+    this.context = canvas.getContext('2d');
+    this.reset();
   }
-
-  public reset(upgrades?: GameState['upgrades']): void {
-    this.state = this.getInitialState();
-    if (upgrades) {
-      this.state.upgrades = upgrades;
-    }
-    if (this.canvas) {
-      this.state.position.y = this.canvas.height - this.groundHeight - this.playerHeight;
-    }
+  
+  setCollisionBehavior(behavior: 'immediate' | 'fade') {
+    this.collisionBehavior = behavior;
   }
-
-  public update(delta: number, mouseState: { left: boolean, right: boolean }): GameState {
-    if (!this.canvas || !this.ctx) return this.state;
-
-    // Update player
-    if (mouseState.right && !this.state.jumping) {
-      this.state.jumping = true;
-      this.state.position.y -= this.jumpForce * this.state.upgrades.speed;
+  
+  reset(upgrades = { speed: 1, fireRate: 1, health: 1 }) {
+    this.player = {
+      x: 100,
+      y: 200,
+      width: 30,
+      height: 50,
+      velocityY: 0,
+      isJumping: false
+    };
+    this.obstacles = [];
+    this.enemies = [];
+    this.bullets = [];
+    this.enemyBullets = [];
+    this.score = 0;
+    this.lives = 3;
+    this.health = 100;
+    this.thcEarned = 0;
+    this.gameOver = false;
+    this.lastObstacleTime = 0;
+    this.lastEnemyTime = 0;
+    this.lastEnemyShootTime = 0;
+    this.lastShootTime = 0;
+    this.upgrades = upgrades;
+  }
+  
+  update(delta: number, input: { left: boolean, right: boolean }) {
+    if (!this.canvas || !this.context) return this.getGameState();
+    
+    // Apply upgrades
+    const speedMultiplier = this.upgrades.speed;
+    const fireRateMultiplier = this.upgrades.fireRate;
+    const healthMultiplier = this.upgrades.health;
+    
+    // Update game speed based on score
+    this.gameSpeed = 5 + Math.min(10, Math.floor(this.score / 1000));
+    
+    // Handle jumping with right mouse button
+    if (input.right && !this.player.isJumping) {
+      this.player.velocityY = -15;
+      this.player.isJumping = true;
     }
-
-    if (this.state.jumping) {
-      this.state.position.y += this.gravity * delta;
-      if (this.state.position.y >= this.canvas.height - this.groundHeight - this.playerHeight) {
-        this.state.position.y = this.canvas.height - this.groundHeight - this.playerHeight;
-        this.state.jumping = false;
-      }
+    
+    // Apply gravity
+    this.player.velocityY += 0.8 * delta;
+    this.player.y += this.player.velocityY * delta;
+    
+    // Check floor collision
+    const floorY = this.canvas.height - this.player.height - 20;
+    if (this.player.y > floorY) {
+      this.player.y = floorY;
+      this.player.velocityY = 0;
+      this.player.isJumping = false;
     }
-
-    // Handle firing
-    if (mouseState.left && !this.state.firing) {
-      this.state.firing = true;
-      this.fireProjectile();
-    } else if (!mouseState.left) {
-      this.state.firing = false;
-    }
-
-    // Spawn enemies
+    
+    // Handle shooting with left mouse button
     const now = Date.now();
-    if (now - this.lastEnemySpawn > this.enemySpawnInterval / this.state.upgrades.speed) {
-      this.spawnEnemy();
-      this.lastEnemySpawn = now;
+    if (input.left && now - this.lastShootTime > 500 / fireRateMultiplier) {
+      this.bullets.push({
+        x: this.player.x + this.player.width,
+        y: this.player.y + this.player.height / 2,
+        width: 10,
+        height: 5,
+        velocityX: 15 * speedMultiplier
+      });
+      this.lastShootTime = now;
     }
-
-    // Spawn obstacles
-    if (now - this.lastObstacleSpawn > this.obstacleSpawnInterval / this.state.upgrades.speed) {
-      this.spawnObstacle();
-      this.lastObstacleSpawn = now;
+    
+    // Generate new obstacles
+    if (now - this.lastObstacleTime > 2000 / (1 + this.gameSpeed / 20)) {
+      const obstacleHeight = 30 + Math.random() * 50;
+      this.obstacles.push({
+        x: this.canvas.width,
+        y: this.canvas.height - obstacleHeight - 20,
+        width: 30,
+        height: obstacleHeight,
+        hit: false
+      });
+      this.lastObstacleTime = now;
     }
-
-    // Update enemies
-    this.state.enemies.forEach((enemy, index) => {
-      enemy.x -= enemy.speed * delta * this.baseSpeed;
-      
-      // Enemy shooting
-      if (now - enemy.lastShot > enemy.shotInterval) {
-        this.enemyFire(enemy);
-        enemy.lastShot = now;
+    
+    // Generate new enemies
+    if (now - this.lastEnemyTime > 3000 / (1 + this.gameSpeed / 30)) {
+      this.enemies.push({
+        x: this.canvas.width,
+        y: 50 + Math.random() * (this.canvas.height - 150),
+        width: 40,
+        height: 40,
+        health: 2,
+        hit: false
+      });
+      this.lastEnemyTime = now;
+    }
+    
+    // Enemy shooting
+    if (now - this.lastEnemyShootTime > 2000 / (1 + this.gameSpeed / 40)) {
+      const shootingEnemies = this.enemies.filter(e => !e.hit);
+      if (shootingEnemies.length > 0) {
+        const shooter = shootingEnemies[Math.floor(Math.random() * shootingEnemies.length)];
+        this.enemyBullets.push({
+          x: shooter.x,
+          y: shooter.y + shooter.height / 2,
+          width: 10,
+          height: 5,
+          velocityX: -8
+        });
+        this.lastEnemyShootTime = now;
       }
-      
-      // Remove enemies that leave the screen
-      if (enemy.x < -enemy.width) {
-        this.state.enemies.splice(index, 1);
-      }
-    });
-
+    }
+    
     // Update obstacles
-    this.state.obstacles.forEach((obstacle, index) => {
-      obstacle.x -= this.baseSpeed * delta * this.state.upgrades.speed;
+    for (let i = this.obstacles.length - 1; i >= 0; i--) {
+      const obstacle = this.obstacles[i];
       
-      // Remove obstacles that leave the screen
-      if (obstacle.x < -obstacle.width) {
-        this.state.obstacles.splice(index, 1);
-      }
-    });
-
-    // Update projectiles
-    this.state.projectiles.forEach((projectile, index) => {
-      if (projectile.fromPlayer) {
-        projectile.x += projectile.speed * delta;
-      } else {
-        projectile.x -= projectile.speed * delta;
+      // Move obstacle
+      obstacle.x -= this.gameSpeed * speedMultiplier * delta;
+      
+      // Remove if off screen
+      if (obstacle.x + obstacle.width < 0) {
+        this.obstacles.splice(i, 1);
+        this.score += 10;
+        this.thcEarned += 0.001;
       }
       
-      // Remove projectiles that leave the screen
-      if (projectile.x < 0 || projectile.x > this.canvas.width) {
-        this.state.projectiles.splice(index, 1);
+      // Check collision with player
+      if (!obstacle.hit && 
+          this.player.x < obstacle.x + obstacle.width &&
+          this.player.x + this.player.width > obstacle.x &&
+          this.player.y < obstacle.y + obstacle.height &&
+          this.player.y + this.player.height > obstacle.y) {
+        
+        // Apply damage
+        this.health -= 10 / healthMultiplier;
+        
+        // Mark as hit to prevent multiple collisions
+        if (this.collisionBehavior === 'immediate') {
+          this.obstacles.splice(i, 1);
+        } else {
+          obstacle.hit = true;
+        }
+        
+        if (this.health <= 0) {
+          this.lives -= 1;
+          if (this.lives <= 0) {
+            this.gameOver = true;
+          } else {
+            this.health = 100;
+          }
+        }
       }
-    });
-
-    // Update effects
-    this.state.effects.forEach((effect, index) => {
-      effect.elapsed += delta;
-      if (effect.elapsed >= effect.duration) {
-        this.state.effects.splice(index, 1);
-      }
-    });
-
-    // Check collisions
-    this.checkCollisions();
-
-    // Increment score
-    this.state.score += 0.1 * delta;
+    }
     
-    // Award THC every 100 points
-    if (Math.floor((this.state.score - 0.1 * delta) / 100) < Math.floor(this.state.score / 100)) {
-      this.state.thcEarned += 0.01;
+    // Update enemies
+    for (let i = this.enemies.length - 1; i >= 0; i--) {
+      const enemy = this.enemies[i];
+      
+      // Move enemy
+      enemy.x -= (this.gameSpeed - 2) * delta;
+      
+      // Remove if off screen
+      if (enemy.x + enemy.width < 0) {
+        this.enemies.splice(i, 1);
+      }
+      
+      // Check collision with player
+      if (!enemy.hit && 
+          this.player.x < enemy.x + enemy.width &&
+          this.player.x + this.player.width > enemy.x &&
+          this.player.y < enemy.y + enemy.height &&
+          this.player.y + this.player.height > enemy.y) {
+        
+        // Apply damage
+        this.health -= 15 / healthMultiplier;
+        
+        // Mark as hit to prevent multiple collisions
+        if (this.collisionBehavior === 'immediate') {
+          this.enemies.splice(i, 1);
+        } else {
+          enemy.hit = true;
+        }
+        
+        if (this.health <= 0) {
+          this.lives -= 1;
+          if (this.lives <= 0) {
+            this.gameOver = true;
+          } else {
+            this.health = 100;
+          }
+        }
+      }
+      
+      // Check collision with bullets
+      for (let j = this.bullets.length - 1; j >= 0; j--) {
+        const bullet = this.bullets[j];
+        if (bullet.x < enemy.x + enemy.width &&
+            bullet.x + bullet.width > enemy.x &&
+            bullet.y < enemy.y + enemy.height &&
+            bullet.y + bullet.height > enemy.y) {
+          
+          // Remove bullet
+          this.bullets.splice(j, 1);
+          
+          // Damage enemy
+          enemy.health--;
+          
+          // If enemy is dead, remove it
+          if (enemy.health <= 0) {
+            if (this.collisionBehavior === 'immediate') {
+              this.enemies.splice(i, 1);
+            } else {
+              enemy.hit = true;
+            }
+            this.score += 50;
+            this.thcEarned += 0.01;
+          }
+          
+          break;
+        }
+      }
     }
-
-    // Check game over
-    if (this.state.lives <= 0 || this.state.health <= 0) {
-      this.state.gameOver = true;
+    
+    // Update bullets
+    for (let i = this.bullets.length - 1; i >= 0; i--) {
+      const bullet = this.bullets[i];
+      bullet.x += bullet.velocityX * delta;
+      
+      // Remove if off screen
+      if (bullet.x > this.canvas.width) {
+        this.bullets.splice(i, 1);
+      }
     }
-
-    return { ...this.state };
+    
+    // Update enemy bullets
+    for (let i = this.enemyBullets.length - 1; i >= 0; i--) {
+      const bullet = this.enemyBullets[i];
+      bullet.x += bullet.velocityX * delta;
+      
+      // Remove if off screen
+      if (bullet.x + bullet.width < 0) {
+        this.enemyBullets.splice(i, 1);
+      }
+      
+      // Check collision with player
+      if (bullet.x < this.player.x + this.player.width &&
+          bullet.x + bullet.width > this.player.x &&
+          bullet.y < this.player.y + this.player.height &&
+          bullet.y + bullet.height > this.player.y) {
+        
+        // Remove bullet
+        this.enemyBullets.splice(i, 1);
+        
+        // Apply damage
+        this.health -= 5 / healthMultiplier;
+        if (this.health <= 0) {
+          this.lives -= 1;
+          if (this.lives <= 0) {
+            this.gameOver = true;
+          } else {
+            this.health = 100;
+          }
+        }
+      }
+    }
+    
+    // Increment score for surviving
+    this.score += Math.ceil(delta);
+    
+    // Increase THC earned based on score/time
+    if (!this.gameOver) {
+      this.thcEarned += 0.0001 * delta;
+    }
+    
+    return this.getGameState();
   }
-
-  public render(): void {
-    if (!this.canvas || !this.ctx) return;
+  
+  render() {
+    if (!this.canvas || !this.context) return;
     
-    const ctx = this.ctx;
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    const ctx = this.context;
+    const width = this.canvas.width;
+    const height = this.canvas.height;
     
-    // Draw background
-    ctx.fillStyle = '#008080';
-    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    // Clear canvas
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, width, height);
     
-    // Draw ground
-    ctx.fillStyle = '#8B4513';
-    ctx.fillRect(0, this.canvas.height - this.groundHeight, this.canvas.width, this.groundHeight);
-    ctx.fillStyle = '#32CD32';
-    ctx.fillRect(0, this.canvas.height - this.groundHeight, this.canvas.width, 5);
+    // Draw background grid
+    ctx.strokeStyle = '#222222';
+    ctx.lineWidth = 1;
+    const gridSize = 50;
+    for (let x = 0; x < width; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+    for (let y = 0; y < height; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+    
+    // Draw floor
+    ctx.fillStyle = '#444444';
+    ctx.fillRect(0, height - 20, width, 20);
+    
+    // Draw player
+    ctx.fillStyle = '#00FF00';
+    ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
     
     // Draw obstacles
-    this.state.obstacles.forEach(obstacle => {
-      switch (obstacle.type) {
-        case 'rock':
-          ctx.fillStyle = '#777777';
-          ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-          break;
-        case 'pit':
-          ctx.fillStyle = '#000000';
-          ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-          break;
-        case 'spikes':
-          ctx.fillStyle = '#696969';
-          const spikeWidth = 10;
-          const spikes = Math.floor(obstacle.width / spikeWidth);
-          for (let i = 0; i < spikes; i++) {
-            ctx.beginPath();
-            ctx.moveTo(obstacle.x + (i * spikeWidth), obstacle.y + obstacle.height);
-            ctx.lineTo(obstacle.x + (i * spikeWidth) + (spikeWidth / 2), obstacle.y);
-            ctx.lineTo(obstacle.x + (i * spikeWidth) + spikeWidth, obstacle.y + obstacle.height);
-            ctx.closePath();
-            ctx.fill();
-          }
-          break;
+    ctx.fillStyle = '#FF0000';
+    this.obstacles.forEach(obstacle => {
+      if (!obstacle.hit) {
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
       }
     });
     
     // Draw enemies
-    this.state.enemies.forEach(enemy => {
-      switch (enemy.type) {
-        case 'lizard':
-          ctx.fillStyle = '#008000';
-          break;
-        case 'reptilian':
-          ctx.fillStyle = '#006400';
-          break;
-        case 'snake':
-          ctx.fillStyle = '#800080';
-          break;
-      }
-      ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-    });
-    
-    // Draw projectiles
-    this.state.projectiles.forEach(projectile => {
-      if (projectile.fromPlayer) {
-        ctx.fillStyle = '#FFA500';
-        ctx.beginPath();
-        ctx.moveTo(projectile.x, projectile.y);
-        ctx.lineTo(projectile.x + projectile.width, projectile.y + projectile.height / 2);
-        ctx.lineTo(projectile.x, projectile.y + projectile.height);
-        ctx.closePath();
-        ctx.fill();
-      } else {
-        ctx.fillStyle = '#00FF00';
-        ctx.fillRect(projectile.x, projectile.y, projectile.width, projectile.height);
+    ctx.fillStyle = '#FF00FF';
+    this.enemies.forEach(enemy => {
+      if (!enemy.hit) {
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
       }
     });
     
-    // Draw effects
-    this.state.effects.forEach(effect => {
-      switch (effect.type) {
-        case 'explosion':
-          ctx.fillStyle = 'rgba(255, 0, 0, ' + (1 - effect.elapsed / effect.duration) + ')';
-          ctx.beginPath();
-          ctx.arc(effect.x, effect.y, 20 * (effect.elapsed / effect.duration), 0, Math.PI * 2);
-          ctx.fill();
-          break;
-        case 'hit':
-          ctx.fillStyle = 'rgba(255, 255, 0, ' + (1 - effect.elapsed / effect.duration) + ')';
-          ctx.beginPath();
-          ctx.arc(effect.x, effect.y, 10, 0, Math.PI * 2);
-          ctx.fill();
-          break;
-      }
+    // Draw player bullets
+    ctx.fillStyle = '#FFFF00';
+    this.bullets.forEach(bullet => {
+      ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
     });
     
-    // Draw player
-    ctx.fillStyle = '#FF69B4';
-    ctx.fillRect(
-      this.state.position.x,
-      this.state.position.y,
-      this.playerWidth,
-      this.playerHeight
-    );
+    // Draw enemy bullets
+    ctx.fillStyle = '#FF6600';
+    this.enemyBullets.forEach(bullet => {
+      ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+    });
     
-    // Draw HUD
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '16px "Press Start 2P", monospace';
-    ctx.fillText(`Score: ${Math.floor(this.state.score)}`, 20, 30);
-    ctx.fillText(`Health: ${this.state.health}%`, 20, 60);
-    ctx.fillText(`Lives: ${this.state.lives}`, 20, 90);
-    ctx.fillText(`$THC: ${this.state.thcEarned.toFixed(2)}`, 20, 120);
-    
-    if (this.state.gameOver) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-      
+    // Draw Game Over text
+    if (this.gameOver) {
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = '30px "Press Start 2P", monospace';
+      ctx.font = '48px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('GAME OVER', this.canvas.width / 2, this.canvas.height / 2 - 30);
+      ctx.fillText('GAME OVER', width / 2, height / 2);
       
-      ctx.font = '16px "Press Start 2P", monospace';
-      ctx.fillText(`Final Score: ${Math.floor(this.state.score)}`, this.canvas.width / 2, this.canvas.height / 2 + 10);
-      ctx.fillText(`$THC Earned: ${this.state.thcEarned.toFixed(2)}`, this.canvas.width / 2, this.canvas.height / 2 + 40);
-      
-      ctx.textAlign = 'start';
+      ctx.font = '24px Arial';
+      ctx.fillText(`Score: ${this.score}`, width / 2, height / 2 + 40);
+      ctx.fillText(`THC Earned: ${this.thcEarned.toFixed(2)}`, width / 2, height / 2 + 70);
     }
   }
-
-  private fireProjectile(): void {
-    const projectile: Projectile = {
-      id: `proj-${Date.now()}-${Math.random()}`,
-      fromPlayer: true,
-      x: this.state.position.x + this.playerWidth,
-      y: this.state.position.y + this.playerHeight / 2,
-      width: 16,
-      height: 6,
-      speed: 10 * this.state.upgrades.fireRate,
-      damage: 1
+  
+  getGameState() {
+    return {
+      score: this.score,
+      lives: this.lives,
+      health: this.health,
+      thcEarned: this.thcEarned,
+      gameOver: this.gameOver
     };
-    
-    this.state.projectiles.push(projectile);
-  }
-
-  private enemyFire(enemy: Enemy): void {
-    const projectile: Projectile = {
-      id: `enemy-proj-${Date.now()}-${Math.random()}`,
-      fromPlayer: false,
-      x: enemy.x,
-      y: enemy.y + enemy.height / 2,
-      width: 12,
-      height: 4,
-      speed: 6,
-      damage: 10
-    };
-    
-    this.state.projectiles.push(projectile);
-  }
-
-  private spawnEnemy(): void {
-    const enemyTypes = ['lizard', 'reptilian', 'snake'] as const;
-    const type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
-    
-    const enemy: Enemy = {
-      id: `enemy-${Date.now()}`,
-      type,
-      x: this.canvas?.width || 800,
-      y: (this.canvas?.height || 400) - this.groundHeight - 48,
-      width: 32,
-      height: 48,
-      health: type === 'snake' ? 1 : type === 'reptilian' ? 3 : 2,
-      speed: 1 + Math.random(),
-      lastShot: 0,
-      shotInterval: 2000 + Math.random() * 3000
-    };
-    
-    this.state.enemies.push(enemy);
-  }
-
-  private spawnObstacle(): void {
-    if (!this.canvas) return;
-    
-    const obstacleTypes = ['rock', 'pit', 'spikes'] as const;
-    const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
-    let width, height, y;
-    
-    switch (type) {
-      case 'rock':
-        width = 30 + Math.random() * 20;
-        height = 20 + Math.random() * 30;
-        y = this.canvas.height - this.groundHeight - height;
-        break;
-      case 'pit':
-        width = 60 + Math.random() * 40;
-        height = this.groundHeight;
-        y = this.canvas.height - height;
-        break;
-      case 'spikes':
-        width = 50 + Math.random() * 50;
-        height = 30;
-        y = this.canvas.height - this.groundHeight - height;
-        break;
-      default:
-        width = 40;
-        height = 40;
-        y = this.canvas.height - this.groundHeight - height;
-    }
-    
-    const obstacle: Obstacle = {
-      id: `obs-${Date.now()}`,
-      type,
-      x: this.canvas.width,
-      y,
-      width,
-      height
-    };
-    
-    this.state.obstacles.push(obstacle);
-  }
-
-  private checkCollisions(): void {
-    if (!this.canvas) return;
-    
-    // Player vs Enemies
-    this.state.enemies.forEach((enemy, enemyIndex) => {
-      if (this.isColliding(
-        this.state.position.x, this.state.position.y, this.playerWidth, this.playerHeight,
-        enemy.x, enemy.y, enemy.width, enemy.height
-      )) {
-        // Player hit enemy
-        this.state.health -= 20 / this.state.upgrades.health;
-        this.state.enemies.splice(enemyIndex, 1);
-        
-        this.state.effects.push({
-          id: `effect-${Date.now()}`,
-          type: 'hit',
-          x: enemy.x,
-          y: enemy.y,
-          duration: 500,
-          elapsed: 0
-        });
-      }
-    });
-    
-    // Player vs Obstacles
-    this.state.obstacles.forEach((obstacle, obstacleIndex) => {
-      if (this.isColliding(
-        this.state.position.x, this.state.position.y, this.playerWidth, this.playerHeight,
-        obstacle.x, obstacle.y, obstacle.width, obstacle.height
-      )) {
-        // Player hit obstacle
-        if (obstacle.type === 'pit') {
-          // Instant death for pits
-          this.state.lives -= 1;
-          this.state.obstacles.splice(obstacleIndex, 1);
-          // Reset player position
-          this.state.position.y = this.canvas.height - this.groundHeight - this.playerHeight;
-        } else {
-          this.state.health -= 15 / this.state.upgrades.health;
-          this.state.obstacles.splice(obstacleIndex, 1);
-        }
-        
-        this.state.effects.push({
-          id: `effect-${Date.now()}`,
-          type: 'hit',
-          x: obstacle.x,
-          y: obstacle.y,
-          duration: 500,
-          elapsed: 0
-        });
-      }
-    });
-    
-    // Player Projectiles vs Enemies
-    this.state.projectiles.forEach((projectile, projectileIndex) => {
-      if (projectile.fromPlayer) {
-        this.state.enemies.forEach((enemy, enemyIndex) => {
-          if (this.isColliding(
-            projectile.x, projectile.y, projectile.width, projectile.height,
-            enemy.x, enemy.y, enemy.width, enemy.height
-          )) {
-            // Projectile hit enemy
-            enemy.health -= projectile.damage;
-            this.state.projectiles.splice(projectileIndex, 1);
-            
-            if (enemy.health <= 0) {
-              // Enemy died
-              this.state.score += 25;
-              this.state.thcEarned += 0.005;
-              this.state.enemies.splice(enemyIndex, 1);
-              
-              this.state.effects.push({
-                id: `effect-${Date.now()}`,
-                type: 'explosion',
-                x: enemy.x + enemy.width / 2,
-                y: enemy.y + enemy.height / 2,
-                duration: 800,
-                elapsed: 0
-              });
-            } else {
-              this.state.effects.push({
-                id: `effect-${Date.now()}`,
-                type: 'hit',
-                x: projectile.x,
-                y: projectile.y,
-                duration: 300,
-                elapsed: 0
-              });
-            }
-          }
-        });
-      } else {
-        // Enemy projectiles vs Player
-        if (this.isColliding(
-          projectile.x, projectile.y, projectile.width, projectile.height,
-          this.state.position.x, this.state.position.y, this.playerWidth, this.playerHeight
-        )) {
-          // Enemy projectile hit player
-          this.state.health -= projectile.damage / this.state.upgrades.health;
-          this.state.projectiles.splice(projectileIndex, 1);
-          
-          this.state.effects.push({
-            id: `effect-${Date.now()}`,
-            type: 'hit',
-            x: projectile.x,
-            y: projectile.y,
-            duration: 300,
-            elapsed: 0
-          });
-        }
-      }
-    });
-    
-    // Check if player has no health left
-    if (this.state.health <= 0) {
-      this.state.health = 0;
-      this.state.lives -= 1;
-      
-      if (this.state.lives > 0) {
-        // Reset for next life
-        this.state.health = 100;
-        this.state.position.y = this.canvas.height - this.groundHeight - this.playerHeight;
-      }
-    }
-  }
-
-  private isColliding(
-    x1: number, y1: number, width1: number, height1: number,
-    x2: number, y2: number, width2: number, height2: number
-  ): boolean {
-    return (
-      x1 < x2 + width2 &&
-      x1 + width1 > x2 &&
-      y1 < y2 + height2 &&
-      y1 + height1 > y2
-    );
   }
 }
+
+export default ReptilianAttackEngine;
