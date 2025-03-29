@@ -41,6 +41,7 @@ interface Plant {
   totalGrowthTime: number;
   isGrowing: boolean;
   quality: number;
+  lastUpdateTime?: number;
 }
 
 // Equipment interface
@@ -61,6 +62,15 @@ interface Equipment {
     };
     cost: number;
   };
+}
+
+// Game state interface for persistence
+interface GameState {
+  thcAmount: number;
+  plants: Plant[];
+  equipment: Record<EquipmentType, Equipment>;
+  plantCapacity: number;
+  lastSaved: number;
 }
 
 // Initial equipment setup with costs reduced by 100x
@@ -141,6 +151,116 @@ const GrowRoom: React.FC = () => {
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const { toast } = useToast();
   
+  // Load game state from localStorage on component mount
+  useEffect(() => {
+    const loadGameState = () => {
+      if (!address) return;
+      
+      const savedState = localStorage.getItem(`growroom-${address}`);
+      if (!savedState) return;
+      
+      try {
+        const parsedState: GameState = JSON.parse(savedState);
+        
+        // Update plants with correct progress based on time passed
+        const updatedPlants = parsedState.plants.map(plant => {
+          if (!plant.isGrowing || plant.stage === GrowthStage.Harvest) return plant;
+          
+          // Calculate progress based on time passed since last save
+          const { speedMultiplier } = calculateMultipliers(parsedState.equipment);
+          const now = Date.now();
+          const timePassed = now - (plant.lastUpdateTime || parsedState.lastSaved);
+          const progressIncrement = (timePassed / 1000) * speedMultiplier;
+          
+          let newProgress = plant.progress + progressIncrement;
+          let newStage = plant.stage;
+          
+          // Check if plant moved to next stage
+          if (newProgress >= 100) {
+            newProgress = 0;
+            
+            switch (plant.stage) {
+              case GrowthStage.Seed:
+                newStage = GrowthStage.Sprout;
+                break;
+              case GrowthStage.Sprout:
+                newStage = GrowthStage.Vegetative;
+                break;
+              case GrowthStage.Vegetative:
+                newStage = GrowthStage.Flowering;
+                break;
+              case GrowthStage.Flowering:
+                newStage = GrowthStage.Harvest;
+                newProgress = 100;
+                break;
+            }
+          }
+          
+          return {
+            ...plant,
+            progress: newProgress,
+            stage: newStage,
+            lastUpdateTime: now,
+            isGrowing: newStage !== GrowthStage.Harvest,
+          };
+        });
+        
+        setPlants(updatedPlants);
+        setEquipment(parsedState.equipment);
+        setPlantCapacity(parsedState.plantCapacity);
+        
+        // Only update thcAmount from localStorage if wallet balance is not available
+        if (!thcBalance) {
+          setThcAmount(parsedState.thcAmount);
+        }
+        
+        toast({
+          title: "Game Loaded",
+          description: "Your grow room progress has been loaded!",
+        });
+      } catch (error) {
+        console.error('Error loading game state:', error);
+        toast({
+          title: "Load Error",
+          description: "Failed to load your saved game. Starting fresh.",
+          variant: "destructive",
+        });
+      }
+    };
+    
+    loadGameState();
+  }, [address, toast]);
+  
+  // Save game state to localStorage whenever important state changes
+  useEffect(() => {
+    if (!address) return;
+    
+    const saveGameState = () => {
+      const updatedPlants = plants.map(plant => ({
+        ...plant,
+        lastUpdateTime: Date.now()
+      }));
+      
+      const gameState: GameState = {
+        thcAmount,
+        plants: updatedPlants,
+        equipment,
+        plantCapacity,
+        lastSaved: Date.now()
+      };
+      
+      localStorage.setItem(`growroom-${address}`, JSON.stringify(gameState));
+      console.log('Game state saved:', gameState);
+    };
+    
+    saveGameState();
+    
+    // Set up auto-save interval
+    const saveInterval = setInterval(saveGameState, 15000); // Save every 15 seconds
+    
+    return () => clearInterval(saveInterval);
+  }, [thcAmount, plants, equipment, plantCapacity, address]);
+
   // Update local THC amount from wallet if available
   useEffect(() => {
     if (thcBalance) {
@@ -152,11 +272,11 @@ const GrowRoom: React.FC = () => {
   }, [thcBalance]);
 
   // Calculate total speed and quality multipliers from equipment
-  const calculateMultipliers = () => {
+  const calculateMultipliers = (equipmentState = equipment) => {
     let speedMultiplier = 1;
     let qualityMultiplier = 1;
 
-    Object.values(equipment).forEach(item => {
+    Object.values(equipmentState).forEach(item => {
       speedMultiplier *= item.effect.speedBoost;
       qualityMultiplier *= item.effect.qualityBoost;
     });
@@ -168,6 +288,8 @@ const GrowRoom: React.FC = () => {
   useEffect(() => {
     const { speedMultiplier } = calculateMultipliers();
     const growthInterval = setInterval(() => {
+      const now = Date.now();
+      
       setPlants(prevPlants => 
         prevPlants.map(plant => {
           if (!plant.isGrowing) return plant;
@@ -183,28 +305,32 @@ const GrowRoom: React.FC = () => {
                   ...plant,
                   stage: GrowthStage.Sprout,
                   progress: 0,
-                  totalGrowthTime: 30000 / speedMultiplier // 30 seconds for sprout stage
+                  totalGrowthTime: 30000 / speedMultiplier, // 30 seconds for sprout stage
+                  lastUpdateTime: now
                 };
               case GrowthStage.Sprout:
                 return {
                   ...plant,
                   stage: GrowthStage.Vegetative,
                   progress: 0,
-                  totalGrowthTime: 45000 / speedMultiplier // 45 seconds for vegetative stage
+                  totalGrowthTime: 45000 / speedMultiplier, // 45 seconds for vegetative stage
+                  lastUpdateTime: now
                 };
               case GrowthStage.Vegetative:
                 return {
                   ...plant,
                   stage: GrowthStage.Flowering,
                   progress: 0,
-                  totalGrowthTime: 60000 / speedMultiplier // 60 seconds for flowering stage
+                  totalGrowthTime: 60000 / speedMultiplier, // 60 seconds for flowering stage
+                  lastUpdateTime: now
                 };
               case GrowthStage.Flowering:
                 return {
                   ...plant,
                   stage: GrowthStage.Harvest,
                   progress: 100,
-                  isGrowing: false
+                  isGrowing: false,
+                  lastUpdateTime: now
                 };
               default:
                 return plant;
@@ -213,7 +339,8 @@ const GrowRoom: React.FC = () => {
           
           return {
             ...plant,
-            progress: newProgress
+            progress: newProgress,
+            lastUpdateTime: now
           };
         })
       );
@@ -301,7 +428,8 @@ const GrowRoom: React.FC = () => {
       progress: 0,
       totalGrowthTime: 15000 / speedMultiplier, // 15 seconds for seed stage
       isGrowing: true,
-      quality: 1
+      quality: 1,
+      lastUpdateTime: Date.now()
     };
 
     setPlants([...plants, newPlant]);
