@@ -30,7 +30,6 @@ const Game: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [windowIsMaximized, setWindowIsMaximized] = useState(false);
-  const [showInstructions, setShowInstructions] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameContainerRef = useRef<HTMLDivElement>(null);
@@ -271,16 +270,13 @@ const Game: React.FC = () => {
     }
   };
 
-  const toggleInstructions = () => {
-    setShowInstructions(!showInstructions);
-  };
-
   return (
-    <div className="win95-window w-full h-full overflow-hidden">
+    <div className="win95-window w-full h-full overflow-hidden flex flex-col">
       <div className="win95-title-bar px-2 py-1 flex justify-between items-center">
         <div className="text-white">Reptilian Attack</div>
       </div>
-      <div className="p-2 bg-[#c0c0c0] flex flex-col items-center h-full">
+      
+      <div className="p-2 bg-[#c0c0c0] flex flex-col h-full">
         <div className="w-full mb-2 win95-panel p-2 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="win95-inset px-3 py-1 flex items-center">
@@ -338,92 +334,68 @@ const Game: React.FC = () => {
           </div>
         </div>
 
-        <div className="win95-inset p-1 w-full flex-grow h-[calc(100%-120px)]" ref={gameContainerRef}>
+        <div className="win95-inset p-1 w-full flex-grow" ref={gameContainerRef}>
           <canvas
             ref={canvasRef}
             className="w-full h-full object-contain"
           />
         </div>
         
-        <div className="win95-panel p-2 w-full mt-2 flex justify-center">
-          <div className="flex gap-4 items-center">
-            <h3 className="font-bold text-black">Upgrades:</h3>
+        <div className="win95-panel p-1 w-full mt-2">
+          <div className="flex justify-center gap-2 items-center">
+            <span className="font-bold text-black text-sm mr-1">Upgrades:</span>
             
-            <div className="win95-inset p-2 flex flex-col items-center w-48">
-              <div className="flex items-center mb-2">
-                <Zap size={18} className="mr-2 text-yellow-500" />
-                <span className="font-bold text-black">Speed</span>
+            <div className="win95-inset p-1 flex flex-row items-center gap-2 w-full">
+              <div className="flex flex-1 items-center gap-1">
+                <Zap size={16} className="text-yellow-500 shrink-0" />
+                <div className="flex-1">
+                  <div className="w-full h-3 win95-inset overflow-hidden">
+                    <div 
+                      className="h-full bg-yellow-500"
+                      style={{ width: `${(gameState.upgrades.speed - 1) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+                <span className="text-xs text-black whitespace-nowrap">Speed: x{gameState.upgrades.speed.toFixed(2)}</span>
+                <Button onClick={() => handleUpgrade('speed')} className="win95-button text-xs py-0 h-6 whitespace-nowrap">
+                  + (0.5 $THC)
+                </Button>
               </div>
-              <div className="w-full h-4 win95-inset mb-2 overflow-hidden">
-                <div 
-                  className="h-full bg-yellow-500"
-                  style={{ width: `${(gameState.upgrades.speed - 1) * 100}%` }}
-                ></div>
+              
+              <div className="flex flex-1 items-center gap-1">
+                <Shield size={16} className="text-blue-500 shrink-0" />
+                <div className="flex-1">
+                  <div className="w-full h-3 win95-inset overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-500"
+                      style={{ width: `${(gameState.upgrades.fireRate - 1) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+                <span className="text-xs text-black whitespace-nowrap">Fire: x{gameState.upgrades.fireRate.toFixed(2)}</span>
+                <Button onClick={() => handleUpgrade('fireRate')} className="win95-button text-xs py-0 h-6 whitespace-nowrap">
+                  + (0.5 $THC)
+                </Button>
               </div>
-              <div className="text-xs mb-2 text-black">Current: x{gameState.upgrades.speed.toFixed(2)}</div>
-              <Button onClick={() => handleUpgrade('speed')} className="win95-button text-xs">
-                Upgrade (0.5 $THC)
-              </Button>
-            </div>
-            
-            <div className="win95-inset p-2 flex flex-col items-center w-48">
-              <div className="flex items-center mb-2">
-                <Shield size={18} className="mr-2 text-blue-500" />
-                <span className="font-bold text-black">Fire Rate</span>
+              
+              <div className="flex flex-1 items-center gap-1">
+                <Heart size={16} className="text-red-500 shrink-0" />
+                <div className="flex-1">
+                  <div className="w-full h-3 win95-inset overflow-hidden">
+                    <div 
+                      className="h-full bg-red-500"
+                      style={{ width: `${(gameState.upgrades.health - 1) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+                <span className="text-xs text-black whitespace-nowrap">Health: x{gameState.upgrades.health.toFixed(2)}</span>
+                <Button onClick={() => handleUpgrade('health')} className="win95-button text-xs py-0 h-6 whitespace-nowrap">
+                  + (0.5 $THC)
+                </Button>
               </div>
-              <div className="w-full h-4 win95-inset mb-2 overflow-hidden">
-                <div 
-                  className="h-full bg-blue-500"
-                  style={{ width: `${(gameState.upgrades.fireRate - 1) * 100}%` }}
-                ></div>
-              </div>
-              <div className="text-xs mb-2 text-black">Current: x{gameState.upgrades.fireRate.toFixed(2)}</div>
-              <Button onClick={() => handleUpgrade('fireRate')} className="win95-button text-xs">
-                Upgrade (0.5 $THC)
-              </Button>
-            </div>
-            
-            <div className="win95-inset p-2 flex flex-col items-center w-48">
-              <div className="flex items-center mb-2">
-                <Heart size={18} className="mr-2 text-red-500" />
-                <span className="font-bold text-black">Health</span>
-              </div>
-              <div className="w-full h-4 win95-inset mb-2 overflow-hidden">
-                <div 
-                  className="h-full bg-red-500"
-                  style={{ width: `${(gameState.upgrades.health - 1) * 100}%` }}
-                ></div>
-              </div>
-              <div className="text-xs mb-2 text-black">Current: x{gameState.upgrades.health.toFixed(2)}</div>
-              <Button onClick={() => handleUpgrade('health')} className="win95-button text-xs">
-                Upgrade (0.5 $THC)
-              </Button>
             </div>
           </div>
         </div>
-        
-        {showInstructions && (
-          <div className="win95-panel p-2 w-full mt-2">
-            <h3 className="font-bold mb-2 text-black">How to Play:</h3>
-            <div className="grid grid-cols-2 text-sm gap-4">
-              <div className="flex items-center">
-                <div className="win95-button min-w-16 text-center mr-4">Left Click</div>
-                <span className="text-black">Shoot at enemies</span>
-              </div>
-              <div className="flex items-center">
-                <div className="win95-button min-w-16 text-center mr-4">Right Click</div>
-                <span className="text-black">Jump over obstacles</span>
-              </div>
-              <div className="col-span-2">
-                <ul className="list-disc list-inside space-y-1">
-                  <li className="text-black">Survive as long as possible and defeat enemies to earn $THC</li>
-                  <li className="text-black">Buy upgrades to improve your speed, fire rate, and health</li>
-                  <li className="text-black">Costs {GAME_START_COST} $THC to start a game</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
       
       <LoadingOverlay 
