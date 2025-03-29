@@ -80,12 +80,15 @@ const fetchNFTMetadata = async (
   try {
     // Get the token ID at the specified index
     const tokenId = await contract.tokenOfOwnerByIndex(owner, index);
+    console.log(`Fetching metadata for token ID ${tokenId} (index ${index})`);
     
     // Get the token URI
     const tokenURI = await contract.tokenURI(tokenId);
+    console.log(`Token URI for ${tokenId}: ${tokenURI}`);
     
     // Clean the URI - some URIs come with ipfs:// prefix or other protocols
     const cleanedURI = tokenURI.replace(/^ipfs:\/\//, 'https://ipfs.io/ipfs/');
+    console.log(`Cleaned URI: ${cleanedURI}`);
     
     // Fetch the metadata from the tokenURI
     const response = await fetch(cleanedURI);
@@ -95,10 +98,12 @@ const fetchNFTMetadata = async (
     }
     
     const metadata = await response.json();
+    console.log(`Metadata received for token ${tokenId}:`, metadata);
     
     // Clean the image URL if it's an IPFS URL
     if (metadata.image && metadata.image.startsWith('ipfs://')) {
       metadata.image = metadata.image.replace('ipfs://', 'https://ipfs.io/ipfs/');
+      console.log(`Cleaned image URL: ${metadata.image}`);
     }
     
     return {
@@ -126,6 +131,7 @@ export const fetchNFTById = async (tokenId: string): Promise<NFTMetadata | null>
     
     // Get the token URI
     const tokenURI = await contract.tokenURI(tokenId);
+    console.log(`Token URI for ID ${tokenId}: ${tokenURI}`);
     
     // Clean the URI
     const cleanedURI = tokenURI.replace(/^ipfs:\/\//, 'https://ipfs.io/ipfs/');

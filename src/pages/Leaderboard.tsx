@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { 
@@ -23,7 +24,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useWeb3 } from '@/contexts/Web3Context';
-import { Trophy, Sprout, Cannabis, Clock, TrendingUp, Users } from 'lucide-react';
+import { Trophy, Sprout, Cannabis, Clock, TrendingUp, Users, Activity, History, Award } from 'lucide-react';
 import { 
   ChartContainer, 
   ChartTooltip, 
@@ -42,23 +43,32 @@ import {
   Tooltip,
   PieChart,
   Pie,
-  Cell
+  Cell,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  AreaChart,
+  Area
 } from 'recharts';
-import { formatDistance } from 'date-fns';
+import { formatDistance, format } from 'date-fns';
 import { EquipmentType } from '@/types/growRoom';
 
 // Colors for charts
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#FF66B2', '#00E396', '#775DD0'];
 
 const Leaderboard = () => {
   const { 
     getSortedLeaderboard, 
     getCurrentPlayerStats, 
     getAggregateStats, 
-    isLoading
+    isLoading,
+    leaderboardData
   } = useLeaderboard();
   const { address } = useWeb3();
   const [sortBy, setSortBy] = useState<'totalThcProduced' | 'totalPlantsGrown' | 'fastestGrowTime' | 'highestQualityPlant'>('totalThcProduced');
+  const [timeRange, setTimeRange] = useState<'all' | 'week' | 'month'>('all');
 
   // Get leaderboard data
   const leaderboard = getSortedLeaderboard(sortBy);
@@ -109,6 +119,92 @@ const Leaderboard = () => {
     };
   });
 
+  // Prepare data for activity timeline (last 30 days)
+  const generateActivityData = () => {
+    const now = Date.now();
+    const thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000);
+    
+    // Create a map for each day
+    const activityMap: Record<string, { plants: number, thc: number, date: string }> = {};
+    
+    // Initialize all days
+    for (let i = 0; i < 30; i++) {
+      const date = now - (i * 24 * 60 * 60 * 1000);
+      const dateStr = format(date, 'MM/dd');
+      activityMap[dateStr] = { plants: 0, thc: 0, date: dateStr };
+    }
+    
+    // Fill in data from all players
+    Object.values(leaderboardData.players).forEach(player => {
+      player.plantStats.forEach(stat => {
+        if (stat.harvestTime > thirtyDaysAgo) {
+          const dateStr = format(stat.harvestTime, 'MM/dd');
+          if (activityMap[dateStr]) {
+            activityMap[dateStr].plants += 1;
+            activityMap[dateStr].thc += stat.thcProduced;
+          }
+        }
+      });
+    });
+    
+    // Convert to array and sort by date
+    return Object.values(activityMap).sort((a, b) => {
+      const [aMonth, aDay] = a.date.split('/').map(n => parseInt(n));
+      const [bMonth, bDay] = b.date.split('/').map(n => parseInt(n));
+      
+      if (aMonth !== bMonth) return aMonth - bMonth;
+      return aDay - bDay;
+    });
+  };
+  
+  const activityData = generateActivityData();
+
+  // Prepare quality vs growth time scatter data
+  const generateQualityVsTimeData = () => {
+    const data: { quality: number, growTime: number, thc: number, id: string }[] = [];
+    
+    Object.values(leaderboardData.players).forEach(player => {
+      player.plantStats.forEach((stat, idx) => {
+        if (stat.totalGrowTime > 0) {
+          data.push({
+            quality: stat.quality,
+            growTime: stat.totalGrowTime / 60000, // Convert to minutes
+            thc: stat.thcProduced,
+            id: `${player.walletAddress.substring(0, 6)}-${idx}`
+          });
+        }
+      });
+    });
+    
+    return data;
+  };
+  
+  const qualityVsTimeData = generateQualityVsTimeData();
+
+  // Prepare radar chart data for equipment comparisons
+  const generateEquipmentComparisonData = () => {
+    // Get top 3 players
+    const topPlayers = getSortedLeaderboard('totalThcProduced').slice(0, 3);
+    
+    // Create radar chart data for each equipment type
+    return Object.values(EquipmentType).map(type => {
+      const dataPoint: any = { type };
+      
+      topPlayers.forEach(player => {
+        const shortAddr = shortenAddress(player.walletAddress);
+        dataPoint[shortAddr] = player.equipment[type].level;
+      });
+      
+      if (currentPlayer && !topPlayers.some(p => p.walletAddress === currentPlayer.walletAddress)) {
+        dataPoint['You'] = currentPlayer.equipment[type].level;
+      }
+      
+      return dataPoint;
+    });
+  };
+  
+  const equipmentComparisonData = generateEquipmentComparisonData();
+
   // Helper to format growth time
   const formatGrowTime = (ms: number) => {
     if (ms === 0) return 'N/A';
@@ -128,6 +224,14 @@ const Leaderboard = () => {
   // Helper to shorten wallet address
   const shortenAddress = (address: string) => {
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  };
+
+  // Format value for tooltips
+  const formatTooltipValue = (value: any, name: string, props: any) => {
+    if (typeof value === 'number') {
+      return [value.toFixed(1), name];
+    }
+    return [value, name];
   };
 
   return (
@@ -171,9 +275,10 @@ const Leaderboard = () => {
 
           {/* Tabs for Different Views */}
           <Tabs defaultValue="leaderboard" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="personal">Personal Stats</TabsTrigger>
             </TabsList>
 
             {/* Leaderboard Tab */}
@@ -207,7 +312,7 @@ const Leaderboard = () => {
               </div>
 
               {/* Leaderboard Table */}
-              <div className="border rounded-md">
+              <div className="border rounded-md overflow-hidden">
                 <Table>
                   <TableCaption>THC Grow Room Leaderboard</TableCaption>
                   <TableHeader>
@@ -259,52 +364,313 @@ const Leaderboard = () => {
                   </TableBody>
                 </Table>
               </div>
+              
+              {/* Top Performers Quick View */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                {/* Top THC Producers */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center">
+                      <Cannabis className="h-4 w-4 mr-1" />
+                      Top THC Producers
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div>
+                      {getSortedLeaderboard('totalThcProduced').slice(0, 3).map((player, index) => (
+                        <div key={player.walletAddress} className="flex items-center justify-between py-1 border-b last:border-0">
+                          <div className="flex items-center">
+                            <span className="w-6 text-center font-bold">{index + 1}</span>
+                            <span>{shortenAddress(player.walletAddress)}</span>
+                          </div>
+                          <span className="font-semibold">{player.totalThcProduced.toFixed(0)} THC</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {/* Top Plant Growers */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center">
+                      <Sprout className="h-4 w-4 mr-1" />
+                      Top Plant Growers
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div>
+                      {getSortedLeaderboard('totalPlantsGrown').slice(0, 3).map((player, index) => (
+                        <div key={player.walletAddress} className="flex items-center justify-between py-1 border-b last:border-0">
+                          <div className="flex items-center">
+                            <span className="w-6 text-center font-bold">{index + 1}</span>
+                            <span>{shortenAddress(player.walletAddress)}</span>
+                          </div>
+                          <span className="font-semibold">{player.totalPlantsGrown} Plants</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {/* Fastest Growers */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center">
+                      <Clock className="h-4 w-4 mr-1" />
+                      Fastest Growers
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div>
+                      {getSortedLeaderboard('fastestGrowTime').slice(0, 3).map((player, index) => (
+                        <div key={player.walletAddress} className="flex items-center justify-between py-1 border-b last:border-0">
+                          <div className="flex items-center">
+                            <span className="w-6 text-center font-bold">{index + 1}</span>
+                            <span>{shortenAddress(player.walletAddress)}</span>
+                          </div>
+                          <span className="font-semibold">{formatGrowTime(player.fastestGrowTime)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
             {/* Analytics Tab */}
             <TabsContent value="analytics" className="space-y-6">
+              {/* Time Range Filters */}
+              <div className="flex justify-end mb-2">
+                <div className="flex space-x-2">
+                  <button 
+                    className={`px-3 py-1 text-sm rounded ${timeRange === 'all' ? 'bg-purple-500 text-white' : 'bg-gray-200'}`}
+                    onClick={() => setTimeRange('all')}
+                  >
+                    All Time
+                  </button>
+                  <button 
+                    className={`px-3 py-1 text-sm rounded ${timeRange === 'month' ? 'bg-purple-500 text-white' : 'bg-gray-200'}`}
+                    onClick={() => setTimeRange('month')}
+                  >
+                    This Month
+                  </button>
+                  <button 
+                    className={`px-3 py-1 text-sm rounded ${timeRange === 'week' ? 'bg-purple-500 text-white' : 'bg-gray-200'}`}
+                    onClick={() => setTimeRange('week')}
+                  >
+                    This Week
+                  </button>
+                </div>
+              </div>
+              
+              {/* Activity Timeline */}
+              <Card className="animate-fade-in">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Activity className="h-4 w-4 mr-2" />
+                    Community Activity Timeline
+                  </CardTitle>
+                  <CardDescription>Growing activity across all players in the last 30 days</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart
+                        data={activityData}
+                        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                      >
+                        <defs>
+                          <linearGradient id="colorPlants" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+                          </linearGradient>
+                          <linearGradient id="colorTHC" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#82ca9d" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <XAxis dataKey="date" />
+                        <YAxis yAxisId="left" />
+                        <YAxis yAxisId="right" orientation="right" />
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <Tooltip formatter={formatTooltipValue} />
+                        <Legend />
+                        <Area 
+                          type="monotone" 
+                          dataKey="plants" 
+                          stroke="#8884d8" 
+                          fillOpacity={1} 
+                          fill="url(#colorPlants)" 
+                          yAxisId="left"
+                          name="Plants Harvested"
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="thc" 
+                          stroke="#82ca9d" 
+                          fillOpacity={1} 
+                          fill="url(#colorTHC)"
+                          yAxisId="right"
+                          name="THC Produced"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Top THC Producers */}
-                <Card>
+                {/* Quality vs Growth Time */}
+                <Card className="animate-fade-in">
                   <CardHeader>
                     <CardTitle className="flex items-center">
-                      <Cannabis className="h-4 w-4 mr-2" />
-                      Top THC Producers
+                      <TrendingUp className="h-4 w-4 mr-2" />
+                      Quality vs Growth Time
                     </CardTitle>
-                    <CardDescription>Players with highest THC production</CardDescription>
+                    <CardDescription>Relationship between plant quality and growth time</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="h-80">
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={topProducersData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
-                          <YAxis />
-                          <Tooltip 
-                            formatter={(value) => [`${value} THC`, 'Produced']}
+                        <ScatterChart
+                          margin={{
+                            top: 20,
+                            right: 20,
+                            bottom: 20,
+                            left: 20,
+                          }}
+                        >
+                          <CartesianGrid />
+                          <XAxis 
+                            type="number" 
+                            dataKey="growTime" 
+                            name="Growth Time" 
+                            unit="min" 
+                            label={{ value: 'Growth Time (min)', position: 'insideBottomRight', offset: -10 }}
                           />
-                          <Bar dataKey="value" fill="#8884d8" name="THC Produced" />
+                          <YAxis 
+                            type="number" 
+                            dataKey="quality" 
+                            name="Quality" 
+                            label={{ value: 'Quality', angle: -90, position: 'insideLeft' }}
+                          />
+                          <Tooltip 
+                            cursor={{ strokeDasharray: '3 3' }}
+                            formatter={formatTooltipValue}
+                            content={({ active, payload }) => {
+                              if (active && payload && payload.length) {
+                                const data = payload[0].payload;
+                                return (
+                                  <div className="bg-white border p-2 shadow-md">
+                                    <p className="font-bold">{data.id}</p>
+                                    <p>Quality: {data.quality.toFixed(1)}</p>
+                                    <p>Growth Time: {data.growTime.toFixed(1)} min</p>
+                                    <p>THC Produced: {data.thc.toFixed(1)}</p>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            }}
+                          />
+                          <Scatter 
+                            name="Plants" 
+                            data={qualityVsTimeData} 
+                            fill="#8884d8"
+                            fillOpacity={0.7}
+                          />
+                        </ScatterChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {/* Equipment Level Comparison */}
+                <Card className="animate-fade-in">
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Award className="h-4 w-4 mr-2" />
+                      Equipment Comparison
+                    </CardTitle>
+                    <CardDescription>Your equipment vs top players</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RadarChart outerRadius={90} data={equipmentComparisonData}>
+                          <PolarGrid />
+                          <PolarAngleAxis dataKey="type" />
+                          <PolarRadiusAxis angle={30} domain={[0, 5]} />
+                          <Tooltip formatter={formatTooltipValue} />
+                          <Legend />
+                          {Object.keys(equipmentComparisonData[0] || {})
+                            .filter(key => key !== 'type')
+                            .map((player, index) => (
+                              <Radar
+                                key={player}
+                                name={player}
+                                dataKey={player}
+                                stroke={COLORS[index % COLORS.length]}
+                                fill={COLORS[index % COLORS.length]}
+                                fillOpacity={0.3}
+                              />
+                            ))}
+                        </RadarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Equipment Distribution */}
+                <Card className="animate-fade-in">
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <TrendingUp className="h-4 w-4 mr-2" />
+                      Equipment Level Distribution
+                    </CardTitle>
+                    <CardDescription>Breakdown of equipment levels across all players</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={equipmentChartData}
+                          layout="vertical"
+                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis type="number" />
+                          <YAxis dataKey="name" type="category" />
+                          <Tooltip formatter={formatTooltipValue} />
+                          <Legend />
+                          <Bar dataKey="Level 1" fill="#8884d8" />
+                          <Bar dataKey="Level 2" fill="#82ca9d" />
+                          <Bar dataKey="Level 3" fill="#ffc658" />
+                          <Bar dataKey="Level 4" fill="#ff8042" />
+                          <Bar dataKey="Level 5" fill="#0088fe" />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Top Plant Growers */}
-                <Card>
+                
+                {/* Top Producers Distribution */}
+                <Card className="animate-fade-in">
                   <CardHeader>
                     <CardTitle className="flex items-center">
-                      <Sprout className="h-4 w-4 mr-2" />
-                      Top Plant Growers
+                      <Cannabis className="h-4 w-4 mr-2" />
+                      THC Production Distribution
                     </CardTitle>
-                    <CardDescription>Players who have grown the most plants</CardDescription>
+                    <CardDescription>Top 5 producers by market share</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="h-80">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
-                            data={topGrowersData}
+                            data={topProducersData}
                             cx="50%"
                             cy="50%"
                             labelLine={true}
@@ -312,163 +678,213 @@ const Leaderboard = () => {
                             outerRadius={80}
                             fill="#8884d8"
                             dataKey="value"
+                            animationDuration={1000}
+                            animationBegin={200}
                           >
-                            {topGrowersData.map((entry, index) => (
+                            {topProducersData.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                           </Pie>
-                          <Tooltip
-                            formatter={(value) => [`${value} Plants`, 'Grown']}
-                          />
+                          <Tooltip formatter={formatTooltipValue} />
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
 
-              {/* Equipment Distribution */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <TrendingUp className="h-4 w-4 mr-2" />
-                    Equipment Level Distribution
-                  </CardTitle>
-                  <CardDescription>Breakdown of equipment levels across all players</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={equipmentChartData}
-                        layout="vertical"
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" />
-                        <YAxis dataKey="name" type="category" />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="Level 1" fill="#8884d8" />
-                        <Bar dataKey="Level 2" fill="#82ca9d" />
-                        <Bar dataKey="Level 3" fill="#ffc658" />
-                        <Bar dataKey="Level 4" fill="#ff8042" />
-                        <Bar dataKey="Level 5" fill="#0088fe" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Player Stats */}
-              {currentPlayer && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Your Growing Statistics</CardTitle>
-                    <CardDescription>Personal growing performance and records</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <h3 className="font-medium mb-1">THC Production History</h3>
-                        <p className="text-sm text-gray-500 mb-2">Your last 10 harvests</p>
-                        <div className="h-60">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart
-                              data={currentPlayer.plantStats.slice(-10).map((stat, idx) => ({
-                                name: `Harvest ${idx + 1}`,
-                                thc: stat.thcProduced,
-                                quality: stat.quality
-                              }))}
-                            >
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="name" />
-                              <YAxis yAxisId="left" />
-                              <YAxis yAxisId="right" orientation="right" />
-                              <Tooltip />
-                              <Legend />
-                              <Line
-                                yAxisId="left"
-                                type="monotone"
-                                dataKey="thc"
-                                stroke="#8884d8"
-                                name="THC Produced"
-                              />
-                              <Line
-                                yAxisId="right"
-                                type="monotone"
-                                dataKey="quality"
-                                stroke="#82ca9d"
-                                name="Plant Quality"
-                              />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-medium mb-1">Growing Efficiency</h3>
-                        <p className="text-sm text-gray-500 mb-2">Growth time for your last 10 plants</p>
-                        <div className="h-60">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart
-                              data={currentPlayer.plantStats.slice(-10).map((stat, idx) => ({
-                                name: `Plant ${idx + 1}`,
-                                time: stat.totalGrowTime / 60000, // Convert to minutes
-                              }))}
-                            >
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="name" />
-                              <YAxis />
-                              <Tooltip formatter={(value: any) => [`${Number(value).toFixed(1)} minutes`, 'Growth Time']} />
-                              <Line
-                                type="monotone"
-                                dataKey="time"
-                                stroke="#ff8042"
-                                name="Growth Time (minutes)"
-                              />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Personal Records */}
-                    <div className="border rounded-md p-4">
-                      <h3 className="font-medium mb-2">Your Personal Records</h3>
+            {/* Personal Stats Tab */}
+            <TabsContent value="personal" className="space-y-6">
+              {currentPlayer ? (
+                <>
+                  {/* Player Summary */}
+                  <Card className="animate-fade-in">
+                    <CardHeader>
+                      <CardTitle>Your Growing Summary</CardTitle>
+                      <CardDescription>Personal statistics and achievements</CardDescription>
+                    </CardHeader>
+                    <CardContent>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                          <p className="text-sm text-gray-500">Total Plants</p>
-                          <p className="text-xl font-bold">{currentPlayer.totalPlantsGrown}</p>
+                        <div className="bg-gray-50 p-4 rounded-md text-center">
+                          <h3 className="text-sm text-gray-500">Total Plants</h3>
+                          <p className="text-2xl font-bold">{currentPlayer.totalPlantsGrown}</p>
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Total THC</p>
-                          <p className="text-xl font-bold">{currentPlayer.totalThcProduced.toFixed(0)}</p>
+                        <div className="bg-gray-50 p-4 rounded-md text-center">
+                          <h3 className="text-sm text-gray-500">Total THC</h3>
+                          <p className="text-2xl font-bold">{currentPlayer.totalThcProduced.toFixed(0)}</p>
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Fastest Grow</p>
-                          <p className="text-xl font-bold">{formatGrowTime(currentPlayer.fastestGrowTime)}</p>
+                        <div className="bg-gray-50 p-4 rounded-md text-center">
+                          <h3 className="text-sm text-gray-500">Fastest Grow</h3>
+                          <p className="text-2xl font-bold">{formatGrowTime(currentPlayer.fastestGrowTime)}</p>
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Highest Quality</p>
-                          <p className="text-xl font-bold">{currentPlayer.highestQualityPlant.toFixed(1)}</p>
+                        <div className="bg-gray-50 p-4 rounded-md text-center">
+                          <h3 className="text-sm text-gray-500">Highest Quality</h3>
+                          <p className="text-2xl font-bold">{currentPlayer.highestQualityPlant.toFixed(1)}</p>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {!currentPlayer && (
+                      
+                      <div className="mt-6">
+                        <h3 className="font-medium text-sm mb-2">Your Rank Position</h3>
+                        <div className="bg-gray-100 h-8 rounded-full overflow-hidden">
+                          <div 
+                            className="bg-purple-500 h-full flex items-center justify-center text-white text-xs"
+                            style={{ width: `${Math.min(100, (currentPlayerRank / aggregateStats.totalPlayers) * 100)}%` }}
+                          >
+                            {currentPlayerRank ? `#${currentPlayerRank} of ${aggregateStats.totalPlayers}` : 'Not Ranked'}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Growth History */}
+                  <Card className="animate-fade-in">
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <History className="h-4 w-4 mr-2" />
+                        Your Growth History
+                      </CardTitle>
+                      <CardDescription>
+                        Stats from your last {Math.min(10, currentPlayer.plantStats.length)} plants
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart
+                            data={currentPlayer.plantStats.slice(-10).map((stat, idx) => ({
+                              name: `Plant ${idx + 1}`,
+                              thc: stat.thcProduced,
+                              quality: stat.quality,
+                              time: stat.totalGrowTime / 60000, // Convert to minutes
+                            }))}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" />
+                            <YAxis yAxisId="left" />
+                            <YAxis yAxisId="right" orientation="right" />
+                            <YAxis yAxisId="time" orientation="right" />
+                            <Tooltip formatter={formatTooltipValue} />
+                            <Legend />
+                            <Line
+                              yAxisId="left"
+                              type="monotone"
+                              dataKey="thc"
+                              stroke="#8884d8"
+                              activeDot={{ r: 8 }}
+                              name="THC Produced"
+                              strokeWidth={2}
+                            />
+                            <Line
+                              yAxisId="right"
+                              type="monotone"
+                              dataKey="quality"
+                              stroke="#82ca9d"
+                              name="Plant Quality"
+                              strokeWidth={2}
+                            />
+                            <Line
+                              yAxisId="time"
+                              type="monotone"
+                              dataKey="time"
+                              stroke="#ffc658"
+                              name="Growth Time (min)"
+                              strokeDasharray="5 5"
+                              strokeWidth={2}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Equipment Levels */}
+                  <Card className="animate-fade-in">
+                    <CardHeader>
+                      <CardTitle>Your Equipment Levels</CardTitle>
+                      <CardDescription>Current equipment setup and levels</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {Object.entries(currentPlayer.equipment).map(([type, equipment]) => (
+                          <div key={type} className="border rounded-md p-4">
+                            <h3 className="font-medium capitalize">{type}</h3>
+                            <div className="mt-2 flex items-center">
+                              <div className="relative w-full bg-gray-200 h-4 rounded-full overflow-hidden">
+                                <div 
+                                  className="absolute h-full bg-purple-500"
+                                  style={{ width: `${(equipment.level / 5) * 100}%` }}
+                                />
+                              </div>
+                              <span className="ml-2 font-bold">{equipment.level}/5</span>
+                            </div>
+                            <p className="text-xs mt-1">
+                              Speed Boost: +{equipment.effect.speedBoost}%<br />
+                              Quality Boost: +{equipment.effect.qualityBoost}%
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Recent Harvests */}
+                  <Card className="animate-fade-in">
+                    <CardHeader>
+                      <CardTitle>Recent Harvests</CardTitle>
+                      <CardDescription>Your most recent plant harvests</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Plant #</TableHead>
+                            <TableHead>Harvest Time</TableHead>
+                            <TableHead>Growth Time</TableHead>
+                            <TableHead>Quality</TableHead>
+                            <TableHead className="text-right">THC Produced</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {currentPlayer.plantStats.slice(-5).reverse().map((stat, index) => (
+                            <TableRow key={stat.id}>
+                              <TableCell className="font-medium">{stat.id}</TableCell>
+                              <TableCell>{new Date(stat.harvestTime).toLocaleString()}</TableCell>
+                              <TableCell>{formatGrowTime(stat.totalGrowTime)}</TableCell>
+                              <TableCell>{stat.quality.toFixed(1)}</TableCell>
+                              <TableCell className="text-right">{stat.thcProduced.toFixed(1)}</TableCell>
+                            </TableRow>
+                          ))}
+                          {currentPlayer.plantStats.length === 0 && (
+                            <TableRow>
+                              <TableCell colSpan={5} className="text-center py-4">
+                                No harvest records yet. Start growing some plants!
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </>
+              ) : (
                 <Card>
                   <CardHeader>
                     <CardTitle>Your Growing Statistics</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex flex-col items-center justify-center py-6">
+                    <div className="flex flex-col items-center justify-center py-8">
                       <p className="text-center mb-4">You haven't grown any plants yet!</p>
-                      <p className="text-center text-gray-500">
+                      <p className="text-center text-gray-500 mb-6">
                         Start growing in the THC Grow Room to see your statistics here.
                       </p>
+                      <button 
+                        className="px-4 py-2 bg-purple-500 text-white rounded-md"
+                        onClick={() => window.location.href = '/growroom'}
+                      >
+                        Go to Grow Room
+                      </button>
                     </div>
                   </CardContent>
                 </Card>
