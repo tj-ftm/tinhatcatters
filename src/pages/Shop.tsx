@@ -16,9 +16,6 @@ const Shop: React.FC = () => {
         </h1>
         
         <div className="win95-panel p-4 mb-4 flex justify-between items-center">
-          <p>
-            Purchase snack NFTs to enhance your gameplay experience!
-          </p>
           {address && (
             <div className="win95-inset p-2 text-sm">
               <span className="font-bold">Your Points:</span> {getPoints(address)}

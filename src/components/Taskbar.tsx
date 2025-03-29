@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Computer, ShoppingCart, Gamepad2, Home, Wallet, Cannabis } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import WalletConnector from './WalletConnector';
 
 interface TaskbarProps {
   activeWindows: string[];
@@ -97,9 +98,14 @@ const Taskbar: React.FC<TaskbarProps> = ({
         <Clock />
       </div>
 
+      {/* Wallet Connector */}
+      <div className="ml-1">
+        <WalletConnector />
+      </div>
+
       {/* Start Menu - Now with higher z-index to ensure it's always on top */}
       {startMenuOpen && (
-        <div className="absolute left-0 bottom-11 win95-window w-56 border-2 z-[1000]">
+        <div className="fixed left-0 bottom-11 win95-window w-56 border-2 z-[9999]">
           <div className="bg-win95-blue h-full w-8 absolute left-0 top-0 bottom-0">
             <div className="flex flex-col justify-end h-full pb-2 text-white font-bold">
               <span className="transform -rotate-90 whitespace-nowrap origin-bottom-left translate-y-0 translate-x-0 absolute bottom-12">
@@ -128,7 +134,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
                   <span className="ml-auto">▶</span>
                 </div>
                 
-                <div className="hidden group-hover:block absolute left-full top-0 win95-window w-48 border-2">
+                <div className="hidden group-hover:block absolute left-full top-0 win95-window w-48 border-2 z-[9999]">
                   <div className="py-1">
                     <StartMenuItem 
                       icon={<Gamepad2 className="h-4 w-4" />} 
@@ -159,7 +165,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
               />
               <StartMenuItem 
                 icon={<Computer className="h-4 w-4" />}
-                label="File Explorer"
+                label="My Computer"
                 onClick={() => handleItemClick('/', 'computer')}
               />
               
