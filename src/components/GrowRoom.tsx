@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -11,8 +10,10 @@ import {
   Fan, 
   Sprout, 
   CircleDollarSign, 
-  Plus
+  Plus,
+  Loader2
 } from 'lucide-react';
+import { sendTransaction } from '@/lib/web3';
 
 // Plant growth stages
 enum GrowthStage {
@@ -62,7 +63,7 @@ interface Equipment {
   };
 }
 
-// Initial equipment setup
+// Initial equipment setup with costs reduced by 100x
 const initialEquipment: Record<EquipmentType, Equipment> = {
   [EquipmentType.Light]: {
     type: EquipmentType.Light,
@@ -73,7 +74,7 @@ const initialEquipment: Record<EquipmentType, Equipment> = {
     nextLevel: {
       name: 'LED Grow Light',
       effect: { speedBoost: 1.5, qualityBoost: 1.2 },
-      cost: 100
+      cost: 1 // Reduced from 100
     }
   },
   [EquipmentType.Pot]: {
@@ -85,7 +86,7 @@ const initialEquipment: Record<EquipmentType, Equipment> = {
     nextLevel: {
       name: 'Smart Pot',
       effect: { speedBoost: 1.2, qualityBoost: 1.5 },
-      cost: 150
+      cost: 1.5 // Reduced from 150
     }
   },
   [EquipmentType.Nutrients]: {
@@ -97,7 +98,7 @@ const initialEquipment: Record<EquipmentType, Equipment> = {
     nextLevel: {
       name: 'Organic Mix',
       effect: { speedBoost: 1.1, qualityBoost: 1.8 },
-      cost: 120
+      cost: 1.2 // Reduced from 120
     }
   },
   [EquipmentType.Ventilation]: {
@@ -109,7 +110,7 @@ const initialEquipment: Record<EquipmentType, Equipment> = {
     nextLevel: {
       name: 'Exhaust System',
       effect: { speedBoost: 1.6, qualityBoost: 1.1 },
-      cost: 200
+      cost: 2 // Reduced from 200
     }
   },
   [EquipmentType.Automation]: {
@@ -121,10 +122,13 @@ const initialEquipment: Record<EquipmentType, Equipment> = {
     nextLevel: {
       name: 'Auto-Waterer',
       effect: { speedBoost: 1.3, qualityBoost: 1.3 },
-      cost: 180
+      cost: 1.8 // Reduced from 180
     }
   }
 };
+
+// Wallet address to send THC to
+const RECIPIENT_ADDRESS = '0x097766e8dE97A0A53B3A31AB4dB02d0004C8cc4F';
 
 const GrowRoom: React.FC = () => {
   const { thcBalance, address } = useWeb3();
@@ -133,6 +137,8 @@ const GrowRoom: React.FC = () => {
   const [equipment, setEquipment] = useState<Record<EquipmentType, Equipment>>(initialEquipment);
   const [plantCapacity, setPlantCapacity] = useState<number>(1);
   const [showUpgradeModal, setShowUpgradeModal] = useState<EquipmentType | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
   const { toast } = useToast();
   
   // Update local THC amount from wallet if available
@@ -216,8 +222,54 @@ const GrowRoom: React.FC = () => {
     return () => clearInterval(growthInterval);
   }, [equipment]);
 
+  // Function to handle THC transaction
+  const handleTransaction = async (amount: number, actionType: string): Promise<boolean> => {
+    if (!address) {
+      toast({
+        title: "Wallet Not Connected",
+        description: "Please connect your wallet to perform this action.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    setIsLoading(true);
+    setPendingAction(actionType);
+
+    try {
+      // Send THC to the recipient address
+      const success = await sendTransaction(RECIPIENT_ADDRESS, amount.toString());
+      
+      if (success) {
+        toast({
+          title: "Transaction Successful",
+          description: `Successfully sent ${amount} THC to the game.`,
+        });
+        return true;
+      } else {
+        toast({
+          title: "Transaction Failed",
+          description: "Failed to send THC. Please try again.",
+          variant: "destructive"
+        });
+        return false;
+      }
+    } catch (error: any) {
+      console.error('Transaction error:', error);
+      toast({
+        title: "Transaction Error",
+        description: error.message || "An error occurred during the transaction.",
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+      setPendingAction(null);
+    }
+  };
+
   // Plant a new seed
-  const plantSeed = () => {
+  const plantSeed = async () => {
     if (plants.length >= plantCapacity) {
       toast({
         title: "Maximum Capacity Reached",
@@ -227,14 +279,20 @@ const GrowRoom: React.FC = () => {
       return;
     }
 
-    if (thcAmount < 10) {
+    const seedCost = 0.1; // Reduced from 10
+    
+    if (thcAmount < seedCost) {
       toast({
         title: "Not Enough $THC",
-        description: "You need 10 $THC to plant a new seed.",
+        description: `You need ${seedCost} $THC to plant a new seed.`,
         variant: "destructive"
       });
       return;
     }
+
+    // Process transaction
+    const transactionSuccess = await handleTransaction(seedCost, "Planting Seed");
+    if (!transactionSuccess) return;
 
     const { speedMultiplier } = calculateMultipliers();
     const newPlant: Plant = {
@@ -247,7 +305,7 @@ const GrowRoom: React.FC = () => {
     };
 
     setPlants([...plants, newPlant]);
-    setThcAmount(prev => prev - 10); // Seeds cost 10 $THC
+    setThcAmount(prev => prev - seedCost); // Seeds cost seedCost $THC
 
     toast({
       title: "Seed Planted!",
@@ -273,7 +331,7 @@ const GrowRoom: React.FC = () => {
   };
 
   // Upgrade equipment
-  const upgradeEquipment = (type: EquipmentType) => {
+  const upgradeEquipment = async (type: EquipmentType) => {
     const itemToUpgrade = equipment[type];
     if (!itemToUpgrade.nextLevel) return;
 
@@ -286,46 +344,53 @@ const GrowRoom: React.FC = () => {
       return;
     }
 
+    // Process transaction
+    const transactionSuccess = await handleTransaction(
+      itemToUpgrade.nextLevel.cost, 
+      `Upgrading ${itemToUpgrade.name}`
+    );
+    if (!transactionSuccess) return;
+
     setThcAmount(prev => prev - itemToUpgrade.nextLevel!.cost);
     
     // Create the next level for the advanced equipment
     let newNextLevel = null;
     if (itemToUpgrade.level === 1) {
-      // Set up the third tier
+      // Set up the third tier with costs reduced by 100x
       switch (type) {
         case EquipmentType.Light:
           newNextLevel = {
             name: 'Full-Spectrum Quantum Board',
             effect: { speedBoost: 2, qualityBoost: 1.5 },
-            cost: 350
+            cost: 3.5 // Reduced from 350
           };
           break;
         case EquipmentType.Pot:
           newNextLevel = {
             name: 'Hydroponic Tray',
             effect: { speedBoost: 1.5, qualityBoost: 2 },
-            cost: 400
+            cost: 4 // Reduced from 400
           };
           break;
         case EquipmentType.Nutrients:
           newNextLevel = {
             name: 'Premium Boost',
             effect: { speedBoost: 1.3, qualityBoost: 2.5 },
-            cost: 300
+            cost: 3 // Reduced from 300
           };
           break;
         case EquipmentType.Ventilation:
           newNextLevel = {
             name: 'Climate Control',
             effect: { speedBoost: 2.2, qualityBoost: 1.3 },
-            cost: 450
+            cost: 4.5 // Reduced from 450
           };
           break;
         case EquipmentType.Automation:
           newNextLevel = {
             name: 'Smart Irrigation',
             effect: { speedBoost: 1.8, qualityBoost: 1.7 },
-            cost: 420
+            cost: 4.2 // Reduced from 420
           };
           break;
       }
@@ -351,8 +416,8 @@ const GrowRoom: React.FC = () => {
   };
 
   // Upgrade grow room capacity
-  const upgradeCapacity = () => {
-    const cost = plantCapacity * 200;
+  const upgradeCapacity = async () => {
+    const cost = plantCapacity * 2; // Reduced from 200
     
     if (thcAmount < cost) {
       toast({
@@ -362,6 +427,10 @@ const GrowRoom: React.FC = () => {
       });
       return;
     }
+    
+    // Process transaction
+    const transactionSuccess = await handleTransaction(cost, "Expanding Grow Room");
+    if (!transactionSuccess) return;
     
     setThcAmount(prev => prev - cost);
     setPlantCapacity(prev => prev + 1);
@@ -402,6 +471,22 @@ const GrowRoom: React.FC = () => {
     }
   };
 
+  // Loading overlay component
+  const renderLoadingOverlay = () => {
+    if (!isLoading) return null;
+    
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center z-50">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg text-center max-w-md">
+          <Loader2 className="w-12 h-12 text-green-500 animate-spin mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-white mb-2">Transaction In Progress</h3>
+          <p className="text-gray-300 mb-4">{pendingAction}...</p>
+          <p className="text-sm text-gray-400">Please confirm the transaction in your wallet and wait for blockchain confirmation.</p>
+        </div>
+      </div>
+    );
+  };
+
   // Equipment upgrade modal
   const renderUpgradeModal = () => {
     if (!showUpgradeModal) return null;
@@ -439,7 +524,7 @@ const GrowRoom: React.FC = () => {
               <Button 
                 className="win95-button flex items-center"
                 onClick={() => upgradeEquipment(showUpgradeModal)}
-                disabled={thcAmount < item.nextLevel.cost}
+                disabled={thcAmount < item.nextLevel.cost || isLoading}
               >
                 <CircleDollarSign className="w-4 h-4 mr-1" />
                 Upgrade ({item.nextLevel.cost} $THC)
@@ -467,10 +552,10 @@ const GrowRoom: React.FC = () => {
           <Button 
             className="win95-button flex items-center px-2 py-1"
             onClick={plantSeed}
-            disabled={plants.length >= plantCapacity || thcAmount < 10}
+            disabled={plants.length >= plantCapacity || thcAmount < 0.1 || isLoading}
           >
             <Sprout className="w-4 h-4 mr-1" />
-            <span>Plant Seed (10 $THC)</span>
+            <span>Plant Seed (0.1 $THC)</span>
           </Button>
         </div>
       </div>
@@ -490,10 +575,10 @@ const GrowRoom: React.FC = () => {
                 <Button 
                   className="win95-button flex items-center"
                   onClick={plantSeed}
-                  disabled={thcAmount < 10}
+                  disabled={thcAmount < 0.1 || isLoading}
                 >
                   <Sprout className="w-4 h-4 mr-1" />
-                  Plant Seed (10 $THC)
+                  Plant Seed (0.1 $THC)
                 </Button>
               </div>
             ) : (
@@ -558,6 +643,7 @@ const GrowRoom: React.FC = () => {
                   <Button
                     className="win95-button px-2 py-1 text-xs"
                     onClick={() => setShowUpgradeModal(EquipmentType.Light)}
+                    disabled={isLoading}
                   >
                     Upgrade
                   </Button>
@@ -581,6 +667,7 @@ const GrowRoom: React.FC = () => {
                   <Button
                     className="win95-button px-2 py-1 text-xs"
                     onClick={() => setShowUpgradeModal(EquipmentType.Pot)}
+                    disabled={isLoading}
                   >
                     Upgrade
                   </Button>
@@ -604,6 +691,7 @@ const GrowRoom: React.FC = () => {
                   <Button
                     className="win95-button px-2 py-1 text-xs"
                     onClick={() => setShowUpgradeModal(EquipmentType.Nutrients)}
+                    disabled={isLoading}
                   >
                     Upgrade
                   </Button>
@@ -627,6 +715,7 @@ const GrowRoom: React.FC = () => {
                   <Button
                     className="win95-button px-2 py-1 text-xs"
                     onClick={() => setShowUpgradeModal(EquipmentType.Ventilation)}
+                    disabled={isLoading}
                   >
                     Upgrade
                   </Button>
@@ -650,6 +739,7 @@ const GrowRoom: React.FC = () => {
                   <Button
                     className="win95-button px-2 py-1 text-xs"
                     onClick={() => setShowUpgradeModal(EquipmentType.Automation)}
+                    disabled={isLoading}
                   >
                     Upgrade
                   </Button>
@@ -662,9 +752,10 @@ const GrowRoom: React.FC = () => {
               <Button
                 className="win95-button flex items-center justify-center w-full"
                 onClick={upgradeCapacity}
+                disabled={isLoading}
               >
                 <Plus className="w-4 h-4 mr-1" />
-                Expand Room ({plantCapacity * 200} $THC)
+                Expand Room ({plantCapacity * 2} $THC)
               </Button>
             </div>
           </div>
@@ -672,6 +763,7 @@ const GrowRoom: React.FC = () => {
       </div>
       
       {renderUpgradeModal()}
+      {renderLoadingOverlay()}
     </div>
   );
 };
