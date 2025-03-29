@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowUp } from 'lucide-react';
+import { ArrowUp, Lightbulb, Fan, FlowerIcon, Beaker, Timer } from 'lucide-react';
 import { Equipment, EquipmentType } from '@/types/growRoom';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -13,18 +13,20 @@ interface EquipmentItemProps {
   className?: string;
 }
 
-// Helper functions (since they're not exported from initialEquipment)
+// Helper functions
 const getEquipmentIcon = (type: EquipmentType) => {
-  // Simple mapping of equipment types to Lucide icons
+  // Mapping equipment types to appropriate Lucide icons
   switch (type) {
-    case 'Lights':
-      return ArrowUp; // This should be a proper light icon
-    case 'Ventilation':
-      return ArrowUp; // This should be a proper ventilation icon
-    case 'Soil':
-      return ArrowUp; // This should be a proper soil icon
-    case 'Nutrients':
-      return ArrowUp; // This should be a proper nutrients icon
+    case EquipmentType.Light:
+      return Lightbulb;
+    case EquipmentType.Ventilation:
+      return Fan;
+    case EquipmentType.Pot:
+      return FlowerIcon;
+    case EquipmentType.Nutrients:
+      return Beaker;
+    case EquipmentType.Automation:
+      return Timer;
     default:
       return ArrowUp;
   }
