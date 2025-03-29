@@ -5,8 +5,8 @@ import { toast } from '@/hooks/use-toast';
 export const switchToSonicNetwork = async () => {
   if (typeof window.ethereum !== 'undefined') {
     try {
-      // Sonic Network Chain ID (this is an example, replace with actual Sonic chain ID)
-      const chainId = '0x22'; // Chain ID for Sonic Network (decimal: 34)
+      // Sonic Network Chain ID
+      const chainId = '0x92'; // Chain ID for Sonic Network (decimal: 146)
       
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
@@ -22,7 +22,7 @@ export const switchToSonicNetwork = async () => {
             method: 'wallet_addEthereumChain',
             params: [
               {
-                chainId: '0x22', // Chain ID for Sonic Network (decimal: 34)
+                chainId: '0x92', // Chain ID for Sonic Network (decimal: 146)
                 chainName: 'Sonic Network',
                 nativeCurrency: {
                   name: 'Sonic',
