@@ -23,14 +23,14 @@ export const switchToSonicNetwork = async () => {
             params: [
               {
                 chainId: '0x92', // Chain ID for Sonic Network (decimal: 146)
-                chainName: 'Sonic Network',
+                chainName: 'Sonic',
                 nativeCurrency: {
                   name: 'Sonic',
                   symbol: 'S',
                   decimals: 18,
                 },
-                rpcUrls: ['https://rpc.sonic.network'],
-                blockExplorerUrls: ['https://sonicscan.io/'],
+                rpcUrls: ['https://rpc.soniclabs.com'],
+                blockExplorerUrls: ['https://sonicscan.org/'],
               },
             ],
           });
