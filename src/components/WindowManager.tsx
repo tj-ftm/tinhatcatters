@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { X, Minus, Square, Maximize2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -50,7 +49,6 @@ const WindowManager: React.FC<WindowManagerProps> = ({
   const getInitialPosition = (windowId: string): Position => {
     if (positions[windowId]) return positions[windowId];
     
-    // Generate a slightly offset position for each new window
     const baseOffset = 50;
     const windowCount = Object.keys(positions).length;
     return {
@@ -62,7 +60,6 @@ const WindowManager: React.FC<WindowManagerProps> = ({
   const getWindowSize = (windowId: string): Size => {
     if (sizes[windowId]) return sizes[windowId];
     
-    // Default sizes based on window type
     if (windowId === 'game') {
       return { width: window.innerWidth * 0.8, height: window.innerHeight * 0.8 };
     } else if (windowId === 'shop') {
@@ -84,7 +81,6 @@ const WindowManager: React.FC<WindowManagerProps> = ({
   };
 
   const startDrag = (windowId: string, e: React.MouseEvent) => {
-    // Don't start drag if maximized
     if (isMaximized[windowId]) return;
     
     const rect = e.currentTarget.getBoundingClientRect();
@@ -95,7 +91,6 @@ const WindowManager: React.FC<WindowManagerProps> = ({
     setDragging(windowId);
     bringToFront(windowId);
 
-    // Store the initial position in case we need to cancel the drag
     dragRef.current = { x: e.clientX, y: e.clientY };
   };
 
@@ -119,7 +114,6 @@ const WindowManager: React.FC<WindowManagerProps> = ({
     e.preventDefault();
     e.stopPropagation();
     
-    // Don't resize if maximized
     if (isMaximized[windowId]) return;
     
     setResizing({ windowId, direction });
@@ -143,7 +137,6 @@ const WindowManager: React.FC<WindowManagerProps> = ({
       const deltaX = e.clientX - (resizeStartPos.current?.x || 0);
       const deltaY = e.clientY - (resizeStartPos.current?.y || 0);
       
-      // Handle resize based on direction
       if (direction.includes('n')) {
         newPos.y = startPos.y + deltaY;
         newSize.height = startSize.height - deltaY;
@@ -159,7 +152,6 @@ const WindowManager: React.FC<WindowManagerProps> = ({
         newSize.width = startSize.width + deltaX;
       }
       
-      // Ensure minimum size
       const minSize = 200;
       if (newSize.width < minSize) {
         newSize.width = minSize;
@@ -187,7 +179,6 @@ const WindowManager: React.FC<WindowManagerProps> = ({
 
   const handleClose = (windowId: string) => {
     closeWindow(windowId);
-    // If closing Game or Shop, navigate back to home
     if (windowId === 'game') navigate('/');
     if (windowId === 'shop') navigate('/');
   };
@@ -196,14 +187,12 @@ const WindowManager: React.FC<WindowManagerProps> = ({
     const currentlyMaximized = isMaximized[windowId];
     
     if (currentlyMaximized) {
-      // Restore previous state
       const prevState = preMaximizeState[windowId];
       if (prevState) {
         setPositions(prev => ({ ...prev, [windowId]: prevState.position }));
         setSizes(prev => ({ ...prev, [windowId]: prevState.size }));
       }
     } else {
-      // Save current state and maximize
       const currentPosition = positions[windowId] || getInitialPosition(windowId);
       const currentSize = sizes[windowId] || getWindowSize(windowId);
       
@@ -212,14 +201,13 @@ const WindowManager: React.FC<WindowManagerProps> = ({
         [windowId]: { position: currentPosition, size: currentSize }
       }));
       
-      // Set to maximized size and position
       setPositions(prev => ({ 
         ...prev, 
         [windowId]: { x: 0, y: 0 } 
       }));
       setSizes(prev => ({ 
         ...prev, 
-        [windowId]: { width: window.innerWidth, height: window.innerHeight - 40 } // 40px for taskbar
+        [windowId]: { width: window.innerWidth, height: window.innerHeight - 40 } 
       }));
     }
     
@@ -320,33 +308,29 @@ const WindowManager: React.FC<WindowManagerProps> = ({
               )}
             </div>
             
-            {/* Resize handles */}
             {!maximized && (
               <>
-                {/* Corner resize handles */}
-                <div className="absolute w-3 h-3 top-0 left-0 cursor-nw-resize" 
+                <div className="absolute w-2 h-2 top-0 left-0 cursor-nw-resize" 
                      onMouseDown={(e) => startResize(windowId, 'nw', e)} />
-                <div className="absolute w-3 h-3 top-0 right-0 cursor-ne-resize" 
+                <div className="absolute w-2 h-2 top-0 right-0 cursor-ne-resize" 
                      onMouseDown={(e) => startResize(windowId, 'ne', e)} />
-                <div className="absolute w-3 h-3 bottom-0 left-0 cursor-sw-resize" 
+                <div className="absolute w-2 h-2 bottom-0 left-0 cursor-sw-resize" 
                      onMouseDown={(e) => startResize(windowId, 'sw', e)} />
-                <div className="absolute w-3 h-3 bottom-0 right-0 cursor-se-resize" 
+                <div className="absolute w-2 h-2 bottom-0 right-0 cursor-se-resize" 
                      onMouseDown={(e) => startResize(windowId, 'se', e)} />
                 
-                {/* Edge resize handles */}
-                <div className="absolute h-1 left-3 right-3 top-0 cursor-n-resize" 
+                <div className="absolute h-1 left-2 right-2 top-0 cursor-n-resize" 
                      onMouseDown={(e) => startResize(windowId, 'n', e)} />
-                <div className="absolute h-1 left-3 right-3 bottom-0 cursor-s-resize" 
+                <div className="absolute h-1 left-2 right-2 bottom-0 cursor-s-resize" 
                      onMouseDown={(e) => startResize(windowId, 's', e)} />
-                <div className="absolute w-1 top-3 bottom-3 left-0 cursor-w-resize" 
+                <div className="absolute w-1 top-2 bottom-2 left-0 cursor-w-resize" 
                      onMouseDown={(e) => startResize(windowId, 'w', e)} />
-                <div className="absolute w-1 top-3 bottom-3 right-0 cursor-e-resize" 
+                <div className="absolute w-1 top-2 bottom-2 right-0 cursor-e-resize" 
                      onMouseDown={(e) => startResize(windowId, 'e', e)} />
                 
-                {/* Bottom-right resize handle icon */}
-                <div className="absolute bottom-1 right-1 w-4 h-4 flex items-center justify-center cursor-se-resize"
+                <div className="absolute bottom-0 right-0 w-3 h-3 flex items-center justify-center cursor-se-resize"
                      onMouseDown={(e) => startResize(windowId, 'se', e)}>
-                  <svg width="8" height="8" viewBox="0 0 8 8" className="fill-current text-gray-700">
+                  <svg width="5" height="5" viewBox="0 0 8 8" className="fill-current text-gray-700">
                     <path d="M0,6 h2 v2 h-2 z M3,3 h2 v2 h-2 z M6,0 h2 v2 h-2 z" />
                   </svg>
                 </div>

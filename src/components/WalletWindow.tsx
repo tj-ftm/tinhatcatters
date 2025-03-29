@@ -238,29 +238,29 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
       {!isMaximized && (
         <>
           {/* Corner resize handles */}
-          <div className="absolute w-3 h-3 top-0 left-0 cursor-nw-resize" 
+          <div className="absolute w-2 h-2 top-0 left-0 cursor-nw-resize" 
                 onMouseDown={(e) => startResize('nw', e)} />
-          <div className="absolute w-3 h-3 top-0 right-0 cursor-ne-resize" 
+          <div className="absolute w-2 h-2 top-0 right-0 cursor-ne-resize" 
                 onMouseDown={(e) => startResize('ne', e)} />
-          <div className="absolute w-3 h-3 bottom-0 left-0 cursor-sw-resize" 
+          <div className="absolute w-2 h-2 bottom-0 left-0 cursor-sw-resize" 
                 onMouseDown={(e) => startResize('sw', e)} />
-          <div className="absolute w-3 h-3 bottom-0 right-0 cursor-se-resize" 
+          <div className="absolute w-2 h-2 bottom-0 right-0 cursor-se-resize" 
                 onMouseDown={(e) => startResize('se', e)} />
           
           {/* Edge resize handles */}
-          <div className="absolute h-1 left-3 right-3 top-0 cursor-n-resize" 
+          <div className="absolute h-1 left-2 right-2 top-0 cursor-n-resize" 
                 onMouseDown={(e) => startResize('n', e)} />
-          <div className="absolute h-1 left-3 right-3 bottom-0 cursor-s-resize" 
+          <div className="absolute h-1 left-2 right-2 bottom-0 cursor-s-resize" 
                 onMouseDown={(e) => startResize('s', e)} />
-          <div className="absolute w-1 top-3 bottom-3 left-0 cursor-w-resize" 
+          <div className="absolute w-1 top-2 bottom-2 left-0 cursor-w-resize" 
                 onMouseDown={(e) => startResize('w', e)} />
-          <div className="absolute w-1 top-3 bottom-3 right-0 cursor-e-resize" 
+          <div className="absolute w-1 top-2 bottom-2 right-0 cursor-e-resize" 
                 onMouseDown={(e) => startResize('e', e)} />
           
-          {/* Bottom-right resize handle icon */}
-          <div className="absolute bottom-1 right-1 w-4 h-4 flex items-center justify-center cursor-se-resize"
+          {/* Bottom-right resize handle icon - make this much smaller */}
+          <div className="absolute bottom-0 right-0 w-3 h-3 flex items-center justify-center cursor-se-resize"
                 onMouseDown={(e) => startResize('se', e)}>
-            <svg width="8" height="8" viewBox="0 0 8 8" className="fill-current text-gray-700">
+            <svg width="5" height="5" viewBox="0 0 8 8" className="fill-current text-gray-700">
               <path d="M0,6 h2 v2 h-2 z M3,3 h2 v2 h-2 z M6,0 h2 v2 h-2 z" />
             </svg>
           </div>
