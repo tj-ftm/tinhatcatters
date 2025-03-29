@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { MessageSquare } from 'lucide-react';
+import { Computer, ShoppingCart, Gamepad2, Home, Wallet, Cannabis, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import WalletConnector from './WalletConnector';
 
@@ -43,11 +43,6 @@ const Taskbar: React.FC<TaskbarProps> = ({
     }
   };
 
-  const openBuyTHC = () => {
-    window.open('https://www.shadow.so/trade?inputCurrency=0x0000000000000000000000000000000000000000&outputCurrency=0x17Af1Df44444AB9091622e4Aa66dB5BB34E51aD5', '_blank');
-    setStartMenuOpen(false);
-  };
-
   return (
     <div className="win95-window h-11 flex items-stretch z-50 border-t-2 w-full">
       <button 
@@ -56,9 +51,13 @@ const Taskbar: React.FC<TaskbarProps> = ({
       >
         <span className="text-sm font-bold flex items-center">
           <img 
-            src="https://cdn3d.iconscout.com/3d/free/thumb/free-windows-2-4659893-3866197.png" 
-            alt="Start" 
+            src="/windows-logo.png" 
+            alt="Windows" 
             className="h-5 w-5 mr-1"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><rect width="9" height="9" x="1" y="1" fill="red"/><rect width="9" height="9" x="10" y="1" fill="green"/><rect width="9" height="9" x="1" y="10" fill="blue"/><rect width="9" height="9" x="10" y="10" fill="yellow"/></svg>';
+            }}
           />
           Start
         </span>
@@ -76,11 +75,12 @@ const Taskbar: React.FC<TaskbarProps> = ({
             className={`win95-button px-2 py-1 h-8 text-sm flex items-center ${!windowsMinimized[window] ? 'border-inset' : ''}`}
             onClick={() => handleWindowButtonClick(window)}
           >
-            {window === 'game' && <img src="https://cdn3d.iconscout.com/3d/premium/thumb/game-controller-5679567-4730291.png" className="h-4 w-4 mr-1" alt="Game" />}
-            {window === 'shop' && <img src="https://cdn3d.iconscout.com/3d/premium/thumb/shopping-cart-5679599-4730323.png" className="h-4 w-4 mr-1" alt="Shop" />}
-            {window === 'computer' && <img src="https://cdn3d.iconscout.com/3d/premium/thumb/computer-5769600-4828559.png" className="h-4 w-4 mr-1" alt="Computer" />}
-            {window === 'wallet' && <img src="https://cdn3d.iconscout.com/3d/premium/thumb/wallet-5679597-4730321.png" className="h-4 w-4 mr-1" alt="Wallet" />}
-            {window === 'growroom' && <img src="https://cdn3d.iconscout.com/3d/premium/thumb/cannabis-5679566-4730290.png" className="h-4 w-4 mr-1" alt="THC" />}
+            {window === 'game' && <Gamepad2 className="h-4 w-4 mr-1" />}
+            {window === 'shop' && <ShoppingCart className="h-4 w-4 mr-1" />}
+            {window === 'computer' && <Computer className="h-4 w-4 mr-1" />}
+            {window === 'home' && <Home className="h-4 w-4 mr-1" />}
+            {window === 'wallet' && <Wallet className="h-4 w-4 mr-1" />}
+            {window === 'growroom' && <Cannabis className="h-4 w-4 mr-1" />}
             {window === 'chat' && <MessageSquare className="h-4 w-4 mr-1" />}
             {window.charAt(0).toUpperCase() + window.slice(1)}
           </button>
@@ -92,21 +92,32 @@ const Taskbar: React.FC<TaskbarProps> = ({
         <Clock />
       </div>
 
-      {/* Start Menu */}
+      {/* Start Menu - Now with higher z-index to ensure it's always on top */}
       {startMenuOpen && (
         <div className="fixed left-0 bottom-11 win95-window w-56 border-2 z-[9999]">
-          <div className="p-1">
-            <div className="p-1 text-lg mb-1 flex items-center">
-              <img src="https://cdn3d.iconscout.com/3d/free/thumb/free-windows-2-4659893-3866197.png" alt="Windows" className="h-6 w-6 mr-2" />
-              TinHatCatters
+          <div className="bg-win95-blue h-full w-8 absolute left-0 top-0 bottom-0">
+            <div className="flex flex-col justify-end h-full pb-2 text-white font-bold">
+              <span className="transform -rotate-90 whitespace-nowrap origin-bottom-left translate-y-0 translate-x-0 absolute bottom-12">
+                TinhatCatters
+              </span>
             </div>
+          </div>
+
+          <div className="pl-8 py-1">
+            <div className="p-1 font-bold text-lg mb-1">Tin Hat Catters</div>
             
             <div className="flex flex-col">
+              <StartMenuItem 
+                icon={<Home className="h-4 w-4" />} 
+                label="Home"
+                onClick={() => handleItemClick('/', 'home')}
+              />
+              
               {/* Games submenu */}
               <div className="relative group">
                 <div className="flex items-center p-1 hover:bg-win95-blue hover:text-white cursor-pointer">
                   <div className="w-6 h-6 flex items-center justify-center mr-2">
-                    <img src="https://cdn3d.iconscout.com/3d/premium/thumb/game-controller-5679567-4730291.png" className="h-4 w-4" alt="Games" />
+                    <Gamepad2 className="h-4 w-4" />
                   </div>
                   <span>Games</span>
                   <span className="ml-auto">▶</span>
@@ -115,12 +126,12 @@ const Taskbar: React.FC<TaskbarProps> = ({
                 <div className="hidden group-hover:block absolute left-full top-0 win95-window w-48 border-2 z-[9999]">
                   <div className="py-1">
                     <StartMenuItem 
-                      icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/game-controller-5679567-4730291.png" className="h-4 w-4" alt="Game" />} 
+                      icon={<Gamepad2 className="h-4 w-4" />} 
                       label="Reptilian Attack"
                       onClick={() => handleItemClick('/game', 'game')}
                     />
                     <StartMenuItem 
-                      icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/cannabis-5679566-4730290.png" className="h-4 w-4" alt="THC" />} 
+                      icon={<Cannabis className="h-4 w-4" />} 
                       label="THC Grow Room"
                       onClick={() => handleItemClick('/growroom', 'growroom')}
                     />
@@ -129,12 +140,12 @@ const Taskbar: React.FC<TaskbarProps> = ({
               </div>
               
               <StartMenuItem 
-                icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/shopping-cart-5679599-4730323.png" className="h-4 w-4" alt="Shop" />}
+                icon={<ShoppingCart className="h-4 w-4" />}
                 label="NFT Shop"
                 onClick={() => handleItemClick('/shop', 'shop')}
               />
               <StartMenuItem 
-                icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/wallet-5679597-4730321.png" className="h-4 w-4" alt="Wallet" />}
+                icon={<Wallet className="h-4 w-4" />}
                 label="Wallet"
                 onClick={() => {
                   setStartMenuOpen(false);
@@ -150,7 +161,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
                 }}
               />
               <StartMenuItem 
-                icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/computer-5769600-4828559.png" className="h-4 w-4" alt="Computer" />}
+                icon={<Computer className="h-4 w-4" />}
                 label="My Computer"
                 onClick={() => handleItemClick('/', 'computer')}
               />
@@ -158,9 +169,9 @@ const Taskbar: React.FC<TaskbarProps> = ({
               <div className="border-t border-win95-darkGray my-1"></div>
               
               <StartMenuItem 
-                icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/dollar-5769602-4828561.png" className="h-4 w-4" alt="Buy THC" />} 
-                label="Buy $THC"
-                onClick={openBuyTHC}
+                icon="❓" 
+                label="Help"
+                onClick={() => alert('Help not available in this version!')}
               />
             </div>
           </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Taskbar from './Taskbar';
@@ -55,40 +54,33 @@ const Desktop: React.FC = () => {
   };
 
   return (
-    <div 
-      className="flex flex-col h-screen w-screen overflow-hidden relative"
-      style={{
-        backgroundImage: "url('/lovable-uploads/6d4e8ebb-627f-4f21-baaf-ff5524cf554c.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center"
-      }}
-    >
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#1AB0ED] relative">
       <div className="flex-grow relative">
         {/* Desktop Icons */}
         <div className="absolute top-2 left-2 flex flex-col items-center gap-6">
           <DesktopIcon 
             label="My Computer" 
-            icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/computer-5769600-4828559.png" alt="My Computer" className="h-8 w-8" />}
+            icon="💻" 
             onClick={() => handleIconClick('computer')} 
           />
           <DesktopIcon 
             label="Reptilian Attack" 
-            icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/game-controller-5679567-4730291.png" alt="Game" className="h-8 w-8" />} 
+            icon="🎮" 
             onClick={() => handleIconClick('game', '/game')} 
           />
           <DesktopIcon 
             label="THC Grow Room" 
-            icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/cannabis-5679566-4730290.png" alt="THC" className="h-8 w-8" />} 
+            icon="🌿" 
             onClick={() => handleIconClick('growroom', '/growroom')} 
           />
           <DesktopIcon 
             label="NFT Shop" 
-            icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/shopping-cart-5679599-4730323.png" alt="Shop" className="h-8 w-8" />} 
+            icon="🛒" 
             onClick={() => handleIconClick('shop', '/shop')} 
           />
           <DesktopIcon 
             label="Community Chat" 
-            icon={<img src="https://cdn3d.iconscout.com/3d/premium/thumb/chat-5769598-4828557.png" alt="Chat" className="h-8 w-8" />} 
+            icon="💬" 
             onClick={handleChatClick} 
           />
         </div>
@@ -175,17 +167,16 @@ const Desktop: React.FC = () => {
 
 const DesktopIcon: React.FC<{ 
   label: string; 
-  icon: React.ReactNode | string; 
+  icon: string; 
   onClick: () => void 
 }> = ({ label, icon, onClick }) => {
   return (
     <div 
       className="flex flex-col items-center cursor-pointer w-16 group hover:bg-win95-blue/20"
       onClick={onClick}
+      onDoubleClick={onClick}
     >
-      <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">
-        {typeof icon === 'string' ? icon : icon}
-      </div>
+      <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">{icon}</div>
       <span className="text-white text-xs text-center bg-win95-blue/80 px-1 py-0.5 w-full">
         {label}
       </span>

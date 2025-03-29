@@ -19,14 +19,7 @@ const Header: React.FC = () => {
   return (
     <header className="win95-window sticky top-0 z-50">
       <div className="win95-title-bar flex justify-between items-center">
-        <div className="flex items-center">
-          <img 
-            src="https://cdn3d.iconscout.com/3d/free/thumb/free-windows-2-4659893-3866197.png" 
-            alt="TinHatCatters" 
-            className="h-5 w-5 mr-2"
-          />
-          <span className="text-lg">Sonic Sidescroller Adventure</span>
-        </div>
+        <span className="text-lg">Sonic Sidescroller Adventure</span>
         <div className="flex items-center gap-2">
           {showExitButton && (
             <Button 
@@ -45,37 +38,14 @@ const Header: React.FC = () => {
       
       <div className="p-2 flex flex-wrap justify-between items-center gap-2">
         <nav className="flex flex-wrap gap-2">
-          <Link to="/" className="win95-button flex items-center">
-            <img 
-              src="https://cdn3d.iconscout.com/3d/free/thumb/free-home-3544420-2969700.png" 
-              alt="Home" 
-              className="h-4 w-4 mr-1"
-            />
+          <Link to="/" className="win95-button">
             Home
           </Link>
-          <Link to="/game" className="win95-button flex items-center">
-            <img 
-              src="https://cdn3d.iconscout.com/3d/premium/thumb/game-controller-5679567-4730291.png" 
-              alt="Game" 
-              className="h-4 w-4 mr-1"
-            />
+          <Link to="/game" className="win95-button">
             Play Game
           </Link>
-          <Link to="/shop" className="win95-button flex items-center">
-            <img 
-              src="https://cdn3d.iconscout.com/3d/premium/thumb/shopping-cart-5679599-4730323.png" 
-              alt="Shop" 
-              className="h-4 w-4 mr-1"
-            />
+          <Link to="/shop" className="win95-button">
             NFT Shop
-          </Link>
-          <Link to="/growroom" className="win95-button flex items-center">
-            <img 
-              src="https://cdn3d.iconscout.com/3d/premium/thumb/cannabis-5679566-4730290.png" 
-              alt="THC" 
-              className="h-4 w-4 mr-1"
-            />
-            THC Grow Room
           </Link>
         </nav>
         

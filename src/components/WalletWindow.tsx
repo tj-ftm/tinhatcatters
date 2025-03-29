@@ -1,39 +1,50 @@
 
-import React from 'react';
-import { X, Minus, Network } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { X, Minus } from 'lucide-react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import WalletConnector from './WalletConnector';
-import { switchToSonicNetwork } from '@/lib/web3';
-import { Button } from './ui/button';
-import { toast } from '@/hooks/use-toast';
+import { ScrollArea } from './ui/scroll-area';
+import { fetchTinHatCattersFromSonicscan } from '@/lib/web3';
 
 interface WalletWindowProps {
   onClose: () => void;
   onMinimize: () => void;
 }
 
+interface NFTData {
+  id: string;
+  image: string;
+}
+
 const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
-  const { address, balance, thcBalance } = useWeb3();
-  const [isCorrectNetwork, setIsCorrectNetwork] = React.useState<boolean>(true);
+  const { address, balance, thcBalance, tinHatCatters } = useWeb3();
+  const [nftData, setNftData] = useState<NFTData[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [imageLoadErrors, setImageLoadErrors] = useState<Record<string, boolean>>({});
   
-  const handleSwitchNetwork = async () => {
-    try {
-      const success = await switchToSonicNetwork();
-      if (success) {
-        setIsCorrectNetwork(true);
-        toast({
-          title: 'Network Changed',
-          description: 'Successfully connected to Sonic Network',
-        });
+  useEffect(() => {
+    const loadNFTData = async () => {
+      if (address) {
+        setLoading(true);
+        try {
+          const data = await fetchTinHatCattersFromSonicscan(address);
+          setNftData(data);
+        } catch (error) {
+          console.error("Error fetching NFT data:", error);
+        } finally {
+          setLoading(false);
+        }
       }
-    } catch (error) {
-      console.error("Error switching network:", error);
-      toast({
-        title: 'Network Switch Failed',
-        description: 'Failed to switch to Sonic Network. Please try again.',
-        variant: 'destructive'
-      });
-    }
+    };
+    
+    loadNFTData();
+  }, [address]);
+  
+  const handleImageError = (nftId: string) => {
+    setImageLoadErrors(prev => ({
+      ...prev,
+      [nftId]: true
+    }));
   };
   
   return (
@@ -72,20 +83,11 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
           </div>
         ) : (
           <div>
-            <div className="flex justify-between items-center mb-3">
-              <div className="flex-grow">
-                <div className="text-xs font-bold mb-1">Address:</div>
-                <div className="win95-inset p-1 text-xs overflow-hidden text-overflow-ellipsis font-bold text-black">
-                  {address}
-                </div>
+            <div className="mb-3">
+              <div className="text-xs font-bold mb-1">Address:</div>
+              <div className="win95-inset p-1 text-xs overflow-hidden text-overflow-ellipsis font-bold text-black">
+                {address}
               </div>
-              <Button 
-                className="win95-button w-8 h-8 flex items-center justify-center ml-2 flex-shrink-0"
-                title="Switch to Sonic Network"
-                onClick={handleSwitchNetwork}
-              >
-                <Network className="h-4 w-4" />
-              </Button>
             </div>
             
             <div className="grid grid-cols-2 gap-2 mb-3">
@@ -101,6 +103,39 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
                 <div className="win95-inset p-1 text-xs font-bold text-black">
                   {thcBalance ? parseFloat(thcBalance).toFixed(2) : '0.00'} THC
                 </div>
+              </div>
+            </div>
+            
+            <div className="mb-2">
+              <div className="text-xs font-bold mb-1">Your Tin Hat Catter:</div>
+              <div className="win95-inset p-1 max-h-24 overflow-y-auto">
+                <ScrollArea className="h-full">
+                  {loading ? (
+                    <div className="text-xs text-center py-1 font-bold text-black">Loading NFTs...</div>
+                  ) : nftData && nftData.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-1">
+                      {nftData.map((nft) => (
+                        <div key={nft.id} className="text-xs p-1 bg-white/50 rounded flex flex-col items-center">
+                          {nft.image && !imageLoadErrors[nft.id] ? (
+                            <img 
+                              src={nft.image} 
+                              alt={`THC #${nft.id}`} 
+                              className="w-full h-auto object-contain mb-1 border border-gray-300"
+                              onError={() => handleImageError(nft.id)}
+                            />
+                          ) : (
+                            <div className="w-full h-12 bg-gray-200 flex items-center justify-center">
+                              <span className="text-[10px]">THC #{nft.id}</span>
+                            </div>
+                          )}
+                          <span className="font-bold text-black text-center text-[10px]">THC #{nft.id}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-center py-1 font-bold text-black">No NFTs found</div>
+                  )}
+                </ScrollArea>
               </div>
             </div>
             
