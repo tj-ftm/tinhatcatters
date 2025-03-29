@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { Button } from '@/components/ui/button';
@@ -334,18 +335,20 @@ const Game: React.FC = () => {
           </div>
         </div>
 
-        <div className="win95-inset p-1 w-full flex-grow" ref={gameContainerRef}>
+        {/* Game container - modified to take all available vertical space */}
+        <div className="win95-inset p-1 w-full flex-grow flex flex-col" ref={gameContainerRef} style={{ minHeight: "0" }}>
           <canvas
             ref={canvasRef}
             className="w-full h-full object-contain"
           />
         </div>
         
-        <div className="win95-panel p-1 w-full mt-2">
-          <div className="flex justify-center gap-2 items-center">
+        {/* Moved upgrades to bottom and made thinner */}
+        <div className="win95-panel p-1 w-full mt-2 h-auto">
+          <div className="flex justify-center gap-2 items-center h-10">
             <span className="font-bold text-black text-sm mr-1">Upgrades:</span>
             
-            <div className="win95-inset p-1 flex flex-row items-center gap-2 w-full">
+            <div className="win95-inset p-1 flex flex-row items-center gap-2 w-full h-8">
               <div className="flex flex-1 items-center gap-1">
                 <Zap size={16} className="text-yellow-500 shrink-0" />
                 <div className="flex-1">
