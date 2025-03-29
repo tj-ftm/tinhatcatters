@@ -1,3 +1,4 @@
+
 import { ethers } from 'ethers';
 import { toast } from '@/hooks/use-toast';
 
@@ -25,6 +26,120 @@ export const requestAccount = async () => {
     console.error('Error requesting account:', error);
     return null;
   }
+};
+
+// Function to connect wallet and return user address
+export const connectWallet = async (walletType?: string) => {
+  try {
+    // If using regular browser wallet like MetaMask
+    if (!walletType || walletType === 'browser') {
+      return await requestAccount();
+    }
+    
+    // For WalletConnect or other wallet types
+    if (walletType === 'walletconnect') {
+      // Basic implementation for WalletConnect
+      if (typeof window.ethereum !== 'undefined') {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          return accounts[0];
+        } catch (error: any) {
+          console.error('WalletConnect error:', error);
+          toast({
+            title: "WalletConnect Failed",
+            description: error.message || "Failed to connect with WalletConnect",
+            variant: "destructive",
+          });
+          throw error;
+        }
+      } else {
+        toast({
+          title: "WalletConnect Not Supported",
+          description: "Your browser doesn't support WalletConnect",
+          variant: "destructive",
+        });
+        throw new Error("WalletConnect not supported");
+      }
+    }
+    
+    return null;
+  } catch (error: any) {
+    console.error('Wallet connection error:', error);
+    toast({
+      title: "Connection Failed",
+      description: error.message || "Failed to connect wallet",
+      variant: "destructive",
+    });
+    throw error;
+  }
+};
+
+// Function to disconnect WalletConnect provider
+export const disconnectWalletConnect = async () => {
+  // Simple implementation - in a real app you'd use the WalletConnect SDK
+  if (typeof window.ethereum !== 'undefined' && window.ethereum.isWalletConnect) {
+    try {
+      await window.ethereum.disconnect();
+    } catch (error) {
+      console.error('Error disconnecting WalletConnect:', error);
+    }
+  }
+};
+
+// Function to check if Web3 is available
+export const isWeb3Available = () => {
+  return typeof window.ethereum !== 'undefined';
+};
+
+// Function to switch to Sonic Network
+export const switchToSonicNetwork = async () => {
+  if (typeof window.ethereum !== 'undefined') {
+    try {
+      // Sonic Network Chain ID (this is an example, replace with actual Sonic chain ID)
+      const chainId = '0x22'; // Chain ID for Sonic Network (decimal: 34)
+      
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId }],
+      });
+      
+      return true;
+    } catch (switchError: any) {
+      // This error code indicates that the chain has not been added to MetaMask
+      if (switchError.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: '0x22', // Chain ID for Sonic Network (decimal: 34)
+                chainName: 'Sonic Network',
+                nativeCurrency: {
+                  name: 'Sonic',
+                  symbol: 'S',
+                  decimals: 18,
+                },
+                rpcUrls: ['https://rpc.sonic.network'],
+                blockExplorerUrls: ['https://sonicscan.io/'],
+              },
+            ],
+          });
+          return true;
+        } catch (addError) {
+          console.error('Error adding Sonic network:', addError);
+          toast({
+            title: "Network Error",
+            description: "Failed to add Sonic network to your wallet",
+            variant: "destructive",
+          });
+          return false;
+        }
+      }
+      console.error('Error switching to Sonic network:', switchError);
+      return false;
+    }
+  }
+  return false;
 };
 
 // Function to get the current account balance
@@ -59,11 +174,14 @@ export const getTHCBalance = async (address: string | null): Promise<string> => 
 
     if (typeof window.ethereum !== 'undefined') {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const tokenAddress = process.env.NEXT_PUBLIC_THC_CONTRACT_ADDRESS; // Ensure this is set in your environment variables
+      // Updated THC token address for Sonic network
+      const tokenAddress = '0x17Af1Df44444AB9091622e4Aa66dB5BB34E51aD5';
+      
       if (!tokenAddress) {
-        console.error('THC token address not set in environment variables!');
+        console.error('THC token address not set!');
         return '0';
       }
+      
       const tokenContract = new ethers.Contract(
         tokenAddress,
         [
@@ -72,6 +190,7 @@ export const getTHCBalance = async (address: string | null): Promise<string> => 
         ],
         provider
       );
+      
       const decimals = await tokenContract.decimals();
       const balance = await tokenContract.balanceOf(address);
       return ethers.utils.formatUnits(balance, decimals);
@@ -82,6 +201,46 @@ export const getTHCBalance = async (address: string | null): Promise<string> => 
   } catch (error: any) {
     console.error('Error getting THC balance:', error);
     return '0';
+  }
+};
+
+// Function to get owned Tin Hat Catters NFTs
+export const getOwnedTinHatCatters = async (address: string): Promise<any[]> => {
+  try {
+    // For now, returning sample data as a placeholder
+    // In a real implementation, you would query the blockchain or an API
+    return [
+      {
+        id: '42',
+        image: 'https://sonicscan.io/nft/tinhats/42.png',
+        name: 'Tin Hat Catter #42',
+      },
+      {
+        id: '777',
+        image: 'https://sonicscan.io/nft/tinhats/777.png',
+        name: 'Tin Hat Catter #777',
+      }
+    ];
+  } catch (error) {
+    console.error('Error fetching Tin Hat Catters:', error);
+    return [];
+  }
+};
+
+// Function to get owned Snacks NFTs
+export const getOwnedSnacks = async (address: string): Promise<any[]> => {
+  try {
+    // For now, returning sample data as a placeholder
+    return [
+      {
+        id: '1',
+        image: 'https://sonicscan.io/nft/snacks/1.png',
+        name: 'Snack #1',
+      }
+    ];
+  } catch (error) {
+    console.error('Error fetching Snacks:', error);
+    return [];
   }
 };
 
@@ -123,3 +282,7 @@ export const fetchTinHatCattersFromSonicscan = async (address: string) => {
     throw new Error('Failed to fetch NFT data');
   }
 };
+
+// Function to get THC token balance (alternative implementation with hard-coded values)
+export const getThcBalance = getTHCBalance;
+
