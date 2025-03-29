@@ -43,11 +43,10 @@ export const useNFTs = () => {
 
       // If user is connected, fetch their owned NFTs
       if (address) {
-        // Set wallet address for RLS - using proper type casting
-        const params = { wallet_address: address };
+        // Set wallet address for RLS - fixing the type issue
         await supabase.rpc(
           'set_wallet_address', 
-          params as unknown as Record<string, unknown>
+          { wallet_address: address } as Record<string, unknown>
         );
 
         const { data: userNftsData, error: userNftsError } = await supabase
@@ -95,11 +94,10 @@ export const useNFTs = () => {
     }
 
     try {
-      // Set wallet address for RLS - using proper type casting
-      const params = { wallet_address: address };
+      // Set wallet address for RLS - fixing the type issue here too
       await supabase.rpc(
         'set_wallet_address', 
-        params as unknown as Record<string, unknown>
+        { wallet_address: address } as Record<string, unknown>
       );
 
       // Check if user already owns this NFT
