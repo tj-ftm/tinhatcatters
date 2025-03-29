@@ -39,7 +39,7 @@ const Web3Context = createContext<Web3ContextType>({
 
 export const useWeb3 = () => useContext(Web3Context);
 
-export const Web3Provider = ({ children }: { children: ReactNode }) => {
+export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [address, setAddress] = useState<string | null>(null);
   const [balance, setBalance] = useState<string>('0');
   const [thcBalance, setThcBalance] = useState<string | null>(null);
