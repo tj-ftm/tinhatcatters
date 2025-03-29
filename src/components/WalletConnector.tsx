@@ -3,10 +3,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { Wallet, LogOut, ChevronDown, ChevronUp } from 'lucide-react';
+import WalletSelectDialog from './WalletSelectDialog';
 
 const WalletConnector: React.FC = () => {
   const { address, balance, connecting, connect, disconnect } = useWeb3();
   const [isOpen, setIsOpen] = useState(false);
+  const [showWalletDialog, setShowWalletDialog] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
   // Format address for display
@@ -28,17 +30,33 @@ const WalletConnector: React.FC = () => {
     };
   }, []);
   
+  const handleConnectClick = () => {
+    setShowWalletDialog(true);
+  };
+  
+  const handleSelectWallet = (walletId: string) => {
+    connect(walletId);
+  };
+  
   // If not connected, show connect button
   if (!address) {
     return (
-      <Button 
-        className="sonic-btn" 
-        onClick={connect} 
-        disabled={connecting}
-      >
-        {connecting ? 'Connecting...' : 'Connect Wallet'}
-        <Wallet className="ml-2 h-4 w-4" />
-      </Button>
+      <>
+        <Button 
+          className="sonic-btn" 
+          onClick={handleConnectClick} 
+          disabled={connecting}
+        >
+          {connecting ? 'Connecting...' : 'Connect Wallet'}
+          <Wallet className="ml-2 h-4 w-4" />
+        </Button>
+        
+        <WalletSelectDialog 
+          open={showWalletDialog}
+          onOpenChange={setShowWalletDialog}
+          onSelectWallet={handleSelectWallet}
+        />
+      </>
     );
   }
   

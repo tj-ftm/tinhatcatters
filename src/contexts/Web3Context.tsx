@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
   connectWallet, 
@@ -15,7 +14,7 @@ interface Web3ContextType {
   connecting: boolean;
   tinHatCatters: any[];
   snacks: any[];
-  connect: () => Promise<void>;
+  connect: (walletType?: string) => Promise<void>;
   disconnect: () => void;
   refreshBalance: () => Promise<void>;
   refreshNFTs: () => Promise<void>;
@@ -43,7 +42,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
   const [snacks, setSnacks] = useState<any[]>([]);
 
   // Connect wallet
-  const connect = async () => {
+  const connect = async (walletType?: string) => {
     if (!isWeb3Available()) {
       toast({
         title: 'Web3 Not Available',
@@ -55,12 +54,14 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
 
     setConnecting(true);
     try {
-      const userAddress = await connectWallet();
+      const userAddress = await connectWallet(walletType);
       setAddress(userAddress);
       await refreshBalance();
       await refreshNFTs();
+      
+      const walletName = walletType ? walletType.charAt(0).toUpperCase() + walletType.slice(1) : 'Wallet';
       toast({
-        title: 'Wallet Connected',
+        title: `${walletName} Connected`,
         description: 'Your wallet has been connected successfully.',
       });
     } catch (error) {

@@ -31,22 +31,25 @@ export function isWeb3Available(): boolean {
   return typeof window !== 'undefined' && typeof window.ethereum !== 'undefined';
 }
 
-// Get ethers provider
-export function getProvider(): ethers.BrowserProvider | null {
+// Get ethers provider based on wallet type
+export function getProvider(walletType?: string): ethers.BrowserProvider | null {
   if (!isWeb3Available()) {
     return null;
   }
+  
+  // Custom provider selection logic could be added here
+  // For now, we'll just use window.ethereum for all wallet types
   return new ethers.BrowserProvider(window.ethereum);
 }
 
 // Connect wallet and return address
-export async function connectWallet(): Promise<string> {
+export async function connectWallet(walletType?: string): Promise<string> {
   if (!isWeb3Available()) {
     throw new Web3Error('No Web3 provider detected. Please install MetaMask.');
   }
 
   try {
-    const provider = getProvider();
+    const provider = getProvider(walletType);
     if (!provider) {
       throw new Web3Error('Cannot initialize Web3 provider.');
     }
