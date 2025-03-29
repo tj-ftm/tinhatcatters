@@ -1,12 +1,11 @@
-
 import React, { useState } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import NFTCard from './NFTCard';
 import { purchaseSnack } from '@/lib/web3';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import WalletSelectDialog from './WalletSelectDialog';
 
-// Expanded snack collection with different categories
 const AVAILABLE_SNACKS = {
   speed: [
     {
@@ -159,17 +158,41 @@ const AVAILABLE_SNACKS = {
 };
 
 const NFTShop: React.FC = () => {
-  const { address, balance, refreshNFTs } = useWeb3();
+  const { address, balance, refreshNFTs, connect } = useWeb3();
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('speed');
+  const [showWalletDialog, setShowWalletDialog] = useState(false);
+  const [pendingSnackId, setPendingSnackId] = useState<string | null>(null);
+  
+  const handleSelectWallet = async (walletId: string) => {
+    try {
+      await connect(walletId);
+      if (pendingSnackId) {
+        handlePurchase(pendingSnackId);
+        setPendingSnackId(null);
+      }
+    } catch (error) {
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect wallet. Please try again.",
+        variant: "destructive"
+      });
+      console.error("Wallet connection error:", error);
+    }
+  };
+  
+  const handlePurchaseClick = (snackId: string) => {
+    if (!address) {
+      setPendingSnackId(snackId);
+      setShowWalletDialog(true);
+      return;
+    }
+    
+    handlePurchase(snackId);
+  };
   
   const handlePurchase = async (snackId: string) => {
     if (!address) {
-      toast({
-        title: 'Error',
-        description: 'Please connect your wallet first.',
-        variant: 'destructive'
-      });
       return;
     }
     
@@ -223,14 +246,16 @@ const NFTShop: React.FC = () => {
       
       <div className="p-4">
         <div className="mb-4">
-          <p className="text-sm mb-2">
-            Purchase snack NFTs to boost your gameplay! Each snack provides temporary enhancements to help you achieve higher scores.
-          </p>
-          
-          <div className="win95-panel">
-            <p className="text-xs font-bold mb-1">Your Balance:</p>
-            <p className="win95-inset p-1 text-sm">{parseFloat(balance).toFixed(4)} S</p>
-          </div>
+          {address ? (
+            <div className="win95-panel">
+              <p className="text-xs font-bold mb-1">Your Balance:</p>
+              <p className="win95-inset p-1 text-sm">{parseFloat(balance).toFixed(4)} S</p>
+            </div>
+          ) : (
+            <div className="win95-panel p-2">
+              <p className="text-sm text-center">Browse items without connecting. Connect wallet when you're ready to buy!</p>
+            </div>
+          )}
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
@@ -271,7 +296,7 @@ const NFTShop: React.FC = () => {
                   image={snack.image}
                   boost={snack.boost}
                   price={snack.price}
-                  onPurchase={() => handlePurchase(snack.id)}
+                  onPurchase={() => handlePurchaseClick(snack.id)}
                 />
               ))}
             </div>
@@ -287,7 +312,7 @@ const NFTShop: React.FC = () => {
                   image={snack.image}
                   boost={snack.boost}
                   price={snack.price}
-                  onPurchase={() => handlePurchase(snack.id)}
+                  onPurchase={() => handlePurchaseClick(snack.id)}
                 />
               ))}
             </div>
@@ -303,7 +328,7 @@ const NFTShop: React.FC = () => {
                   image={snack.image}
                   boost={snack.boost}
                   price={snack.price}
-                  onPurchase={() => handlePurchase(snack.id)}
+                  onPurchase={() => handlePurchaseClick(snack.id)}
                 />
               ))}
             </div>
@@ -319,13 +344,19 @@ const NFTShop: React.FC = () => {
                   image={snack.image}
                   boost={snack.boost}
                   price={snack.price}
-                  onPurchase={() => handlePurchase(snack.id)}
+                  onPurchase={() => handlePurchaseClick(snack.id)}
                 />
               ))}
             </div>
           </TabsContent>
         </Tabs>
       </div>
+      
+      <WalletSelectDialog 
+        open={showWalletDialog}
+        onOpenChange={setShowWalletDialog}
+        onSelectWallet={handleSelectWallet}
+      />
     </div>
   );
 };

@@ -120,9 +120,9 @@ export async function connectWallet(walletType?: string): Promise<string> {
       
       try {
         // Connect to WalletConnect
-        const accounts = await wcProvider.connect();
+        const accounts = await wcProvider.enable();
         
-        if (accounts.length === 0) {
+        if (!accounts || accounts.length === 0) {
           throw new Web3Error('No accounts found. Please connect your wallet.');
         }
         

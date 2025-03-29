@@ -19,21 +19,7 @@ const Shop: React.FC = () => {
           </p>
         </div>
         
-        {address ? (
-          <NFTShop />
-        ) : (
-          <div className="win95-window p-8 text-center">
-            <h2 className="text-xl font-bold mb-4">Connect Your Wallet</h2>
-            <p className="mb-6">
-              You need to connect your wallet to the Sonic network to browse and purchase NFTs.
-            </p>
-            <div className="win95-inset p-4">
-              <p className="text-sm">
-                Use the "Connect Wallet" button in the top right corner to connect to the Sonic network.
-              </p>
-            </div>
-          </div>
-        )}
+        <NFTShop />
       </div>
     </div>
   );
