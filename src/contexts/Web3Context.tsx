@@ -117,8 +117,9 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const newBalance = await getBalance(address);
       setBalance(newBalance);
       
-      // Get THC token balance - fixed function name
+      // Get THC token balance - using correct function name
       const newThcBalance = await getTHCBalance(address);
+      console.log("THC balance updated:", newThcBalance);
       setThcBalance(newThcBalance);
     }
   };
