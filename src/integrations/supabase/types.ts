@@ -9,7 +9,157 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      nft_categories: {
+        Row: {
+          description: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          description?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          description?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      nfts: {
+        Row: {
+          boost_duration: number | null
+          boost_type: string
+          boost_value: number
+          category_id: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string
+          name: string
+          price: number
+        }
+        Insert: {
+          boost_duration?: number | null
+          boost_type: string
+          boost_value: number
+          category_id?: number | null
+          created_at?: string | null
+          description?: string | null
+          id: string
+          image_url: string
+          name: string
+          price: number
+        }
+        Update: {
+          boost_duration?: number | null
+          boost_type?: string
+          boost_value?: number
+          category_id?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string
+          name?: string
+          price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nfts_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "nft_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plants: {
+        Row: {
+          growth_stage: string
+          id: string
+          is_growing: boolean | null
+          last_updated: string | null
+          planted_date: string | null
+          progress: number | null
+          quality: number | null
+          wallet_address: string
+        }
+        Insert: {
+          growth_stage: string
+          id?: string
+          is_growing?: boolean | null
+          last_updated?: string | null
+          planted_date?: string | null
+          progress?: number | null
+          quality?: number | null
+          wallet_address: string
+        }
+        Update: {
+          growth_stage?: string
+          id?: string
+          is_growing?: boolean | null
+          last_updated?: string | null
+          planted_date?: string | null
+          progress?: number | null
+          quality?: number | null
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      user_equipment: {
+        Row: {
+          equipment_type: string
+          id: string
+          level: number | null
+          wallet_address: string
+        }
+        Insert: {
+          equipment_type: string
+          id?: string
+          level?: number | null
+          wallet_address: string
+        }
+        Update: {
+          equipment_type?: string
+          id?: string
+          level?: number | null
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      user_nfts: {
+        Row: {
+          id: string
+          nft_id: string | null
+          purchase_date: string | null
+          used: boolean | null
+          wallet_address: string
+        }
+        Insert: {
+          id?: string
+          nft_id?: string | null
+          purchase_date?: string | null
+          used?: boolean | null
+          wallet_address: string
+        }
+        Update: {
+          id?: string
+          nft_id?: string | null
+          purchase_date?: string | null
+          used?: boolean | null
+          wallet_address?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_nfts_nft_id_fkey"
+            columns: ["nft_id"]
+            isOneToOne: false
+            referencedRelation: "nfts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

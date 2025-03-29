@@ -1,8 +1,10 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import NFTCard from './NFTCard';
 import { toast } from '@/hooks/use-toast';
+import { useNFTs } from '@/hooks/use-nfts';
+import { Loader2 } from 'lucide-react';
 
 interface PetSelectionProps {
   onSelectPet: (pet: any) => void;
@@ -10,7 +12,8 @@ interface PetSelectionProps {
 }
 
 const PetSelection: React.FC<PetSelectionProps> = ({ onSelectPet, selectedPetId }) => {
-  const { tinHatCatters } = useWeb3();
+  const { address } = useWeb3();
+  const { ownedNfts, loading } = useNFTs();
   
   const handleSelectPet = (pet: any) => {
     onSelectPet(pet);
@@ -27,22 +30,30 @@ const PetSelection: React.FC<PetSelectionProps> = ({ onSelectPet, selectedPetId 
       </div>
       
       <div className="p-4">
-        {tinHatCatters.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        ) : ownedNfts.length === 0 ? (
           <div className="win95-panel p-4 text-center">
             <p className="text-sm mb-2">You don't own any TinHatCatters NFTs yet.</p>
             <p className="text-xs">Connect your wallet and buy TinHatCatters NFTs to use them as pets in the game!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {tinHatCatters.map((pet) => (
+            {ownedNfts.map((pet) => (
               <NFTCard
                 key={pet.id}
                 id={pet.id}
                 name={pet.name}
-                image={pet.image}
-                boost={pet.boost}
+                image={pet.image_url}
+                boost={{
+                  type: pet.boost_type,
+                  value: pet.boost_value,
+                  duration: pet.boost_duration,
+                }}
                 onSelect={() => handleSelectPet(pet)}
-                selected={selectedPetId === pet.id}
+                selected={selectedPetId === parseInt(pet.id)}
               />
             ))}
           </div>
