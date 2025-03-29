@@ -43,44 +43,52 @@ export class Web3Error extends Error {
 // This is a placeholder project ID for development purposes only
 const WC_PROJECT_ID = 'c1330fe75b833d2e66f772f4d2c565a3';
 
-let walletConnectProvider: EthereumProvider | null = null;
+// Define these as null initially
+let walletConnectProvider: null | Awaited<ReturnType<typeof EthereumProvider.init>> = null;
 let walletConnectModal: WalletConnectModal | null = null;
 
 // Initialize WalletConnect provider
 async function initWalletConnectProvider() {
   if (!walletConnectProvider) {
-    walletConnectProvider = await EthereumProvider.init({
-      projectId: WC_PROJECT_ID,
-      chains: [Number(parseInt(SONIC_NETWORK.chainId, 16))],
-      optionalChains: [Number(parseInt(SONIC_NETWORK.chainId, 16))],
-      showQrModal: false,
-      rpcMap: {
-        [Number(parseInt(SONIC_NETWORK.chainId, 16))]: SONIC_NETWORK.rpcUrl,
-      },
-      metadata: {
-        name: "TinHatCatters",
-        description: "TinHatCatters App",
-        url: window.location.origin,
-        icons: [`${window.location.origin}/favicon.ico`],
-      },
-    });
+    try {
+      walletConnectProvider = await EthereumProvider.init({
+        projectId: WC_PROJECT_ID,
+        chains: [Number(parseInt(SONIC_NETWORK.chainId, 16))],
+        optionalChains: [Number(parseInt(SONIC_NETWORK.chainId, 16))],
+        showQrModal: false,
+        rpcMap: {
+          [Number(parseInt(SONIC_NETWORK.chainId, 16))]: SONIC_NETWORK.rpcUrl,
+        },
+        metadata: {
+          name: "TinHatCatters",
+          description: "TinHatCatters App",
+          url: window.location.origin,
+          icons: [`${window.location.origin}/favicon.ico`],
+        },
+      });
 
-    // Initialize WalletConnect Modal
-    walletConnectModal = new WalletConnectModal({
-      projectId: WC_PROJECT_ID,
-      themeMode: 'light',
-      themeVariables: {
-        '--wcm-font-family': 'MS Sans Serif, sans-serif',
-        '--wcm-background-color': '#c0c0c0',
-        '--wcm-accent-color': '#000080',
-      },
-    });
+      // Initialize WalletConnect Modal
+      walletConnectModal = new WalletConnectModal({
+        projectId: WC_PROJECT_ID,
+        themeMode: 'light',
+        themeVariables: {
+          '--wcm-font-family': 'MS Sans Serif, sans-serif',
+          '--wcm-background-color': '#c0c0c0',
+          '--wcm-accent-color': '#000080',
+        },
+      });
 
-    // Setup event listeners
-    walletConnectProvider.on('disconnect', () => {
-      console.log('WalletConnect disconnected');
-      walletConnectProvider = null;
-    });
+      // Setup event listeners
+      if (walletConnectProvider) {
+        walletConnectProvider.on('disconnect', () => {
+          console.log('WalletConnect disconnected');
+          walletConnectProvider = null;
+        });
+      }
+    } catch (error) {
+      console.error('Error initializing WalletConnect provider:', error);
+      throw new Web3Error('Failed to initialize WalletConnect');
+    }
   }
 
   return walletConnectProvider;
