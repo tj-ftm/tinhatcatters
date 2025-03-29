@@ -1,0 +1,83 @@
+
+/* Analytics Dashboard Custom Animations */
+.animate-pulse-on-hover:hover {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.delay-100 {
+  animation-delay: 100ms !important;
+}
+
+.delay-200 {
+  animation-delay: 200ms !important;
+}
+
+.delay-300 {
+  animation-delay: 300ms !important;
+}
+
+.delay-400 {
+  animation-delay: 400ms !important;
+}
+
+/* Make chart paths have a drawing animation */
+.animate-draw path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: draw 1.5s ease-out forwards;
+}
+
+/* Different animation delays for subsequent charts */
+.animate-draw.delay-100 path {
+  animation-delay: 100ms;
+}
+
+.animate-draw.delay-200 path {
+  animation-delay: 200ms;
+}
+
+.animate-draw.delay-300 path {
+  animation-delay: 300ms;
+}
+
+.animate-draw.delay-400 path {
+  animation-delay: 400ms;
+}
+
+/* Make lines feel more alive with gentle pulsing */
+.recharts-layer.recharts-line-dots {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+/* Add custom animations for radar charts */
+.recharts-radar-polygon {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
+/* Animation for chart bars */
+.recharts-layer.recharts-bar-rectangle > path {
+  transform-origin: bottom;
+}
+
+/* Ensure all animations look good in dark mode */
+.dark .recharts-layer text {
+  fill: #e2e8f0;
+}
+
+.dark .recharts-cartesian-grid line {
+  stroke: rgba(255, 255, 255, 0.1);
+}
+
+.dark .recharts-polar-grid-angle line, 
+.dark .recharts-polar-grid-concentric path {
+  stroke: rgba(255, 255, 255, 0.1);
+}
+
+.dark .recharts-reference-line line {
+  stroke: rgba(255, 255, 255, 0.3);
+}
+
+/* Add this import to your main CSS file */
+@import url('tailwindcss/base');
+@import url('tailwindcss/components');
+@import url('tailwindcss/utilities');

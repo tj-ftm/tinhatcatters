@@ -24,7 +24,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useWeb3 } from '@/contexts/Web3Context';
-import { Trophy, Sprout, Cannabis, Clock, TrendingUp, Users, Activity, History, Award } from 'lucide-react';
+import { 
+  Trophy, 
+  Sprout, 
+  Cannabis, 
+  Clock, 
+  TrendingUp, 
+  Users, 
+  Activity, 
+  History, 
+  Award 
+} from 'lucide-react';
 import { 
   ChartContainer, 
   ChartTooltip, 
@@ -52,7 +62,7 @@ import {
   AreaChart,
   Area,
   ScatterChart,
-  Scatter
+  Scatter,
 } from 'recharts';
 import { formatDistance, format } from 'date-fns';
 import { EquipmentType } from '@/types/growRoom';

@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -61,6 +60,8 @@
   font-weight: normal;
   font-style: normal;
 }
+
+@import './styles/analytics.css';
 
 @layer components {
   .win95-window {

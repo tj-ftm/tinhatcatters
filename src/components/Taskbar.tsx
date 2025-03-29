@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Computer, ShoppingCart, Gamepad2, Home, Wallet, Cannabis, MessageSquare, TrendingUp } from 'lucide-react';
+import { Computer, ShoppingCart, Gamepad2, Home, Wallet, Cannabis, MessageSquare, TrendingUp, BarChart2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import WalletConnector from './WalletConnector';
 
@@ -83,6 +83,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
             {window === 'growroom' && <Cannabis className="h-4 w-4 mr-1" />}
             {window === 'chat' && <MessageSquare className="h-4 w-4 mr-1" />}
             {window === 'leaderboard' && <TrendingUp className="h-4 w-4 mr-1" />}
+            {window === 'analytics' && <BarChart2 className="h-4 w-4 mr-1" />}
             {window.charAt(0).toUpperCase() + window.slice(1)}
           </button>
         ))}
@@ -149,6 +150,11 @@ const Taskbar: React.FC<TaskbarProps> = ({
                 icon={<TrendingUp className="h-4 w-4" />}
                 label="Leaderboard"
                 onClick={() => handleItemClick('/leaderboard', 'leaderboard')}
+              />
+              <StartMenuItem 
+                icon={<BarChart2 className="h-4 w-4" />}
+                label="Analytics Dashboard"
+                onClick={() => handleItemClick('/analytics', 'analytics')}
               />
               <StartMenuItem 
                 icon={<Wallet className="h-4 w-4" />}
