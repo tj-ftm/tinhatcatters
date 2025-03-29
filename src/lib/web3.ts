@@ -1,3 +1,4 @@
+
 import { ethers } from 'ethers';
 import { toast } from '@/hooks/use-toast';
 import { EthereumProvider } from '@walletconnect/ethereum-provider';
@@ -42,7 +43,7 @@ export class Web3Error extends Error {
 // This is a placeholder project ID for development purposes only
 const WC_PROJECT_ID = 'c1330fe75b833d2e66f772f4d2c565a3';
 
-let walletConnectProvider: typeof EthereumProvider | null = null;
+let walletConnectProvider: EthereumProvider | null = null;
 let walletConnectModal: WalletConnectModal | null = null;
 
 // Initialize WalletConnect provider
@@ -246,14 +247,12 @@ export async function switchToSonicNetwork(
       return true;
     }
 
-    if (isWalletConnect) {
+    if (isWalletConnect && walletConnectProvider) {
       // WalletConnect handles chain switching differently
-      if (walletConnectProvider) {
-        await walletConnectProvider.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: SONIC_NETWORK.chainId }],
-        });
-      }
+      await walletConnectProvider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: SONIC_NETWORK.chainId }],
+      });
       return true;
     }
 
