@@ -25,13 +25,13 @@ const EquipmentArea: React.FC<EquipmentAreaProps> = ({
   const expansionCost = 2;
   
   return (
-    <div className="win95-window p-2 w-full">
-      <div className="win95-title-bar mb-2">
+    <div className="win95-window p-1 w-full">
+      <div className="win95-title-bar mb-1 text-xs">
         <span>Equipment</span>
       </div>
       
-      <div className="p-2 space-y-2">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+      <div className="p-1 space-y-1">
+        <div className="grid grid-cols-5 gap-1">
           {/* Light */}
           <EquipmentItem
             type={EquipmentType.Light}
@@ -73,16 +73,16 @@ const EquipmentArea: React.FC<EquipmentAreaProps> = ({
           />
         </div>
         
-        <Separator className="my-2" />
+        <Separator className="my-1" />
         
-        {/* Capacity Upgrade */}
-        <div className="win95-window p-2">
+        {/* Capacity Upgrade - Smaller */}
+        <div className="win95-window p-1">
           <Button
-            className="win95-button flex items-center justify-center w-full"
+            className="win95-button flex items-center justify-center w-full text-xs py-1"
             onClick={onUpgradeCapacity}
             disabled={isLoading || plantCapacity >= 50}
           >
-            <Plus className="w-4 h-4 mr-1" />
+            <Plus className="w-3 h-3 mr-1" />
             Expand Room ({expansionCost} $THC) - {plantCapacity}/50 Capacity
           </Button>
         </div>

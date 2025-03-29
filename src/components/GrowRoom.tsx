@@ -27,35 +27,41 @@ const GrowRoom: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex-1 flex flex-col gap-4">
-        {/* Growing Area */}
-        <GrowingArea 
-          plants={plants}
-          plantCapacity={plantCapacity}
-          isLoading={isLoading}
-          thcAmount={thcAmount}
-          getGrowthColor={getGrowthColor}
-          onPlantSeed={plantSeed}
-          onHarvestPlant={harvestPlant}
-        />
+      <div className="flex-1 flex flex-col">
+        {/* Growing Area - Now larger */}
+        <div className="flex-1 flex mb-2">
+          <GrowingArea 
+            plants={plants}
+            plantCapacity={plantCapacity}
+            isLoading={isLoading}
+            thcAmount={thcAmount}
+            getGrowthColor={getGrowthColor}
+            onPlantSeed={plantSeed}
+            onHarvestPlant={harvestPlant}
+          />
+        </div>
         
-        {/* Equipment Area - Now horizontal */}
-        <EquipmentArea 
-          equipment={equipment}
-          plantCapacity={plantCapacity}
-          isLoading={isLoading}
-          onShowUpgradeModal={setShowUpgradeModal}
-          onUpgradeCapacity={upgradeCapacity}
-        />
+        {/* Equipment Area - Smaller and horizontal */}
+        <div className="mb-1">
+          <EquipmentArea 
+            equipment={equipment}
+            plantCapacity={plantCapacity}
+            isLoading={isLoading}
+            onShowUpgradeModal={setShowUpgradeModal}
+            onUpgradeCapacity={upgradeCapacity}
+          />
+        </div>
         
-        {/* Stats Bar - Moved to the bottom */}
-        <StatsBar 
-          thcAmount={thcAmount}
-          plantCount={plants.length}
-          plantCapacity={plantCapacity}
-          isLoading={isLoading}
-          onPlantSeed={plantSeed}
-        />
+        {/* Stats Bar - At the bottom with reduced spacing */}
+        <div>
+          <StatsBar 
+            thcAmount={thcAmount}
+            plantCount={plants.length}
+            plantCapacity={plantCapacity}
+            isLoading={isLoading}
+            onPlantSeed={plantSeed}
+          />
+        </div>
       </div>
       
       {/* Modals and Overlays */}
