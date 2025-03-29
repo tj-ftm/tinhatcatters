@@ -61,7 +61,7 @@ const Desktop: React.FC = () => {
           <DesktopIcon 
             label="THC Grow Room" 
             icon="🌿" 
-            onClick={() => handleIconClick('growroom')} 
+            onClick={() => handleIconClick('growroom', '/growroom')} 
           />
           <DesktopIcon 
             label="NFT Shop" 
@@ -122,7 +122,7 @@ const DesktopIcon: React.FC<{
 }> = ({ label, icon, onClick }) => {
   return (
     <div 
-      className="flex flex-col items-center cursor-pointer w-16 group"
+      className="flex flex-col items-center cursor-pointer w-16 group hover:bg-win95-blue/20"
       onClick={onClick}
       onDoubleClick={onClick}
     >
