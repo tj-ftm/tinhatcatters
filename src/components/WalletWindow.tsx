@@ -1,18 +1,54 @@
+
 import React, { useEffect, useState } from 'react';
-import { X, Minus, Eye, EyeOff } from 'lucide-react';
+import { X, Minus } from 'lucide-react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import WalletConnector from './WalletConnector';
 import { ScrollArea } from './ui/scroll-area';
-import { Button } from './ui/button';
+import { fetchTinHatCattersFromSonicscan } from '@/lib/web3';
 
 interface WalletWindowProps {
   onClose: () => void;
   onMinimize: () => void;
 }
 
+interface NFTData {
+  id: string;
+  image: string;
+}
+
 const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
-  const { address, balance, thcBalance, sonicNFTs } = useWeb3();
-  const [showBalances, setShowBalances] = useState<boolean>(true);
+  const { address, balance, thcBalance, tinHatCatters, sonicNFTs } = useWeb3();
+  const [nftData, setNftData] = useState<NFTData[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [imageLoadErrors, setImageLoadErrors] = useState<Record<string, boolean>>({});
+  
+  useEffect(() => {
+    const loadNFTData = async () => {
+      if (address) {
+        setLoading(true);
+        setError(null);
+        try {
+          const data = await fetchTinHatCattersFromSonicscan(address);
+          setNftData(data);
+        } catch (error) {
+          console.error("Error fetching NFT data:", error);
+          setError("Failed to load NFT data. Please try again later.");
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    
+    loadNFTData();
+  }, [address]);
+  
+  const handleImageError = (nftId: string) => {
+    setImageLoadErrors(prev => ({
+      ...prev,
+      [nftId]: true
+    }));
+  };
   
   return (
     <div className="win95-window w-80 shadow-lg z-20">
@@ -47,41 +83,65 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
           </div>
         ) : (
           <div>
-            <div className="mb-3 flex items-center">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mr-2 win95-button h-6 w-6 p-0" 
-                onClick={() => setShowBalances(!showBalances)}
-              >
-                {showBalances ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-              </Button>
-              <div className="flex-1">
-                <div className="text-xs font-bold mb-1">Address:</div>
-                <div className="win95-inset p-1 text-xs overflow-hidden text-overflow-ellipsis font-bold text-black">
-                  {address}
+            <div className="mb-3">
+              <div className="text-xs font-bold mb-1">Address:</div>
+              <div className="win95-inset p-1 text-xs overflow-hidden text-overflow-ellipsis font-bold text-black">
+                {address}
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <div>
+                <div className="text-xs font-bold mb-1">S Balance:</div>
+                <div className="win95-inset p-1 text-xs font-bold text-black">
+                  {parseFloat(balance).toFixed(4)} S
+                </div>
+              </div>
+              
+              <div>
+                <div className="text-xs font-bold mb-1">THC Balance:</div>
+                <div className="win95-inset p-1 text-xs font-bold text-black">
+                  {thcBalance ? parseFloat(thcBalance).toFixed(2) : '0.00'} THC
                 </div>
               </div>
             </div>
             
-            {showBalances && (
-              <div className="grid grid-cols-2 gap-2 mb-3">
-                <div>
-                  <div className="text-xs font-bold mb-1">S Balance:</div>
-                  <div className="win95-inset p-1 text-xs font-bold text-black">
-                    {parseFloat(balance).toFixed(4)} S
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="text-xs font-bold mb-1">THC Balance:</div>
-                  <div className="win95-inset p-1 text-xs font-bold text-black">
-                    {thcBalance ? parseFloat(thcBalance).toFixed(2) : '0.00'} THC
-                  </div>
-                </div>
+            <div className="mb-2">
+              <div className="text-xs font-bold mb-1">Your Tin Hat Catter:</div>
+              <div className="win95-inset p-1 max-h-24 overflow-y-auto">
+                <ScrollArea className="h-full">
+                  {loading ? (
+                    <div className="text-xs text-center py-1 font-bold text-black">Loading NFTs...</div>
+                  ) : error ? (
+                    <div className="text-xs text-center py-1 font-bold text-red-600">{error}</div>
+                  ) : nftData && nftData.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-1">
+                      {nftData.map((nft) => (
+                        <div key={nft.id} className="text-xs p-1 bg-white/50 rounded flex flex-col items-center">
+                          {nft.image && !imageLoadErrors[nft.id] ? (
+                            <img 
+                              src={nft.image} 
+                              alt={`THC #${nft.id}`} 
+                              className="w-full h-auto object-contain mb-1 border border-gray-300"
+                              onError={() => handleImageError(nft.id)}
+                            />
+                          ) : (
+                            <div className="w-full h-12 bg-gray-200 flex items-center justify-center">
+                              <span className="text-[10px]">THC #{nft.id}</span>
+                            </div>
+                          )}
+                          <span className="font-bold text-black text-center text-[10px]">THC #{nft.id}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-center py-1 font-bold text-black">No NFTs found</div>
+                  )}
+                </ScrollArea>
               </div>
-            )}
+            </div>
             
+            {/* Sonic NFTs Preview */}
             {sonicNFTs.length > 0 && (
               <div className="mb-2">
                 <div className="text-xs font-bold mb-1">Your Sonic NFTs:</div>
