@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { X, Minus, Image, FileImage } from 'lucide-react';
 import { useWeb3 } from '@/contexts/Web3Context';
@@ -6,6 +5,7 @@ import WalletConnector from './WalletConnector';
 import { ScrollArea } from './ui/scroll-area';
 import { fetchNFTsFromContract } from '@/lib/web3';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
+import { toast } from '@/hooks/use-toast';
 
 interface WalletWindowProps {
   onClose: () => void;
@@ -28,53 +28,105 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [imageLoadErrors, setImageLoadErrors] = useState<Record<string, boolean>>({});
+  const [lastRefresh, setLastRefresh] = useState<number>(Date.now());
   
-  // Initial load and refresh of NFT data
   useEffect(() => {
-    const loadNFTData = async () => {
+    const loadWalletData = async () => {
       if (address) {
         setLoading(true);
         setError(null);
+        
         try {
-          // First try to get NFTs from context
-          if (tinHatCatters && tinHatCatters.length > 0) {
-            console.log("Using NFTs from context:", tinHatCatters);
-            setNftData(tinHatCatters);
-          } else {
-            // If none in context, fetch directly
-            console.log("Fetching NFTs directly");
+          await refreshBalance();
+          
+          try {
             await refreshNFTs();
-            const data = await fetchNFTsFromContract(address);
-            console.log("Fetched NFT data:", data);
-            setNftData(data);
+            
+            if (!tinHatCatters || tinHatCatters.length === 0) {
+              console.log("Fetching NFTs directly");
+              const data = await fetchNFTsFromContract(address);
+              console.log("Fetched NFT data:", data);
+              setNftData(data);
+            } else {
+              console.log("Using NFTs from context:", tinHatCatters);
+              setNftData(tinHatCatters);
+            }
+          } catch (nftError) {
+            console.error("Error fetching NFTs:", nftError);
+            toast({
+              title: "NFT Loading Issue",
+              description: "Unable to load NFTs. Showing placeholder data.",
+              variant: "destructive"
+            });
+            
+            const mockData = [
+              {
+                id: '1',
+                name: 'Tin Hat Catter #1',
+                image: `/assets/tinhats/1.png`,
+                description: "A unique Tin Hat Catter NFT"
+              }
+            ];
+            setNftData(mockData);
           }
         } catch (error) {
-          console.error("Error fetching NFT data:", error);
-          setError("Failed to load NFT data. Please try again later.");
+          console.error("Error loading wallet data:", error);
+          setError("Failed to load wallet data. Please try again.");
         } finally {
           setLoading(false);
+          setLastRefresh(Date.now());
         }
       }
     };
     
-    loadNFTData();
+    loadWalletData();
     
-    // Set up periodic refresh for balances
     const refreshInterval = setInterval(() => {
       if (address) {
         refreshBalance().catch(e => console.error("Error refreshing balance:", e));
+        setLastRefresh(Date.now());
       }
-    }, 15000); // Refresh every 15 seconds
+    }, 10000);
     
     return () => clearInterval(refreshInterval);
-  }, [address, tinHatCatters, refreshNFTs, refreshBalance]);
+  }, [address, refreshBalance]);
   
-  // Update nftData when tinHatCatters changes
   useEffect(() => {
     if (tinHatCatters && tinHatCatters.length > 0) {
+      console.log("Updated NFT data from context:", tinHatCatters);
       setNftData(tinHatCatters);
     }
   }, [tinHatCatters]);
+  
+  const handleManualRefresh = async () => {
+    if (!address) return;
+    
+    setLoading(true);
+    try {
+      toast({
+        title: "Refreshing",
+        description: "Updating wallet data...",
+      });
+      
+      await refreshBalance();
+      await refreshNFTs();
+      
+      toast({
+        title: "Refresh Complete",
+        description: "Wallet data has been updated.",
+      });
+    } catch (error) {
+      console.error("Manual refresh error:", error);
+      toast({
+        title: "Refresh Failed",
+        description: "Failed to update wallet data.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+      setLastRefresh(Date.now());
+    }
+  };
   
   const handleImageError = (nftId: string, fallbackType: string) => {
     setImageLoadErrors(prev => ({
@@ -84,7 +136,6 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
   };
   
   const getNFTImage = (nft: NFTData) => {
-    // Try primary image
     if (!imageLoadErrors[`${nft.id}-primary`]) {
       return (
         <img 
@@ -96,7 +147,6 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
       );
     }
     
-    // Try first fallback
     if (nft.fallbackImage && !imageLoadErrors[`${nft.id}-fallback1`]) {
       return (
         <img 
@@ -108,7 +158,6 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
       );
     }
     
-    // Try secondary fallback
     if (nft.secondaryFallback && !imageLoadErrors[`${nft.id}-fallback2`]) {
       return (
         <img 
@@ -120,7 +169,6 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
       );
     }
     
-    // Show fallback icon/text
     return (
       <div className="w-full h-16 bg-gray-200 flex items-center justify-center">
         <div className="flex flex-col items-center">
@@ -188,7 +236,17 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
             </div>
             
             <div className="mb-2">
-              <div className="text-xs font-bold mb-1">Your Tin Hat Catters:</div>
+              <div className="flex justify-between items-center">
+                <div className="text-xs font-bold mb-1">Your Tin Hat Catters:</div>
+                <button 
+                  className="win95-button text-[8px] p-0.5 h-5 mb-1"
+                  onClick={handleManualRefresh}
+                  disabled={loading}
+                >
+                  {loading ? 'Refreshing...' : 'Refresh'}
+                </button>
+              </div>
+              
               <div className="win95-inset p-1 max-h-36 overflow-y-auto">
                 <ScrollArea className="h-full w-full">
                   {loading ? (

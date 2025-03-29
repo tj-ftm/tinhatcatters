@@ -27,65 +27,70 @@ export const getBalance = async (address: string | null): Promise<string> => {
 
 // Function to get the THC balance (assuming it's a ERC-20 token)
 export const getTHCBalance = async (address: string | null): Promise<string> => {
+  if (!address) {
+    console.warn('No address provided to getTHCBalance');
+    return '0';
+  }
+
+  if (!isWeb3Available()) {
+    console.error('Web3 is not available');
+    return '0';
+  }
+
+  // Log to check if we're getting here
+  console.log('Getting THC balance for address:', address);
+
   try {
-    if (!address) {
-      console.warn('No address provided to getTHCBalance');
-      return '0';
-    }
-
-    if (!isWeb3Available()) {
-      console.error('Web3 is not available');
-      return '0';
-    }
-
-    // Log to check if we're getting here
-    console.log('Getting THC balance for address:', address);
-
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    
+    // Use the specific contract address provided
+    const tokenAddress = '0xae8e9b2222031c464342dbfab7433b64eb5c15cf';
+    
+    console.log('Using token contract address:', tokenAddress);
+    
+    const abi = [
+      "function balanceOf(address) view returns (uint)",
+      "function decimals() view returns (uint8)",
+      "function symbol() view returns (string)"
+    ];
+    
+    const tokenContract = new ethers.Contract(
+      tokenAddress,
+      abi,
+      provider
+    );
+    
+    // Get token decimals - handle errors gracefully
+    let decimals = 18; // Default to 18 if we can't fetch
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      
-      // Use the specific contract address provided
-      const tokenAddress = '0xae8e9b2222031c464342dbfab7433b64eb5c15cf';
-      
-      console.log('Using token contract address:', tokenAddress);
-      
-      const abi = [
-        "function balanceOf(address) view returns (uint)",
-        "function decimals() view returns (uint8)",
-        "function symbol() view returns (string)"
-      ];
-      
-      const tokenContract = new ethers.Contract(
-        tokenAddress,
-        abi,
-        provider
-      );
-      
-      // Get token decimals - handle errors gracefully
-      console.log('Fetching token decimals...');
-      let decimals = 18; // Default to 18 if we can't fetch
-      try {
-        decimals = await tokenContract.decimals();
-        console.log('Token decimals:', decimals);
-      } catch (err) {
-        console.warn('Failed to get decimals, using default of 18:', err);
-      }
-      
-      // Get balance
-      console.log('Fetching balance for address:', address);
+      decimals = await tokenContract.decimals();
+      console.log('Token decimals:', decimals);
+    } catch (err) {
+      console.warn('Failed to get decimals, using default of 18:', err);
+    }
+    
+    // Get balance with timeout
+    console.log('Fetching balance for address:', address);
+    
+    // Set a timeout promise to handle slow responses
+    const timeoutPromise = new Promise<string>((_, reject) => {
+      setTimeout(() => reject(new Error('Balance fetch timeout')), 5000);
+    });
+    
+    // Actual balance fetch
+    const balancePromise = async (): Promise<string> => {
       const balance = await tokenContract.balanceOf(address);
       console.log('Raw balance:', balance.toString());
-      
       const formattedBalance = ethers.formatUnits(balance, decimals);
       console.log('Formatted THC balance:', formattedBalance);
-      
       return formattedBalance;
-    } catch (error) {
-      console.error('Error in THC balance inner try/catch:', error);
-      return '0';
-    }
+    };
+    
+    // Race between timeout and actual fetch
+    const formattedBalance = await Promise.race([balancePromise(), timeoutPromise]);
+    return formattedBalance;
   } catch (error: any) {
-    console.error('Error getting THC balance (outer):', error);
+    console.error('Error getting THC balance:', error);
     console.error('Error details:', error.message);
     return '0';
   }

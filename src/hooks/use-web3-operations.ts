@@ -90,7 +90,7 @@ export function useWeb3Operations() {
     });
   };
 
-  // Refresh balance
+  // Refresh balance with retry logic
   const refreshBalance = async () => {
     if (address) {
       try {
@@ -111,15 +111,16 @@ export function useWeb3Operations() {
         let thcSuccess = false;
         let newThcBalance = '0';
         
-        while (attempts < 2 && !thcSuccess) {
+        while (attempts < 3 && !thcSuccess) {
           try {
+            console.log(`Attempting to get THC balance, attempt ${attempts + 1}`);
             newThcBalance = await getTHCBalance(address);
             thcSuccess = true;
           } catch (error) {
             console.warn(`THC balance attempt ${attempts + 1} failed:`, error);
             attempts++;
             // Short delay before retry
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 1000));
           }
         }
         
@@ -133,18 +134,26 @@ export function useWeb3Operations() {
     }
   };
 
-  // Refresh NFTs
+  // Refresh NFTs with better error handling
   const refreshNFTs = async () => {
     if (address) {
       try {
+        console.log("Refreshing NFTs for address:", address);
         const cats = await getOwnedTinHatCatters(address);
+        console.log("Retrieved cats:", cats);
         setTinHatCatters(cats);
         
-        const ownedSnacks = await getOwnedSnacks(address);
-        setSnacks(ownedSnacks);
+        try {
+          const ownedSnacks = await getOwnedSnacks(address);
+          setSnacks(ownedSnacks);
+        } catch (snackError) {
+          console.error('Error fetching snacks:', snackError);
+          // Continue even if snacks fail to load
+        }
       } catch (error) {
         console.error('Error in refreshNFTs:', error);
-        // Don't throw the error further, just log it
+        // Don't throw the error further, just log it and return empty array
+        setTinHatCatters([]);
       }
     }
   };
