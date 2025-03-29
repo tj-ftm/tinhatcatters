@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
   connectWallet, 
@@ -8,6 +7,7 @@ import {
   isWeb3Available,
   getThcBalance,
   disconnectWalletConnect,
+  switchToSonicNetwork
 } from '@/lib/web3';
 import { toast } from '@/hooks/use-toast';
 
@@ -61,6 +61,9 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     setConnecting(true);
     try {
+      // Always ensure we're on Sonic network
+      await switchToSonicNetwork();
+      
       const userAddress = await connectWallet(walletType);
       setAddress(userAddress);
       setConnectedWalletType(walletType || 'unknown');
@@ -107,6 +110,9 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Refresh balance
   const refreshBalance = async () => {
     if (address) {
+      // Ensure on Sonic network before refreshing balance
+      await switchToSonicNetwork();
+      
       const newBalance = await getBalance(address);
       setBalance(newBalance);
       
@@ -127,7 +133,7 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Listen for account changes
+  // Listen for account changes and network changes
   useEffect(() => {
     if (isWeb3Available() && window.ethereum) {
       const handleAccountsChanged = (accounts: string[]) => {
@@ -141,12 +147,26 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
           refreshNFTs();
         }
       };
+      
+      const handleChainChanged = () => {
+        // When chain changes, ensure we're on Sonic network
+        switchToSonicNetwork().then(() => {
+          if (address) {
+            refreshBalance();
+          }
+        });
+      };
 
       window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
+      
+      // Check network on initial load
+      switchToSonicNetwork();
       
       // Cleanup
       return () => {
         window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
       };
     }
   }, [address]);

@@ -128,7 +128,7 @@ export async function connectWallet(walletType?: string): Promise<string> {
         
         provider = new ethers.BrowserProvider(wcProvider as any);
         
-        // Check if user is on Sonic network
+        // Always switch to Sonic network
         await switchToSonicNetwork(provider, true);
         
         return accounts[0];
@@ -152,7 +152,7 @@ export async function connectWallet(walletType?: string): Promise<string> {
         throw new Web3Error('No accounts found. Please unlock your wallet.');
       }
 
-      // Check if user is on Sonic network
+      // Always switch to Sonic network
       await switchToSonicNetwork(provider);
       
       return accounts[0];
@@ -180,6 +180,9 @@ export async function getBalance(address: string): Promise<string> {
       throw new Web3Error('Cannot initialize Web3 provider.');
     }
 
+    // Always ensure we're on Sonic network before getting balance
+    await switchToSonicNetwork();
+    
     const balance = await provider.getBalance(address);
     return ethers.formatEther(balance);
   } catch (error) {
@@ -236,6 +239,7 @@ export async function switchToSonicNetwork(
       return true;
     }
 
+    // Always try to switch networks if not on Sonic
     if (isWalletConnect && walletConnectProvider) {
       // WalletConnect handles chain switching differently
       await walletConnectProvider.request({

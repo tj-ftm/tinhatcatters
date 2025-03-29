@@ -50,22 +50,22 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
           <div>
             <div className="mb-3">
               <div className="text-xs font-bold mb-1">Address:</div>
-              <div className="win95-inset p-1 text-xs overflow-hidden text-overflow-ellipsis">
+              <div className="win95-inset p-1 text-xs overflow-hidden text-overflow-ellipsis font-bold text-black">
                 {address}
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-2 mb-3">
               <div>
-                <div className="text-xs font-bold mb-1">ETH Balance:</div>
-                <div className="win95-inset p-1 text-xs">
-                  {parseFloat(balance).toFixed(4)} ETH
+                <div className="text-xs font-bold mb-1">S Balance:</div>
+                <div className="win95-inset p-1 text-xs font-bold text-black">
+                  {parseFloat(balance).toFixed(4)} S
                 </div>
               </div>
               
               <div>
                 <div className="text-xs font-bold mb-1">THC Balance:</div>
-                <div className="win95-inset p-1 text-xs">
+                <div className="win95-inset p-1 text-xs font-bold text-black">
                   {thcBalance ? parseFloat(thcBalance).toFixed(2) : '0.00'} THC
                 </div>
               </div>
@@ -77,13 +77,13 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
                 {tinHatCatters && tinHatCatters.length > 0 ? (
                   <div className="grid grid-cols-2 gap-1">
                     {tinHatCatters.map((cat, index) => (
-                      <div key={index} className="text-xs p-1 bg-white/50 rounded">
+                      <div key={index} className="text-xs p-1 bg-white/50 rounded font-bold text-black">
                         THC #{cat.id}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-xs text-center py-1">No NFTs found</div>
+                  <div className="text-xs text-center py-1 font-bold text-black">No NFTs found</div>
                 )}
               </div>
             </div>
