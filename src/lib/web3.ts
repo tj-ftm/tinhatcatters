@@ -42,7 +42,7 @@ export class Web3Error extends Error {
 // This is a placeholder project ID for development purposes only
 const WC_PROJECT_ID = 'c1330fe75b833d2e66f772f4d2c565a3';
 
-let walletConnectProvider: EthereumProvider | null = null;
+let walletConnectProvider: typeof EthereumProvider | null = null;
 let walletConnectModal: WalletConnectModal | null = null;
 
 // Initialize WalletConnect provider

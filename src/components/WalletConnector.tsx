@@ -43,7 +43,7 @@ const WalletConnector: React.FC = () => {
     return (
       <>
         <Button 
-          className="sonic-btn" 
+          className="sonic-btn whitespace-nowrap flex-shrink-0" 
           onClick={handleConnectClick} 
           disabled={connecting}
         >
@@ -62,9 +62,9 @@ const WalletConnector: React.FC = () => {
   
   // If connected, show dropdown
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative flex-shrink-0" ref={dropdownRef}>
       <Button 
-        className="sonic-btn flex items-center" 
+        className="sonic-btn flex items-center whitespace-nowrap" 
         onClick={() => setIsOpen(!isOpen)}
       >
         {displayAddress}

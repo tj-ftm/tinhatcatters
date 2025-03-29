@@ -7,6 +7,8 @@ export default class GameScene extends Phaser.Scene {
   cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   platforms!: Phaser.Physics.Arcade.StaticGroup;
   rings!: Phaser.Physics.Arcade.Group;
+  enemies!: Phaser.Physics.Arcade.Group;
+  obstacles!: Phaser.Physics.Arcade.StaticGroup;
   parallaxBG: Phaser.GameObjects.TileSprite[] = [];
   score: number = 0;
   scoreText!: Phaser.GameObjects.Text;
@@ -14,10 +16,15 @@ export default class GameScene extends Phaser.Scene {
   ringsText!: Phaser.GameObjects.Text;
   pet?: Phaser.Physics.Arcade.Sprite;
   activeBoosts: { type: string; value: number; endTime: number }[] = [];
+  health: number = 100;
+  healthBar!: Phaser.GameObjects.Graphics;
+  isInvincible: boolean = false;
+  invincibilityTimer?: Phaser.Time.TimerEvent;
 
   // For boost effects
   boostEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
   dustEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
+  playerSize: { width: number; height: number } = { width: 30, height: 45 };
 
   constructor() {
     super('GameScene');
@@ -32,6 +39,10 @@ export default class GameScene extends Phaser.Scene {
     
     // Create rings to collect
     this.createRings();
+    
+    // Create enemies and obstacles
+    this.createEnemies();
+    this.createObstacles();
     
     // Create player
     this.createPlayer();
@@ -51,6 +62,8 @@ export default class GameScene extends Phaser.Scene {
     // Add colliders
     this.physics.add.collider(this.player, this.platforms);
     this.physics.add.overlap(this.player, this.rings, this.collectRing, undefined, this);
+    this.physics.add.collider(this.player, this.enemies, this.hitEnemy, undefined, this);
+    this.physics.add.collider(this.player, this.obstacles, this.hitObstacle, undefined, this);
 
     // Camera follows player
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
@@ -84,20 +97,31 @@ export default class GameScene extends Phaser.Scene {
     
     // Create more platforms as the player moves
     this.generatePlatforms();
+    
+    // Generate more content as player progresses
+    this.generateGameContent();
+    
+    // Check for game over condition
+    if (this.health <= 0 || this.player.y > this.cameras.main.height + 200) {
+      this.gameOver();
+    }
   }
 
   createParallaxBackground() {
-    // Add three layers of background with different scroll speeds
+    // Add three layers of background with different scroll speeds and pink/black theme
     this.parallaxBG = [
       this.add.tileSprite(0, 0, 800, 400, 'bg-layer-1')
         .setOrigin(0, 0)
-        .setScrollFactor(0, 0),
+        .setScrollFactor(0, 0)
+        .setTint(0x000000), // Black
       this.add.tileSprite(0, 0, 800, 400, 'bg-layer-2')
         .setOrigin(0, 0)
-        .setScrollFactor(0, 0),
+        .setScrollFactor(0, 0)
+        .setTint(0xFF69B4), // Pink
       this.add.tileSprite(0, 0, 800, 400, 'bg-layer-3')
         .setOrigin(0, 0)
         .setScrollFactor(0, 0)
+        .setTint(0x222222) // Dark gray
     ];
   }
 
@@ -106,23 +130,71 @@ export default class GameScene extends Phaser.Scene {
     
     // Create initial ground
     for (let i = 0; i < 20; i++) {
-      this.platforms.create(i * 64, 380, 'platform');
+      const platform = this.platforms.create(i * 64, 380, 'platform');
+      platform.setTint(0xFF69B4); // Pink platforms
+      platform.refreshBody();
     }
     
     // Add some floating platforms
-    this.platforms.create(300, 280, 'platform');
-    this.platforms.create(550, 200, 'platform');
-    this.platforms.create(750, 300, 'platform');
+    const floatingPlatform1 = this.platforms.create(300, 280, 'platform');
+    floatingPlatform1.setTint(0xFF69B4);
+    floatingPlatform1.refreshBody();
+    
+    const floatingPlatform2 = this.platforms.create(550, 200, 'platform');
+    floatingPlatform2.setTint(0xFF69B4);
+    floatingPlatform2.refreshBody();
+    
+    const floatingPlatform3 = this.platforms.create(750, 300, 'platform');
+    floatingPlatform3.setTint(0xFF69B4);
+    floatingPlatform3.refreshBody();
   }
 
   createRings() {
     this.rings = this.physics.add.group();
     
-    // Add some initial rings
+    // Add some initial rings with yellow tint
     for (let i = 0; i < 10; i++) {
       const x = Phaser.Math.Between(200, 800);
       const y = Phaser.Math.Between(100, 300);
-      this.rings.create(x, y, 'ring');
+      const ring = this.rings.create(x, y, 'ring');
+      ring.setTint(0xFFFF00); // Yellow rings
+      // Add a simple rotation animation
+      this.tweens.add({
+        targets: ring,
+        angle: 360,
+        duration: 1500,
+        repeat: -1
+      });
+    }
+  }
+
+  createEnemies() {
+    this.enemies = this.physics.add.group();
+    
+    // Add some initial enemies
+    for (let i = 0; i < 5; i++) {
+      const x = Phaser.Math.Between(400, 1200);
+      const y = Phaser.Math.Between(100, 350);
+      const enemy = this.enemies.create(x, y, 'enemy');
+      enemy.setTint(0xFF00FF); // Magenta enemies
+      enemy.setVelocityX(Phaser.Math.Between(-50, 50));
+      enemy.setBounce(1);
+      enemy.setCollideWorldBounds(false);
+    }
+    
+    // Add collision between enemies and platforms
+    this.physics.add.collider(this.enemies, this.platforms);
+  }
+
+  createObstacles() {
+    this.obstacles = this.physics.add.staticGroup();
+    
+    // Add some spikes and other obstacles
+    for (let i = 0; i < 3; i++) {
+      const x = Phaser.Math.Between(400, 1200);
+      const obstacle = this.obstacles.create(x, 360, 'spikes');
+      obstacle.setTint(0xFF0000); // Red obstacles
+      obstacle.refreshBody();
     }
   }
 
@@ -133,11 +205,17 @@ export default class GameScene extends Phaser.Scene {
     this.player.setCollideWorldBounds(false);
     
     // Set player hitbox
-    this.player.setSize(30, 45);
+    this.player.setSize(this.playerSize.width, this.playerSize.height);
     this.player.setOffset(9, 3);
     
-    // Start with idle animation
-    this.player.anims.play('idle', true);
+    // Only play animations if the player texture has frames
+    try {
+      if (this.anims.exists('idle')) {
+        this.player.anims.play('idle', true);
+      }
+    } catch (error) {
+      console.error("Could not play animation: ", error);
+    }
   }
 
   createPet() {
@@ -146,6 +224,16 @@ export default class GameScene extends Phaser.Scene {
     
     // Set pet to follow player loosely
     this.pet.setGravity(0);
+    
+    // Add a bobbing animation to the pet
+    this.tweens.add({
+      targets: this.pet,
+      y: "+=10",
+      duration: 1000,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
   }
 
   createParticles() {
@@ -155,6 +243,7 @@ export default class GameScene extends Phaser.Scene {
       speed: { min: 50, max: 100 },
       scale: { start: 0.8, end: 0 },
       blendMode: 'ADD',
+      tint: 0xFFFF00, // Yellow
       emitting: false
     });
     
@@ -184,6 +273,30 @@ export default class GameScene extends Phaser.Scene {
       fontSize: '20px',
       color: '#FFFF00' // Yellow
     }).setScrollFactor(0);
+    
+    // Health bar (bottom left)
+    this.healthBar = this.add.graphics().setScrollFactor(0);
+    this.updateHealthBar();
+  }
+
+  updateHealthBar() {
+    this.healthBar.clear();
+    
+    // Background
+    this.healthBar.fillStyle(0x000000);
+    this.healthBar.fillRect(16, this.cameras.main.height - 30, 150, 20);
+    
+    // Health remaining
+    if (this.health > 30) {
+      this.healthBar.fillStyle(0x00FF00);
+    } else {
+      this.healthBar.fillStyle(0xFF0000);
+    }
+    this.healthBar.fillRect(18, this.cameras.main.height - 28, Math.floor(146 * (this.health / 100)), 16);
+    
+    // Border
+    this.healthBar.lineStyle(2, 0xFFFF00);
+    this.healthBar.strokeRect(16, this.cameras.main.height - 30, 150, 20);
   }
 
   handlePlayerMovement() {
@@ -202,14 +315,26 @@ export default class GameScene extends Phaser.Scene {
       this.player.setVelocityX(-speed);
       this.player.flipX = true;
       if (this.player.body.touching.down) {
-        this.player.anims.play('run', true);
+        try {
+          if (this.anims.exists('run')) {
+            this.player.anims.play('run', true);
+          }
+        } catch (error) {
+          console.error("Could not play run animation: ", error);
+        }
         this.dustEmitter?.emitParticleAt(this.player.x + 10, this.player.y + 24);
       }
     } else if (this.cursors.right!.isDown) {
       this.player.setVelocityX(speed);
       this.player.flipX = false;
       if (this.player.body.touching.down) {
-        this.player.anims.play('run', true);
+        try {
+          if (this.anims.exists('run')) {
+            this.player.anims.play('run', true);
+          }
+        } catch (error) {
+          console.error("Could not play run animation: ", error);
+        }
         this.dustEmitter?.emitParticleAt(this.player.x - 10, this.player.y + 24);
       }
     } else {
@@ -222,14 +347,26 @@ export default class GameScene extends Phaser.Scene {
       }
       
       if (this.player.body.touching.down) {
-        this.player.anims.play('idle', true);
+        try {
+          if (this.anims.exists('idle')) {
+            this.player.anims.play('idle', true);
+          }
+        } catch (error) {
+          console.error("Could not play idle animation: ", error);
+        }
       }
     }
     
     // Jump when up arrow is pressed
     if (this.cursors.up!.isDown && this.player.body.touching.down) {
       this.player.setVelocityY(-jumpForce);
-      this.player.anims.play('jump', true);
+      try {
+        if (this.anims.exists('jump')) {
+          this.player.anims.play('jump', true);
+        }
+      } catch (error) {
+        console.error("Could not play jump animation: ", error);
+      }
       // this.sound.play('jump');
     }
     
@@ -286,6 +423,9 @@ export default class GameScene extends Phaser.Scene {
     // Update UI position for fixed HUD
     this.scoreText.x = this.cameras.main.scrollX + 16;
     this.ringsText.x = this.cameras.main.scrollX + this.cameras.main.width - 150;
+    
+    // Ensure health bar stays at the bottom
+    this.updateHealthBar();
   }
 
   updateBoosts() {
@@ -294,6 +434,12 @@ export default class GameScene extends Phaser.Scene {
     this.activeBoosts = this.activeBoosts.filter(boost => {
       return currentTime < boost.endTime;
     });
+    
+    // Check invincibility
+    if (this.isInvincible && currentTime >= this.invincibilityTimer?.getRemaining()) {
+      this.isInvincible = false;
+      this.player.alpha = 1; // Restore opacity
+    }
   }
 
   generatePlatforms() {
@@ -304,12 +450,44 @@ export default class GameScene extends Phaser.Scene {
       const x = rightmostPlatform + Phaser.Math.Between(100, 300);
       const y = Phaser.Math.Between(200, 350);
       
-      this.platforms.create(x, y, 'platform');
+      const platform = this.platforms.create(x, y, 'platform');
+      platform.setTint(0xFF69B4); // Pink
+      platform.refreshBody();
       
       // Sometimes add a ring above the platform
       if (Phaser.Math.Between(0, 1) > 0.5) {
-        this.rings.create(x, y - 50, 'ring');
+        const ring = this.rings.create(x, y - 50, 'ring');
+        ring.setTint(0xFFFF00); // Yellow
+        this.tweens.add({
+          targets: ring,
+          angle: 360,
+          duration: 1500,
+          repeat: -1
+        });
       }
+    }
+  }
+
+  generateGameContent() {
+    // Generate more enemies and obstacles as player progresses
+    const rightmostX = this.getRightmostX();
+    
+    // Add enemies occasionally
+    if (this.player.x > rightmostX - 800 && Phaser.Math.Between(0, 100) < 2) {
+      const x = rightmostX + Phaser.Math.Between(200, 500);
+      const y = Phaser.Math.Between(100, 350);
+      const enemy = this.enemies.create(x, y, 'enemy');
+      enemy.setTint(0xFF00FF); // Magenta
+      enemy.setVelocityX(Phaser.Math.Between(-50, 50));
+      enemy.setBounce(1);
+    }
+    
+    // Add obstacles occasionally
+    if (this.player.x > rightmostX - 800 && Phaser.Math.Between(0, 100) < 1) {
+      const x = rightmostX + Phaser.Math.Between(300, 600);
+      const obstacle = this.obstacles.create(x, 360, 'spikes');
+      obstacle.setTint(0xFF0000); // Red
+      obstacle.refreshBody();
     }
   }
 
@@ -334,7 +512,8 @@ export default class GameScene extends Phaser.Scene {
       const y = ring.y + Math.sin(angle) * 10;
       
       const sparkle = this.add.sprite(x, y, 'sparkle')
-        .setScale(Phaser.Math.Between(5, 10) / 10);
+        .setScale(Phaser.Math.Between(5, 10) / 10)
+        .setTint(0xFFFF00); // Yellow
       
       this.tweens.add({
         targets: sparkle,
@@ -349,6 +528,67 @@ export default class GameScene extends Phaser.Scene {
     if (this.ringsCount % 10 === 0) {
       this.applyBoost('speed', 20, 5000);
     }
+  }
+
+  hitEnemy(player: Phaser.Physics.Arcade.Sprite, enemy: Phaser.Physics.Arcade.Sprite) {
+    // No damage if invincible
+    if (this.isInvincible) return;
+    
+    // Take damage
+    this.takeDamage(10);
+    
+    // Knockback effect
+    const knockbackDirection = player.x < enemy.x ? -1 : 1;
+    player.setVelocity(knockbackDirection * 200, -200);
+    
+    // Briefly make invincible
+    this.makeInvincible(1000);
+  }
+
+  hitObstacle(player: Phaser.Physics.Arcade.Sprite, obstacle: Phaser.Physics.Arcade.Sprite) {
+    // No damage if invincible
+    if (this.isInvincible) return;
+    
+    // Take damage
+    this.takeDamage(15);
+    
+    // Knockback effect
+    player.setVelocityY(-200);
+    
+    // Briefly make invincible
+    this.makeInvincible(1000);
+  }
+
+  takeDamage(amount: number) {
+    this.health = Math.max(0, this.health - amount);
+    this.updateHealthBar();
+    
+    // Flash the player red
+    this.player.setTint(0xFF0000);
+    this.time.delayedCall(200, () => {
+      this.player.clearTint();
+    });
+    
+    // Camera shake
+    this.cameras.main.shake(200, 0.01);
+  }
+
+  makeInvincible(duration: number) {
+    this.isInvincible = true;
+    
+    // Visual effect - flashing
+    this.player.alpha = 0.7;
+    
+    // Clear any existing timer
+    if (this.invincibilityTimer) {
+      this.invincibilityTimer.remove();
+    }
+    
+    // Set new timer
+    this.invincibilityTimer = this.time.delayedCall(duration, () => {
+      this.isInvincible = false;
+      this.player.alpha = 1;
+    });
   }
 
   applyBoost(type: string, value: number, duration: number) {
@@ -369,6 +609,78 @@ export default class GameScene extends Phaser.Scene {
         this.boostEmitter?.stop();
       });
     }
+    
+    // If invincibility boost
+    if (type === 'invincibility') {
+      this.makeInvincible(duration);
+      
+      // Show special effect for invincibility
+      this.player.setTint(0xFFFF00); // Yellow glow
+      this.time.delayedCall(duration, () => {
+        this.player.clearTint();
+      });
+    }
+  }
+
+  gameOver() {
+    // Show game over message
+    const gameOverText = this.add.text(
+      this.cameras.main.scrollX + this.cameras.main.width / 2,
+      this.cameras.main.scrollY + this.cameras.main.height / 2,
+      'GAME OVER', 
+      { 
+        fontFamily: 'monospace',
+        fontSize: '40px',
+        color: '#FF0000',
+        backgroundColor: '#000000',
+        padding: { x: 20, y: 10 }
+      }
+    )
+    .setOrigin(0.5)
+    .setScrollFactor(0)
+    .setDepth(100);
+    
+    // Show score
+    const finalScoreText = this.add.text(
+      this.cameras.main.scrollX + this.cameras.main.width / 2,
+      this.cameras.main.scrollY + this.cameras.main.height / 2 + 60,
+      `Final Score: ${this.score}`, 
+      { 
+        fontFamily: 'monospace',
+        fontSize: '24px',
+        color: '#FFFF00',
+        backgroundColor: '#000000',
+        padding: { x: 20, y: 10 }
+      }
+    )
+    .setOrigin(0.5)
+    .setScrollFactor(0)
+    .setDepth(100);
+    
+    // Restart button
+    const restartButton = this.add.text(
+      this.cameras.main.scrollX + this.cameras.main.width / 2,
+      this.cameras.main.scrollY + this.cameras.main.height / 2 + 120,
+      'Click to Restart', 
+      { 
+        fontFamily: 'monospace',
+        fontSize: '20px',
+        color: '#FFFFFF',
+        backgroundColor: '#FF69B4',
+        padding: { x: 20, y: 10 }
+      }
+    )
+    .setOrigin(0.5)
+    .setScrollFactor(0)
+    .setDepth(100)
+    .setInteractive({ useHandCursor: true });
+    
+    restartButton.on('pointerdown', () => {
+      this.scene.restart();
+    });
+    
+    // Pause the game
+    this.scene.pause();
   }
 
   getRightmostPlatform() {
@@ -378,6 +690,25 @@ export default class GameScene extends Phaser.Scene {
         rightmostX = platform.x;
       }
     });
+    return rightmostX;
+  }
+
+  getRightmostX() {
+    let rightmostX = this.getRightmostPlatform();
+    
+    // Check enemies and obstacles too
+    this.enemies.getChildren().forEach((enemy: any) => {
+      if (enemy.x > rightmostX) {
+        rightmostX = enemy.x;
+      }
+    });
+    
+    this.obstacles.getChildren().forEach((obstacle: any) => {
+      if (obstacle.x > rightmostX) {
+        rightmostX = obstacle.x;
+      }
+    });
+    
     return rightmostX;
   }
 }
