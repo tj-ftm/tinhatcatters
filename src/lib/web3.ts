@@ -77,9 +77,12 @@ export const connectWallet = async (walletType?: string) => {
 // Function to disconnect WalletConnect provider
 export const disconnectWalletConnect = async () => {
   // Simple implementation - in a real app you'd use the WalletConnect SDK
-  if (typeof window.ethereum !== 'undefined' && window.ethereum.isWalletConnect) {
+  if (typeof window.ethereum !== 'undefined' && window.ethereum.hasOwnProperty('isWalletConnect')) {
     try {
-      await window.ethereum.disconnect();
+      // Safely check if the disconnect method exists before calling it
+      if (typeof (window.ethereum as any).disconnect === 'function') {
+        await (window.ethereum as any).disconnect();
+      }
     } catch (error) {
       console.error('Error disconnecting WalletConnect:', error);
     }
@@ -151,9 +154,9 @@ export const getBalance = async (address: string | null): Promise<string> => {
     }
 
     if (typeof window.ethereum !== 'undefined') {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const provider = new ethers.BrowserProvider(window.ethereum);
       const balance = await provider.getBalance(address);
-      return ethers.utils.formatEther(balance);
+      return ethers.formatEther(balance);
     } else {
       console.error('MetaMask or compatible wallet not detected!');
       return '0';
@@ -173,7 +176,7 @@ export const getTHCBalance = async (address: string | null): Promise<string> => 
     }
 
     if (typeof window.ethereum !== 'undefined') {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const provider = new ethers.BrowserProvider(window.ethereum);
       // Updated THC token address for Sonic network
       const tokenAddress = '0x17Af1Df44444AB9091622e4Aa66dB5BB34E51aD5';
       
@@ -193,7 +196,7 @@ export const getTHCBalance = async (address: string | null): Promise<string> => 
       
       const decimals = await tokenContract.decimals();
       const balance = await tokenContract.balanceOf(address);
-      return ethers.utils.formatUnits(balance, decimals);
+      return ethers.formatUnits(balance, decimals);
     } else {
       console.error('MetaMask or compatible wallet not detected!');
       return '0';
@@ -286,3 +289,35 @@ export const fetchTinHatCattersFromSonicscan = async (address: string) => {
 // Function to get THC token balance (alternative implementation with hard-coded values)
 export const getThcBalance = getTHCBalance;
 
+// Function to purchase a snack NFT
+export const purchaseSnack = async (snackId: number): Promise<boolean> => {
+  try {
+    if (typeof window.ethereum === 'undefined') {
+      toast({
+        title: "No Wallet Detected",
+        description: "Please install MetaMask or another compatible wallet to purchase snacks.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    // In a real implementation, this would interact with a smart contract
+    // Here we're just simulating a purchase with a delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    toast({
+      title: "Purchase Successful",
+      description: `You have purchased snack #${snackId}!`,
+    });
+    
+    return true;
+  } catch (error: any) {
+    console.error('Error purchasing snack:', error);
+    toast({
+      title: "Purchase Failed",
+      description: error.message || "Failed to purchase snack. Please try again.",
+      variant: "destructive",
+    });
+    return false;
+  }
+};
