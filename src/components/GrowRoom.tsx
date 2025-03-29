@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useGrowRoom } from '@/hooks/useGrowRoom';
 import StatsBar from './grow-room/StatsBar';
 import GrowingArea from './grow-room/GrowingArea';
@@ -9,6 +9,8 @@ import UpgradeModal from './grow-room/UpgradeModal';
 import { useWindowManagement } from '@/hooks/useWindowManagement';
 
 const GrowRoom: React.FC = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
   const {
     thcAmount,
     plants,
@@ -26,7 +28,7 @@ const GrowRoom: React.FC = () => {
     getGrowthColor
   } = useGrowRoom();
 
-  const { toggleMaximize } = useWindowManagement();
+  const { toggleMaximize } = useWindowManagement(containerRef);
 
   // Maximize window on load
   useEffect(() => {
@@ -34,7 +36,7 @@ const GrowRoom: React.FC = () => {
   }, [toggleMaximize]);
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col" ref={containerRef}>
       <div className="flex-1 flex flex-col gap-4 overflow-hidden">
         {/* Growing Area - Now takes more space */}
         <GrowingArea 
