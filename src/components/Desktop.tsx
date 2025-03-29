@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import Taskbar from './Taskbar';
 import WindowManager from './WindowManager';
 import WalletWindow from './WalletWindow';
@@ -9,6 +9,7 @@ const Desktop: React.FC = () => {
   const [activeWindows, setActiveWindows] = useState<string[]>([]);
   const [windowsMinimized, setWindowsMinimized] = useState<Record<string, boolean>>({});
   const [showWalletWindow, setShowWalletWindow] = useState(true);
+  const navigate = useNavigate();
 
   const addWindow = (windowId: string) => {
     if (!activeWindows.includes(windowId)) {
@@ -34,17 +35,43 @@ const Desktop: React.FC = () => {
     setWindowsMinimized(prev => ({ ...prev, [windowId]: false }));
   };
 
+  const handleIconClick = (windowId: string, route?: string) => {
+    addWindow(windowId);
+    if (route) {
+      navigate(route);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#008080] relative">
       <div className="flex-grow relative">
         {/* Desktop Icons */}
         <div className="absolute top-2 left-2 flex flex-col items-center gap-6">
-          <DesktopIcon label="File Explorer" icon="💻" onClick={() => addWindow('computer')} />
-          <DesktopIcon label="Recycle Bin" icon="🗑️" onClick={() => addWindow('recyclebin')} />
-          <DesktopIcon label="Reptilian Attack" icon="🎮" onClick={() => addWindow('game')} />
-          <DesktopIcon label="THC Grow Room" icon="🌿" onClick={() => addWindow('growroom')} />
-          <DesktopIcon label="NFT Shop" icon="🛒" onClick={() => addWindow('shop')} />
-          <DesktopIcon label="Home" icon="🏠" onClick={() => addWindow('home')} />
+          <DesktopIcon 
+            label="My Computer" 
+            icon="💻" 
+            onClick={() => handleIconClick('computer')} 
+          />
+          <DesktopIcon 
+            label="Recycle Bin" 
+            icon="🗑️" 
+            onClick={() => handleIconClick('recyclebin')} 
+          />
+          <DesktopIcon 
+            label="Reptilian Attack" 
+            icon="🎮" 
+            onClick={() => handleIconClick('game', '/game')} 
+          />
+          <DesktopIcon 
+            label="THC Grow Room" 
+            icon="🌿" 
+            onClick={() => handleIconClick('growroom')} 
+          />
+          <DesktopIcon 
+            label="NFT Shop" 
+            icon="🛒" 
+            onClick={() => handleIconClick('shop', '/shop')} 
+          />
         </div>
         
         {/* Wallet Window */}

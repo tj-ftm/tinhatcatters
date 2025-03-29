@@ -200,9 +200,6 @@ const WindowManager: React.FC<WindowManagerProps> = ({
 
   const handleClose = (windowId: string) => {
     closeWindow(windowId);
-    if (windowId === 'game') navigate('/');
-    if (windowId === 'shop') navigate('/');
-    if (windowId === 'growroom') navigate('/');
   };
 
   const toggleMaximize = (windowId: string) => {
@@ -260,6 +257,10 @@ const WindowManager: React.FC<WindowManagerProps> = ({
     return () => window.removeEventListener('resize', handleResize);
   }, [isMaximized]);
 
+  const handleNavigation = (path: string) => {
+    navigate(path);
+  };
+
   return (
     <div 
       ref={containerRef}
@@ -273,7 +274,7 @@ const WindowManager: React.FC<WindowManagerProps> = ({
         
         const pos = positions[windowId] || getInitialPosition(windowId);
         const size = sizes[windowId] || getWindowSize(windowId);
-        const windowTitle = windowId.charAt(0).toUpperCase() + windowId.slice(1);
+        const windowTitle = windowId === 'computer' ? 'My Computer' : windowId.charAt(0).toUpperCase() + windowId.slice(1);
         const maximized = isMaximized[windowId] || false;
         
         return (
@@ -321,17 +322,28 @@ const WindowManager: React.FC<WindowManagerProps> = ({
             <div className="p-1 bg-[#c0c0c0] h-[calc(100%-24px)] overflow-auto">
               {windowId === 'game' && <Game />}
               {windowId === 'shop' && <Shop />}
-              {windowId === 'home' && <Index />}
               {windowId === 'growroom' && <GrowRoom />}
               {windowId === 'computer' && (
                 <div className="p-4">
-                  <h2 className="text-lg font-bold mb-4">File Explorer</h2>
+                  <h2 className="text-lg font-bold mb-4">My Computer</h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    <NavigationIcon label="Home" icon="🏠" path="/" />
-                    <NavigationIcon label="Reptilian Attack" icon="🎮" path="/game" />
-                    <NavigationIcon label="NFT Shop" icon="🛒" path="/shop" />
-                    <NavigationIcon label="THC Grow Room" icon="🌿" path="/growroom" />
-                    <NavigationIcon label="Recycle Bin" icon="🗑️" path="#" />
+                    <FileIcon label="Reptilian Attack" icon="🎮" onClick={() => {
+                      navigate('/game');
+                      handleClose('computer');
+                      closeWindow('computer');
+                    }} />
+                    <FileIcon label="NFT Shop" icon="🛒" onClick={() => {
+                      navigate('/shop');
+                      handleClose('computer');
+                      closeWindow('computer');
+                    }} />
+                    <FileIcon label="THC Grow Room" icon="🌿" onClick={() => {
+                      closeWindow('computer');
+                      handleClose('computer');
+                    }} />
+                    <FileIcon label="Recycle Bin" icon="🗑️" onClick={() => {
+                      closeWindow('computer');
+                    }} />
                   </div>
                 </div>
               )}
@@ -375,23 +387,15 @@ const WindowManager: React.FC<WindowManagerProps> = ({
   );
 };
 
-const NavigationIcon: React.FC<{ 
+const FileIcon: React.FC<{ 
   label: string; 
   icon: string; 
-  path: string;
-}> = ({ label, icon, path }) => {
-  const navigate = useNavigate();
-  
-  const handleClick = () => {
-    if (path !== '#') {
-      navigate(path);
-    }
-  };
-  
+  onClick: () => void;
+}> = ({ label, icon, onClick }) => {
   return (
     <div 
       className="flex flex-col items-center cursor-pointer p-2 hover:bg-gray-200"
-      onClick={handleClick}
+      onClick={onClick}
     >
       <div className="text-2xl mb-1">{icon}</div>
       <span className="text-xs text-center">{label}</span>
