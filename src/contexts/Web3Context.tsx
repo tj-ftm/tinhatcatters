@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
   connectWallet, 
@@ -5,7 +6,7 @@ import {
   getOwnedTinHatCatters, 
   getOwnedSnacks,
   isWeb3Available,
-  getThcBalance,
+  getTHCBalance,
   disconnectWalletConnect,
   switchToSonicNetwork
 } from '@/lib/web3';
@@ -116,8 +117,8 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const newBalance = await getBalance(address);
       setBalance(newBalance);
       
-      // Get THC token balance
-      const newThcBalance = await getThcBalance(address);
+      // Get THC token balance - fixed function name
+      const newThcBalance = await getTHCBalance(address);
       setThcBalance(newThcBalance);
     }
   };

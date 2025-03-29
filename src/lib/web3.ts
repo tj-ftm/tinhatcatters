@@ -1,5 +1,77 @@
+
 import { ethers } from 'ethers';
 import { toast } from '@/hooks/use-toast';
+
+// Check if Web3 is available
+export const isWeb3Available = () => {
+  return typeof window !== 'undefined' && typeof window.ethereum !== 'undefined';
+};
+
+// Function to switch to Sonic Network
+export const switchToSonicNetwork = async () => {
+  if (!isWeb3Available()) return false;
+  
+  const sonicChainId = '0x8274'; // Chain ID for Sonic (33396 in decimal)
+  
+  try {
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: sonicChainId }],
+    });
+    return true;
+  } catch (error: any) {
+    // If the chain hasn't been added to MetaMask
+    if (error.code === 4902) {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [
+            {
+              chainId: sonicChainId,
+              chainName: 'Sonic',
+              nativeCurrency: {
+                name: 'Sonic',
+                symbol: 'SON',
+                decimals: 18,
+              },
+              rpcUrls: ['https://rpc.sonic.game/'],
+              blockExplorerUrls: ['https://sonicscan.io/'],
+            },
+          ],
+        });
+        return true;
+      } catch (addError) {
+        console.error('Error adding Sonic network:', addError);
+        return false;
+      }
+    }
+    console.error('Error switching to Sonic network:', error);
+    return false;
+  }
+};
+
+// Connect wallet function
+export const connectWallet = async (walletType?: string) => {
+  if (!isWeb3Available()) {
+    throw new Error('No Web3 wallet detected');
+  }
+  
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    return accounts[0];
+  } catch (error: any) {
+    console.error('Error connecting wallet:', error);
+    throw new Error(error.message || 'Failed to connect wallet');
+  }
+};
+
+// Disconnect WalletConnect
+export const disconnectWalletConnect = async () => {
+  // If using WalletConnect, we would implement disconnect logic here
+  // This is a placeholder for now
+  console.log('Disconnecting WalletConnect provider');
+  return true;
+};
 
 // Function to request access to the user's wallet
 export const requestAccount = async () => {
@@ -36,9 +108,10 @@ export const getBalance = async (address: string | null): Promise<string> => {
     }
 
     if (typeof window.ethereum !== 'undefined') {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      // Update for ethers v6
+      const provider = new ethers.BrowserProvider(window.ethereum);
       const balance = await provider.getBalance(address);
-      return ethers.utils.formatEther(balance);
+      return ethers.formatEther(balance);
     } else {
       console.error('MetaMask or compatible wallet not detected!');
       return '0';
@@ -58,23 +131,27 @@ export const getTHCBalance = async (address: string | null): Promise<string> => 
     }
 
     if (typeof window.ethereum !== 'undefined') {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      // Update for ethers v6
+      const provider = new ethers.BrowserProvider(window.ethereum);
       const tokenAddress = process.env.NEXT_PUBLIC_THC_CONTRACT_ADDRESS; // Ensure this is set in your environment variables
       if (!tokenAddress) {
         console.error('THC token address not set in environment variables!');
         return '0';
       }
+      
+      const abi = [
+        "function balanceOf(address) view returns (uint)",
+        "function decimals() view returns (uint8)"
+      ];
+      
       const tokenContract = new ethers.Contract(
         tokenAddress,
-        [
-          "function balanceOf(address) view returns (uint)",
-          "function decimals() view returns (uint8)"
-        ],
+        abi,
         provider
       );
       const decimals = await tokenContract.decimals();
       const balance = await tokenContract.balanceOf(address);
-      return ethers.utils.formatUnits(balance, decimals);
+      return ethers.formatUnits(balance, decimals);
     } else {
       console.error('MetaMask or compatible wallet not detected!');
       return '0';
@@ -121,5 +198,66 @@ export const fetchTinHatCattersFromSonicscan = async (address: string) => {
   } catch (error) {
     console.error('Error fetching NFT data from Etherscan:', error);
     throw new Error('Failed to fetch NFT data');
+  }
+};
+
+// Function to get owned THC tokens
+export const getOwnedTinHatCatters = async (address: string) => {
+  try {
+    return await fetchTinHatCattersFromSonicscan(address);
+  } catch (error) {
+    console.error('Error getting owned THC tokens:', error);
+    return [];
+  }
+};
+
+// Function to get owned snacks
+export const getOwnedSnacks = async (address: string) => {
+  // This would normally fetch snack NFTs from the blockchain
+  // For now, return mock data
+  try {
+    // Mock implementation
+    return [
+      {
+        id: 'donut1',
+        name: 'Energy Donut',
+        image: '/assets/snacks/donut.png',
+        boost: { type: 'speed', value: 20, duration: 10 }
+      }
+    ];
+  } catch (error) {
+    console.error('Error getting owned snacks:', error);
+    return [];
+  }
+};
+
+// Function to purchase a snack
+export const purchaseSnack = async (snackId: number): Promise<boolean> => {
+  try {
+    if (!isWeb3Available()) {
+      toast({
+        title: "No Wallet Detected",
+        description: "Please install MetaMask or another compatible wallet to use this feature.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    // Mock successful purchase for now
+    // In a real implementation, this would interact with a smart contract
+    console.log(`Purchasing snack with ID: ${snackId}`);
+    
+    // Simulate transaction delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    return true;
+  } catch (error: any) {
+    console.error('Error purchasing snack:', error);
+    toast({
+      title: "Purchase Failed",
+      description: error.message || "Failed to purchase snack",
+      variant: "destructive",
+    });
+    return false;
   }
 };
