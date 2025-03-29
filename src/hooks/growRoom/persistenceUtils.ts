@@ -59,7 +59,7 @@ export const loadGameState = (
       const progressIncrement = (timePassed / 1000) * speedMultiplier;
       
       let newProgress = plant.progress + progressIncrement;
-      let newStage = plant.stage;
+      let newStage: GrowthStage = plant.stage;
       
       // Check if plant moved to next stage
       if (newProgress >= 100) {
