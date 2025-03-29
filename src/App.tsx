@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Game from "./pages/Game";
 import Shop from "./pages/Shop";
 import NotFound from "./pages/NotFound";
+import Desktop from "./components/Desktop";
 
 const queryClient = new QueryClient();
 
@@ -20,10 +21,12 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/game" element={<Game />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="/" element={<Desktop />}>
+              <Route index element={<Index />} />
+              <Route path="/game" element={<Game />} />
+              <Route path="/shop" element={<Shop />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
