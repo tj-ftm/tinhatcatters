@@ -87,8 +87,8 @@ const Taskbar: React.FC<TaskbarProps> = ({
         <div className="absolute left-0 bottom-11 win95-window w-56 border-2">
           <div className="bg-win95-blue h-full w-8 absolute left-0 top-0 bottom-0">
             <div className="flex flex-col justify-end h-full pb-2 text-white font-bold">
-              <span className="transform -rotate-90 whitespace-nowrap origin-top-left translate-y-20 translate-x-1">
-                Windows 95
+              <span className="transform -rotate-90 whitespace-nowrap origin-bottom-left translate-y-0 translate-x-0 absolute bottom-12">
+                TinhatCatters
               </span>
             </div>
           </div>
