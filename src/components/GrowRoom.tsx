@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useGrowRoom } from '@/hooks/useGrowRoom';
 import StatsBar from './grow-room/StatsBar';
 import GrowingArea from './grow-room/GrowingArea';
 import EquipmentArea from './grow-room/EquipmentArea';
 import LoadingOverlay from './grow-room/LoadingOverlay';
 import UpgradeModal from './grow-room/UpgradeModal';
+import { useWindowManagement } from '@/hooks/useWindowManagement';
 
 const GrowRoom: React.FC = () => {
   const {
@@ -25,19 +26,17 @@ const GrowRoom: React.FC = () => {
     getGrowthColor
   } = useGrowRoom();
 
+  const { maximizeWindow } = useWindowManagement();
+
+  // Maximize window on load
+  useEffect(() => {
+    maximizeWindow('growroom');
+  }, [maximizeWindow]);
+
   return (
     <div className="h-full flex flex-col">
-      {/* Top Bar with Stats */}
-      <StatsBar 
-        thcAmount={thcAmount}
-        plantCount={plants.length}
-        plantCapacity={plantCapacity}
-        isLoading={isLoading}
-        onPlantSeed={plantSeed}
-      />
-
-      <div className="flex-1 flex flex-col md:flex-row gap-4">
-        {/* Growing Area */}
+      <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+        {/* Growing Area - Now takes more space */}
         <GrowingArea 
           plants={plants}
           plantCapacity={plantCapacity}
@@ -48,13 +47,22 @@ const GrowRoom: React.FC = () => {
           onHarvestPlant={harvestPlant}
         />
         
-        {/* Equipment Area */}
+        {/* Equipment Area - Now at the bottom and more square */}
         <EquipmentArea 
           equipment={equipment}
           plantCapacity={plantCapacity}
           isLoading={isLoading}
           onShowUpgradeModal={setShowUpgradeModal}
           onUpgradeCapacity={upgradeCapacity}
+        />
+
+        {/* Stats Bar - Now at the very bottom */}
+        <StatsBar 
+          thcAmount={thcAmount}
+          plantCount={plants.length}
+          plantCapacity={plantCapacity}
+          isLoading={isLoading}
+          onPlantSeed={plantSeed}
         />
       </div>
       
