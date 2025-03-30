@@ -2,7 +2,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useGrowRoom } from '@/hooks/useGrowRoom';
 import StatsBar from './grow-room/StatsBar';
-import GrowingArea from './grow-room/GrowingArea';
 import EquipmentArea from './grow-room/EquipmentArea';
 import LoadingOverlay from './grow-room/LoadingOverlay';
 import UpgradeModal from './grow-room/UpgradeModal';
@@ -52,27 +51,20 @@ const GrowRoom: React.FC = () => {
           />
         )}
         
-        {/* Visual Grow Room Canvas - This is new */}
-        <div className="flex flex-col md:flex-row gap-4 flex-1">
-          <div className="win95-window p-2 flex-1 flex flex-col">
-            <div className="win95-title-bar mb-2">
-              <span>THC Grow Room - Visual</span>
-            </div>
-            
-            <GrowRoomCanvas />
+        {/* Visual Grow Room Canvas - This is the main view now */}
+        <div className="flex-1 win95-window p-2">
+          <div className="win95-title-bar mb-2">
+            <span>THC Grow Room</span>
           </div>
-          
-          {/* Traditional Growing Area Interface */}
-          <div className={`${isMobile ? 'flex-1' : 'w-1/3'} flex flex-col gap-4`}>
-            <GrowingArea 
+          <div className="win95-inset p-2 h-[calc(100%-32px)]">
+            <GrowRoomCanvas
               plants={plants}
+              equipment={equipment}
               plantCapacity={plantCapacity}
-              isLoading={isLoading}
-              thcAmount={thcAmount}
-              getGrowthColor={getGrowthColor}
               onPlantSeed={plantSeed}
               onHarvestPlant={harvestPlant}
-              isMobile={isMobile}
+              getGrowthColor={getGrowthColor}
+              thcAmount={thcAmount}
             />
           </div>
         </div>

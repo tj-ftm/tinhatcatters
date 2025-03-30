@@ -13,14 +13,59 @@ export const createPlantSVGAnimation = (stage: GrowthStage, progress: number): s
   };
   
   // Add details based on progress within the stage
-  // This is a simplified example. Real implementation would interpolate between stages
   const progressInStage = Math.min(100, Math.max(0, progress));
   
-  // Return the path with additional details based on progress
-  return basePaths[stage];
+  // Get the current path and the next stage path for interpolation
+  let currentPath = basePaths[stage];
+  
+  // For animation within the stage, interpolate towards the next stage
+  if (progressInStage > 75 && stage !== GrowthStage.Harvest) {
+    const nextStage = getNextStage(stage);
+    if (nextStage && basePaths[nextStage]) {
+      // Add slight progress-based animation
+      const animationProgress = (progressInStage - 75) / 25; // 0 to 1 for the last 25% of progress
+      const growthFactor = 1 + (animationProgress * 0.1);
+      
+      // For simplicity, just scale the path slightly
+      currentPath = currentPath.replace(/(\d+)/g, (match) => {
+        const num = parseFloat(match);
+        if (num > 0) { // Only scale positive numbers to avoid messing up the path
+          return Math.round(num * growthFactor).toString();
+        }
+        return match;
+      });
+    }
+  }
+  
+  // Add leaf details based on progress for vegetative and flowering stages
+  if (stage === GrowthStage.Vegetative || stage === GrowthStage.Flowering) {
+    // Add more leaf details
+    const leafDetails = ` M12,${14 - progressInStage/20} Q${14 + progressInStage/25},${13 - progressInStage/20} ${15 + progressInStage/15},${14 - progressInStage/25}`;
+    currentPath += leafDetails;
+  }
+  
+  // Add flower buds for flowering and harvest stages
+  if (stage === GrowthStage.Flowering || stage === GrowthStage.Harvest) {
+    const budSize = stage === GrowthStage.Harvest ? 2 + progress/50 : 1 + progress/100;
+    const budDetails = ` M12,10 Q${11 - budSize},${8 - budSize} ${12},${7 - budSize} T${13 + budSize},${8 - budSize}`;
+    currentPath += budDetails;
+  }
+  
+  return currentPath;
 };
 
-// Canvas-based growth animation
+// Helper function to get the next stage
+const getNextStage = (currentStage: GrowthStage): GrowthStage | null => {
+  switch (currentStage) {
+    case GrowthStage.Seed: return GrowthStage.Sprout;
+    case GrowthStage.Sprout: return GrowthStage.Vegetative;
+    case GrowthStage.Vegetative: return GrowthStage.Flowering;
+    case GrowthStage.Flowering: return GrowthStage.Harvest;
+    default: return null;
+  }
+};
+
+// Canvas-based growth animation (useful for more complex animations)
 export const drawPlantGrowthAnimation = (
   ctx: CanvasRenderingContext2D,
   x: number,
