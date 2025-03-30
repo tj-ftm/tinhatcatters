@@ -17,7 +17,8 @@ const GAME_ICON_IMAGES = {
   player: "/assets/Icons/tinhatcat.webp",
   enemy: "/assets/Icons/illuminati.webp",
   powerup: "/assets/Icons/weed.png",
-  background: "/assets/Icons/sidescrollerbg.webp"
+  background: "/assets/Icons/sidescrollerbg.webp",
+  playerSprite: "/playersprite.gif"
 };
 
 const RECIPIENT_ADDRESS = '0x097766e8dE97A0A53B3A31AB4dB02d0004C8cc4F';
@@ -78,6 +79,10 @@ const Game: React.FC = () => {
           // Set the game assets immediately so they appear before game starts
           if (typeof gameEngineRef.current.setPlayerSprite === 'function') {
             gameEngineRef.current.setPlayerSprite(GAME_ICON_IMAGES.player);
+          }
+          
+          if (typeof gameEngineRef.current.setPlayerAnimatedSprite === 'function') {
+            gameEngineRef.current.setPlayerAnimatedSprite(GAME_ICON_IMAGES.playerSprite, 4);
           }
           
           if (typeof gameEngineRef.current.setBackgroundImage === 'function') {
@@ -171,6 +176,11 @@ const Game: React.FC = () => {
       if (gameEngineRef.current) {
         gameEngineRef.current.reset(gameState.upgrades);
         gameEngineRef.current.setCollisionBehavior('immediate');
+        
+        // Enable sprite animation when game starts
+        if (typeof gameEngineRef.current.setAnimationRunning === 'function') {
+          gameEngineRef.current.setAnimationRunning(true);
+        }
       }
       
       setGameState(prev => ({
@@ -191,6 +201,11 @@ const Game: React.FC = () => {
 
   const pauseGame = () => {
     setGameState(prev => ({ ...prev, paused: !prev.paused }));
+    
+    // Pause/resume sprite animation
+    if (gameEngineRef.current && typeof gameEngineRef.current.setAnimationRunning === 'function') {
+      gameEngineRef.current.setAnimationRunning(!gameState.paused);
+    }
   };
 
   const gameLoop = (timestamp: number) => {
@@ -312,12 +327,34 @@ const Game: React.FC = () => {
 
   useEffect(() => {
     if (gameState.gameStarted && !gameState.gameOver && !gameState.paused) {
+      // Enable sprite animation
+      if (gameEngineRef.current && typeof gameEngineRef.current.setAnimationRunning === 'function') {
+        gameEngineRef.current.setAnimationRunning(true);
+      }
+      
       lastFrameTime.current = 0;
       animationFrameRef.current = requestAnimationFrame(gameLoop);
     } else if (!gameState.gameStarted && gameEngineRef.current) {
+      // Disable sprite animation
+      if (gameEngineRef.current && typeof gameEngineRef.current.setAnimationRunning === 'function') {
+        gameEngineRef.current.setAnimationRunning(false);
+      }
+      
       // When game is not started, render the start screen instead
       cancelAnimationFrame(animationFrameRef.current);
       gameEngineRef.current.renderStartScreen();
+    } else if (gameState.paused && gameEngineRef.current) {
+      // Disable sprite animation when paused
+      if (gameEngineRef.current && typeof gameEngineRef.current.setAnimationRunning === 'function') {
+        gameEngineRef.current.setAnimationRunning(false);
+      }
+      
+      cancelAnimationFrame(animationFrameRef.current);
+    } else if (gameState.gameOver && gameEngineRef.current) {
+      // Disable sprite animation when game over
+      if (gameEngineRef.current && typeof gameEngineRef.current.setAnimationRunning === 'function') {
+        gameEngineRef.current.setAnimationRunning(false);
+      }
     }
 
     return () => {

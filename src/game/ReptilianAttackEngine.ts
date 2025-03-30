@@ -30,6 +30,8 @@ class ReptilianAttackEngine {
   private collisionBehavior: 'immediate' | 'fade' = 'fade';
   private startTime: number = 0;
   private gameTime: number = 0;
+  private animationFrame: number = 0;
+  private lastAnimationFrameTime: number = 0;
   
   // Scrolling background properties
   private backgroundScrollX: number = 0;
@@ -37,6 +39,7 @@ class ReptilianAttackEngine {
   
   // Image assets
   private playerImage: HTMLImageElement | null = null;
+  private playerSpriteSheet: HTMLImageElement | null = null;
   private backgroundImage: HTMLImageElement | null = null;
   private obstacleImage: HTMLImageElement | null = null;
   private enemyImage: HTMLImageElement | null = null;
@@ -44,9 +47,16 @@ class ReptilianAttackEngine {
   private enemyBulletImage: HTMLImageElement | null = null;
   private floorImage: HTMLImageElement | null = null;
   
+  // Sprite animation
+  private spriteAnimationRunning: boolean = false;
+  private spriteTotalFrames: number = 4; // Default, will be determined when sprite loads
+  private spriteFrameWidth: number = 50; // Default, will be determined when sprite loads
+  private spriteFrameHeight: number = 70; // Default, will be determined when sprite loads
+  
   // Track image loading status
   private imagesLoaded: {[key: string]: boolean} = {
     player: false,
+    playerSprite: false,
     background: false,
     obstacle: false,
     enemy: false,
@@ -61,6 +71,13 @@ class ReptilianAttackEngine {
       src: '/assets/Icons/tinhatcat.webp',
       width: 50,
       height: 70
+    },
+    playerSprite: {
+      src: '/playersprite.gif',
+      width: 50,
+      height: 70,
+      frames: 4,
+      frameWidth: 50
     },
     background: {
       src: '/assets/Icons/sidescrollerbg.webp',
@@ -111,9 +128,17 @@ class ReptilianAttackEngine {
     this.collisionBehavior = behavior;
   }
   
+  // Set animation state
+  setAnimationRunning(running: boolean) {
+    this.spriteAnimationRunning = running;
+    // Reset animation frame when we start or stop
+    this.animationFrame = 0;
+    this.lastAnimationFrameTime = 0;
+  }
+  
   // Load all game images with error handling
   private loadImages() {
-    // Player image
+    // Player image (static fallback)
     this.playerImage = new Image();
     this.playerImage.onload = () => {
       this.imagesLoaded.player = true;
@@ -135,6 +160,44 @@ class ReptilianAttackEngine {
       };
     };
     this.playerImage.src = this.imageConfig.player.src;
+    
+    // Player sprite sheet (animated)
+    this.playerSpriteSheet = new Image();
+    this.playerSpriteSheet.onload = () => {
+      this.imagesLoaded.playerSprite = true;
+      console.log("Player sprite sheet loaded successfully");
+      
+      // Try to detect frame count based on image dimensions
+      if (this.playerSpriteSheet) {
+        // If it's a proper sprite sheet, update frame information
+        const aspectRatio = this.playerSpriteSheet.width / this.playerSpriteSheet.height;
+        if (aspectRatio > 1) { // Horizontal sprite sheet
+          this.spriteTotalFrames = Math.round(aspectRatio);
+          this.spriteFrameWidth = this.playerSpriteSheet.width / this.spriteTotalFrames;
+          this.spriteFrameHeight = this.playerSpriteSheet.height;
+          
+          this.imageConfig.playerSprite.frames = this.spriteTotalFrames;
+          this.imageConfig.playerSprite.frameWidth = this.spriteFrameWidth;
+          
+          console.log(`Detected ${this.spriteTotalFrames} frames in sprite sheet`);
+        } else {
+          // Use defaults if it appears to be a single image
+          this.spriteTotalFrames = 1;
+          this.spriteFrameWidth = this.playerSpriteSheet.width;
+          this.spriteFrameHeight = this.playerSpriteSheet.height;
+        }
+      }
+      
+      this.render(); // Re-render once image is loaded
+    };
+    this.playerSpriteSheet.onerror = () => {
+      console.error('Failed to load player sprite sheet:', this.imageConfig.playerSprite.src);
+      this.imagesLoaded.playerSprite = false;
+      
+      // Use static player image as fallback
+      console.log("Using static player image as fallback");
+    };
+    this.playerSpriteSheet.src = this.imageConfig.playerSprite.src;
     
     // Background image
     this.backgroundImage = new Image();
@@ -299,6 +362,42 @@ class ReptilianAttackEngine {
     newImage.src = imageSrc;
   }
   
+  // Set player animated sprite
+  setPlayerAnimatedSprite(imageSrc: string, frames: number = 4, width?: number, height?: number) {
+    console.log("Setting player animated sprite:", imageSrc);
+    this.imageConfig.playerSprite.src = imageSrc;
+    this.imageConfig.playerSprite.frames = frames;
+    if (width) this.imageConfig.playerSprite.width = width;
+    if (height) this.imageConfig.playerSprite.height = height;
+    
+    // Reset loaded state
+    this.imagesLoaded.playerSprite = false;
+    
+    // Create new image with error handling
+    const newImage = new Image();
+    newImage.onload = () => {
+      this.playerSpriteSheet = newImage;
+      this.imagesLoaded.playerSprite = true;
+      
+      // Update frame information
+      this.spriteTotalFrames = frames;
+      this.spriteFrameWidth = newImage.width / frames;
+      this.spriteFrameHeight = newImage.height;
+      this.imageConfig.playerSprite.frameWidth = this.spriteFrameWidth;
+      
+      console.log("Player animated sprite loaded successfully");
+      this.render(); // Re-render with new sprite
+    };
+    newImage.onerror = () => {
+      console.error('Failed to load custom player animated sprite:', imageSrc);
+      this.imagesLoaded.playerSprite = false;
+      
+      // Fallback to static image
+      console.log("Falling back to static player image");
+    };
+    newImage.src = imageSrc;
+  }
+  
   // Set background image
   setBackgroundImage(imageSrc: string, width?: number, height?: number) {
     console.log("Setting background image:", imageSrc);
@@ -419,6 +518,10 @@ class ReptilianAttackEngine {
     this.upgrades = upgrades;
     this.startTime = Date.now();
     
+    // Reset animation
+    this.animationFrame = 0;
+    this.lastAnimationFrameTime = 0;
+    
     // Reset background scroll position
     this.backgroundScrollX = 0;
   }
@@ -429,6 +532,13 @@ class ReptilianAttackEngine {
     // Calculate game time if game is not over
     if (!this.gameOver) {
       this.gameTime = Date.now() - this.startTime;
+    }
+    
+    // Update animation frame
+    const now = Date.now();
+    if (this.spriteAnimationRunning && now - this.lastAnimationFrameTime > 100) { // Frame duration in ms
+      this.animationFrame = (this.animationFrame + 1) % this.spriteTotalFrames;
+      this.lastAnimationFrameTime = now;
     }
     
     // Apply upgrades
@@ -461,7 +571,6 @@ class ReptilianAttackEngine {
     }
     
     // Handle shooting with left mouse button
-    const now = Date.now();
     if (input.left && now - this.lastShootTime > 500 / fireRateMultiplier) {
       this.bullets.push({
         x: this.player.x + this.player.width,
@@ -728,22 +837,51 @@ class ReptilianAttackEngine {
         ctx.fillRect(0, height - 20, width, 20);
       }
       
-      // Draw the player in a static position
-      if (this.playerImage && this.imagesLoaded.player) {
+      // Draw the player in a static position - use sprite sheet but with a single frame
+      if (this.playerSpriteSheet && this.imagesLoaded.playerSprite) {
         try {
+          // Use first frame of the sprite (paused state)
           ctx.drawImage(
-            this.playerImage, 
-            100, // Fixed x position 
-            height - this.player.height - 20, // On the ground
-            this.player.width, 
-            this.player.height
+            this.playerSpriteSheet, 
+            0, // First frame x
+            0, // First frame y
+            this.spriteFrameWidth, 
+            this.spriteFrameHeight,
+            100, // Position on canvas x
+            height - this.spriteFrameHeight - 20, // Position on canvas y
+            this.imageConfig.playerSprite.width, 
+            this.imageConfig.playerSprite.height
           );
         } catch (error) {
-          console.error('Error drawing player:', error);
-          // Fallback
-          ctx.fillStyle = '#00FF00';
-          ctx.fillRect(100, height - this.player.height - 20, this.player.width, this.player.height);
+          console.error('Error drawing player sprite:', error);
+          // Fallback to static image
+          if (this.playerImage && this.imagesLoaded.player) {
+            ctx.drawImage(
+              this.playerImage, 
+              100, 
+              height - this.imageConfig.player.height - 20, 
+              this.imageConfig.player.width, 
+              this.imageConfig.player.height
+            );
+          } else {
+            // Last resort fallback
+            ctx.fillStyle = '#00FF00';
+            ctx.fillRect(100, height - 70 - 20, 50, 70);
+          }
         }
+      } else if (this.playerImage && this.imagesLoaded.player) {
+        // Fallback to static image
+        ctx.drawImage(
+          this.playerImage, 
+          100, 
+          height - this.imageConfig.player.height - 20, 
+          this.imageConfig.player.width, 
+          this.imageConfig.player.height
+        );
+      } else {
+        // Last resort fallback
+        ctx.fillStyle = '#00FF00';
+        ctx.fillRect(100, height - 70 - 20, 50, 70);
       }
       
       // Draw start game text
@@ -837,18 +975,40 @@ class ReptilianAttackEngine {
         ctx.fillRect(0, height - 20, width, 20);
       }
       
-      // Draw player
-      if (this.playerImage && this.imagesLoaded.player) {
+      // Draw player - use sprite sheet if available and animated, otherwise use static image
+      if (this.playerSpriteSheet && this.imagesLoaded.playerSprite) {
         try {
-          ctx.drawImage(this.playerImage, this.player.x, this.player.y, this.player.width, this.player.height);
+          // If animation is running, use the current frame from the sprite sheet
+          // Otherwise, use the first frame (static pose)
+          const frameX = this.spriteAnimationRunning ? this.animationFrame * this.spriteFrameWidth : 0;
+          
+          ctx.drawImage(
+            this.playerSpriteSheet, 
+            frameX, // Current frame x
+            0, // Current frame y (vertical sprite sheets would need to adjust this)
+            this.spriteFrameWidth, 
+            this.spriteFrameHeight,
+            this.player.x, 
+            this.player.y, 
+            this.player.width, 
+            this.player.height
+          );
         } catch (error) {
-          console.error('Error drawing player:', error);
-          // Fallback
-          ctx.fillStyle = '#00FF00';
-          ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
+          console.error('Error drawing player sprite:', error);
+          // Fallback to static image
+          if (this.playerImage && this.imagesLoaded.player) {
+            ctx.drawImage(this.playerImage, this.player.x, this.player.y, this.player.width, this.player.height);
+          } else {
+            // Last resort fallback
+            ctx.fillStyle = '#00FF00';
+            ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
+          }
         }
+      } else if (this.playerImage && this.imagesLoaded.player) {
+        // Fallback to static image
+        ctx.drawImage(this.playerImage, this.player.x, this.player.y, this.player.width, this.player.height);
       } else {
-        // Fallback if image is not loaded
+        // Last resort fallback
         ctx.fillStyle = '#00FF00';
         ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
       }
