@@ -9,6 +9,17 @@ import ReptilianAttackEngine from '@/game/ReptilianAttackEngine';
 import { Shield, Zap, Heart } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+const GAME_ICON_IMAGES = {
+  speed: "/assets/Icons/illuminati.webp",
+  fireRate: "/assets/Icons/illuminati.webp",
+  health: "/assets/Icons/illuminati.webp",
+  logo: "/assets/game/reptilian-logo.png",
+  player: "/assets/Icons/illuminati.webp",
+  enemy: "/assets/Icons/illuminati.webp",
+  powerup: "/assets/Icons/illuminati.webp",
+  background: "/assets/Icons/illuminati.webp"
+};
+
 const RECIPIENT_ADDRESS = '0x097766e8dE97A0A53B3A31AB4dB02d0004C8cc4F';
 const GAME_START_COST = 0.1;
 
@@ -400,7 +411,24 @@ const Game: React.FC = () => {
           
           <div className={`win95-inset p-1 ${isMobile ? 'flex flex-col gap-2' : 'flex flex-row items-center gap-2'} w-full ${isMobile ? '' : 'h-6'}`}>
             <div className={`${isMobile ? 'flex' : 'flex flex-1'} items-center gap-1`}>
-              <Zap size={16} className="text-yellow-500 shrink-0" />
+              <img 
+                src={GAME_ICON_IMAGES.speed} 
+                alt="Speed" 
+                className="h-4 w-4 object-contain"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  // Fallback to Lucide icon
+                  const iconContainer = target.parentElement;
+                  if (iconContainer) {
+                    const iconElement = document.createElement('span');
+                    iconContainer.appendChild(iconElement);
+                    // React elements can't be directly inserted this way
+                    // This is just a placeholder for the error handling
+                  }
+                }}
+              />
+              <Zap size={16} className="text-yellow-500 shrink-0" style={{ display: 'none' }} />
               <div className="flex-1">
                 <div className="w-full h-3 win95-inset overflow-hidden">
                   <div 
@@ -416,7 +444,21 @@ const Game: React.FC = () => {
             </div>
             
             <div className={`${isMobile ? 'flex' : 'flex flex-1'} items-center gap-1`}>
-              <Shield size={16} className="text-blue-500 shrink-0" />
+              <img 
+                src={GAME_ICON_IMAGES.fireRate} 
+                alt="Fire Rate" 
+                className="h-4 w-4 object-contain"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  // Show Shield icon as fallback
+                  const shieldIcon = target.parentElement?.querySelector('.lucide-shield');
+                  if (shieldIcon) {
+                    (shieldIcon as HTMLElement).style.display = 'block';
+                  }
+                }}
+              />
+              <Shield size={16} className="text-blue-500 shrink-0" style={{ display: 'none' }} />
               <div className="flex-1">
                 <div className="w-full h-3 win95-inset overflow-hidden">
                   <div 
@@ -432,7 +474,21 @@ const Game: React.FC = () => {
             </div>
             
             <div className={`${isMobile ? 'flex' : 'flex flex-1'} items-center gap-1`}>
-              <Heart size={16} className="text-red-500 shrink-0" />
+              <img 
+                src={GAME_ICON_IMAGES.health} 
+                alt="Health" 
+                className="h-4 w-4 object-contain"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  // Show Heart icon as fallback
+                  const heartIcon = target.parentElement?.querySelector('.lucide-heart');
+                  if (heartIcon) {
+                    (heartIcon as HTMLElement).style.display = 'block';
+                  }
+                }}
+              />
+              <Heart size={16} className="text-red-500 shrink-0" style={{ display: 'none' }} />
               <div className="flex-1">
                 <div className="w-full h-3 win95-inset overflow-hidden">
                   <div 

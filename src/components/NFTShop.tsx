@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import NFTCard from './NFTCard';
@@ -9,47 +10,86 @@ import { usePoints } from '@/hooks/use-points';
 import WalletConnector from './WalletConnector';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+// Configurable icon URLs for each snack item
+const SNACK_ICON_IMAGES = {
+  // Speed Items
+  donut: "/assets/Icons/illuminati.webp",
+  cookie: "/assets/Icons/illuminati.webp",
+  soda: "/assets/Icons/illuminati.webp",
+  shake: "/assets/Icons/illuminati.webp",
+  energybar: "/assets/Icons/illuminati.webp",
+  speedpotion: "/assets/Icons/illuminati.webp",
+  
+  // Jump Items
+  coffee: "/assets/Icons/illuminati.webp",
+  springs: "/assets/Icons/illuminati.webp",
+  jumpcandy: "/assets/Icons/illuminati.webp",
+  jetpack: "/assets/Icons/illuminati.webp",
+  jumpgum: "/assets/Icons/illuminati.webp",
+  helium: "/assets/Icons/illuminati.webp",
+  
+  // Health Items
+  firstaid: "/assets/Icons/illuminati.webp",
+  shield: "/assets/Icons/illuminati.webp",
+  potion: "/assets/Icons/illuminati.webp",
+  medkit: "/assets/Icons/illuminati.webp",
+  
+  // Growing Items
+  growfood: "/assets/Icons/illuminati.webp",
+  supersoil: "/assets/Icons/illuminati.webp",
+  seeds: "/assets/Icons/illuminati.webp",
+  water: "/assets/Icons/illuminati.webp",
+  
+  // THC Items
+  thcfert: "/assets/Icons/illuminati.webp",
+  thcseed: "/assets/Icons/illuminati.webp",
+  hydrokit: "/assets/Icons/illuminati.webp",
+  ledlight: "/assets/Icons/illuminati.webp",
+  autofeeder: "/assets/Icons/illuminati.webp",
+  climatectrl: "/assets/Icons/illuminati.webp"
+};
+
 const AVAILABLE_SNACKS = {
   speed: [
     {
       id: 'donut',
       name: 'Energy Donut',
-      image: '/assets/snacks/donut.png',
+      image: SNACK_ICON_IMAGES.donut,
       price: 5,
       boost: { type: 'speed', value: 20, duration: 10 }
     },
     {
       id: 'cookie',
       name: 'Speed Cookie',
-      image: '/assets/snacks/cookie.png',
+      image: SNACK_ICON_IMAGES.cookie,
       price: 8,
       boost: { type: 'speed', value: 30, duration: 5 }
     },
     {
       id: 'soda',
       name: 'Sonic Soda',
-      image: '/assets/snacks/soda.png',
+      image: SNACK_ICON_IMAGES.soda,
       price: 12,
       boost: { type: 'speed', value: 40, duration: 8 }
     },
     {
       id: 'shake',
       name: 'Power Shake',
-      image: '/assets/snacks/shake.png',
+      image: SNACK_ICON_IMAGES.shake,
       price: 15,
       boost: { type: 'speed', value: 50, duration: 7 }
     },
     {
       id: 'energybar',
       name: 'Energy Bar',
-      image: '/assets/snacks/energybar.png',
+      image: SNACK_ICON_IMAGES.energybar,
       price: 10,
       boost: { type: 'speed', value: 25, duration: 15 }
     },
     {
       id: 'speedpotion',
       name: 'Speed Potion',
-      image: '/assets/snacks/speedpotion.png',
+      image: SNACK_ICON_IMAGES.speedpotion,
       price: 20,
       boost: { type: 'speed', value: 60, duration: 6 }
     }
@@ -58,42 +98,42 @@ const AVAILABLE_SNACKS = {
     {
       id: 'coffee',
       name: 'Jump Coffee',
-      image: '/assets/snacks/coffee.png',
+      image: SNACK_ICON_IMAGES.coffee,
       price: 7,
       boost: { type: 'jump', value: 25, duration: 10 }
     },
     {
       id: 'springs',
       name: 'Spring Boots',
-      image: '/assets/snacks/springs.png',
+      image: SNACK_ICON_IMAGES.springs,
       price: 15,
       boost: { type: 'jump', value: 40, duration: 12 }
     },
     {
       id: 'jumpcandy',
       name: 'Bounce Candy',
-      image: '/assets/snacks/jumpcandy.png',
+      image: SNACK_ICON_IMAGES.jumpcandy,
       price: 9,
       boost: { type: 'jump', value: 30, duration: 8 }
     },
     {
       id: 'jetpack',
       name: 'Mini Jetpack',
-      image: '/assets/snacks/jetpack.png',
+      image: SNACK_ICON_IMAGES.jetpack,
       price: 25,
       boost: { type: 'jump', value: 50, duration: 6 }
     },
     {
       id: 'jumpgum',
       name: 'Bounce Gum',
-      image: '/assets/snacks/jumpgum.png',
+      image: SNACK_ICON_IMAGES.jumpgum,
       price: 12,
       boost: { type: 'jump', value: 35, duration: 14 }
     },
     {
       id: 'helium',
       name: 'Helium Balloon',
-      image: '/assets/snacks/helium.png',
+      image: SNACK_ICON_IMAGES.helium,
       price: 18,
       boost: { type: 'jump', value: 45, duration: 9 }
     }
@@ -102,28 +142,28 @@ const AVAILABLE_SNACKS = {
     {
       id: 'firstaid',
       name: 'First Aid Kit',
-      image: '/assets/snacks/firstaid.png',
+      image: SNACK_ICON_IMAGES.firstaid,
       price: 20,
       boost: { type: 'health', value: 50, duration: 0 }
     },
     {
       id: 'shield',
       name: 'Force Shield',
-      image: '/assets/snacks/shield.png',
+      image: SNACK_ICON_IMAGES.shield,
       price: 30,
       boost: { type: 'invincibility', value: 100, duration: 10 }
     },
     {
       id: 'potion',
       name: 'Health Potion',
-      image: '/assets/snacks/potion.png',
+      image: SNACK_ICON_IMAGES.potion,
       price: 15,
       boost: { type: 'health', value: 30, duration: 0 }
     },
     {
       id: 'medkit',
       name: 'Mega Medkit',
-      image: '/assets/snacks/medkit.png',
+      image: SNACK_ICON_IMAGES.medkit,
       price: 40,
       boost: { type: 'health', value: 100, duration: 0 }
     }
@@ -132,28 +172,28 @@ const AVAILABLE_SNACKS = {
     {
       id: 'growfood',
       name: 'Growth Nutrient',
-      image: '/assets/snacks/growfood.png',
+      image: SNACK_ICON_IMAGES.growfood,
       price: 25,
       boost: { type: 'size', value: 50, duration: 15 }
     },
     {
       id: 'supersoil',
       name: 'Super Soil',
-      image: '/assets/snacks/supersoil.png',
+      image: SNACK_ICON_IMAGES.supersoil,
       price: 35,
       boost: { type: 'growth', value: 100, duration: 0 }
     },
     {
       id: 'seeds',
       name: 'Sonic Seeds',
-      image: '/assets/snacks/seeds.png',
+      image: SNACK_ICON_IMAGES.seeds,
       price: 15,
       boost: { type: 'planting', value: 1, duration: 0 }
     },
     {
       id: 'water',
       name: 'Special Water',
-      image: '/assets/snacks/water.png',
+      image: SNACK_ICON_IMAGES.water,
       price: 10,
       boost: { type: 'hydration', value: 75, duration: 0 }
     }
@@ -162,46 +202,55 @@ const AVAILABLE_SNACKS = {
     {
       id: 'thcfert',
       name: 'Premium THC Fertilizer',
-      image: '/assets/snacks/growfood.png',
+      image: SNACK_ICON_IMAGES.thcfert,
       price: 20,
       boost: { type: 'growth', value: 50, duration: 0 }
     },
     {
       id: 'thcseed',
       name: 'THC Premium Seeds',
-      image: '/assets/snacks/seeds.png',
+      image: SNACK_ICON_IMAGES.thcseed,
       price: 30,
       boost: { type: 'planting', value: 3, duration: 0 }
     },
     {
       id: 'hydrokit',
       name: 'Hydroponic System',
-      image: '/assets/snacks/water.png',
+      image: SNACK_ICON_IMAGES.hydrokit,
       price: 50,
       boost: { type: 'hydration', value: 100, duration: 0 }
     },
     {
       id: 'ledlight',
       name: 'LED Grow Light',
-      image: '/assets/snacks/shield.png',
+      image: SNACK_ICON_IMAGES.ledlight,
       price: 40,
       boost: { type: 'lighting', value: 75, duration: 0 }
     },
     {
       id: 'autofeeder',
       name: 'Auto Feeding System',
-      image: '/assets/snacks/speedpotion.png',
+      image: SNACK_ICON_IMAGES.autofeeder,
       price: 35,
       boost: { type: 'feeding', value: 60, duration: 0 }
     },
     {
       id: 'climatectrl',
       name: 'Climate Control System',
-      image: '/assets/snacks/jetpack.png',
+      image: SNACK_ICON_IMAGES.climatectrl,
       price: 45,
       boost: { type: 'environment', value: 80, duration: 0 }
     }
   ]
+};
+
+// Tab icon images that can be individually customized
+const TAB_ICON_IMAGES = {
+  speed: "/assets/Icons/illuminati.webp",
+  jump: "/assets/Icons/illuminati.webp",
+  health: "/assets/Icons/illuminati.webp",
+  growing: "/assets/Icons/illuminati.webp",
+  thc: "/assets/Icons/illuminati.webp"
 };
 
 const NFTShop: React.FC = () => {
@@ -323,25 +372,69 @@ const NFTShop: React.FC = () => {
               value="speed" 
               className={`flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black ${isMobile ? 'text-[10px] py-1' : ''}`}
             >
-              {isMobile ? 'Speed' : 'Speed Boosts'}
+              <div className="flex items-center gap-1">
+                <img 
+                  src={TAB_ICON_IMAGES.speed} 
+                  alt="Speed" 
+                  className="h-4 w-4 object-contain"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+                {isMobile ? 'Speed' : 'Speed Boosts'}
+              </div>
             </TabsTrigger>
             <TabsTrigger 
               value="jump" 
               className={`flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black ${isMobile ? 'text-[10px] py-1' : ''}`}
             >
-              {isMobile ? 'Jump' : 'Jump Boosts'}
+              <div className="flex items-center gap-1">
+                <img 
+                  src={TAB_ICON_IMAGES.jump} 
+                  alt="Jump" 
+                  className="h-4 w-4 object-contain"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+                {isMobile ? 'Jump' : 'Jump Boosts'}
+              </div>
             </TabsTrigger>
             <TabsTrigger 
               value="health" 
               className={`flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black ${isMobile ? 'text-[10px] py-1' : ''}`}
             >
-              {isMobile ? 'Health' : 'Health Items'}
+              <div className="flex items-center gap-1">
+                <img 
+                  src={TAB_ICON_IMAGES.health} 
+                  alt="Health" 
+                  className="h-4 w-4 object-contain"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+                {isMobile ? 'Health' : 'Health Items'}
+              </div>
             </TabsTrigger>
             <TabsTrigger 
               value="thc" 
               className={`flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black ${isMobile ? 'text-[10px] py-1' : ''}`}
             >
-              {isMobile ? 'THC' : 'THC Grow Items'}
+              <div className="flex items-center gap-1">
+                <img 
+                  src={TAB_ICON_IMAGES.thc} 
+                  alt="THC" 
+                  className="h-4 w-4 object-contain"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+                {isMobile ? 'THC' : 'THC Grow Items'}
+              </div>
             </TabsTrigger>
           </TabsList>
           

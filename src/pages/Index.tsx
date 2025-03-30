@@ -5,6 +5,15 @@ import ChatButton from '../components/ChatButton';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
+// Configurable index page icon images
+const INDEX_ICON_IMAGES = {
+  logo: "/assets/game/reptilian-logo.png",
+  game: "/assets/Icons/illuminati.webp",
+  shop: "/assets/Icons/illuminati.webp",
+  wallet: "/assets/Icons/illuminati.webp",
+  chat: "/assets/Icons/illuminati.webp"
+};
+
 const Index = () => {
   const navigate = useNavigate();
 
@@ -17,7 +26,7 @@ const Index = () => {
           
           <div className="animate-float mb-6">
             <img 
-              src="/assets/game/reptilian-logo.png" 
+              src={INDEX_ICON_IMAGES.logo} 
               alt="Reptilian" 
               className="w-48 h-48 object-contain"
               onError={(e) => {
@@ -33,7 +42,23 @@ const Index = () => {
             className="win95-button h-auto py-4 flex flex-col items-center"
             onClick={() => navigate('/game')}
           >
-            <span className="text-2xl mb-2">🎮</span>
+            <img 
+              src={INDEX_ICON_IMAGES.game} 
+              alt="Game" 
+              className="h-8 w-8 mb-2 object-contain"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                // Add fallback emoji
+                const container = target.parentElement;
+                if (container) {
+                  const fallback = document.createElement('span');
+                  fallback.textContent = '🎮';
+                  fallback.className = 'text-2xl mb-2';
+                  container.insertBefore(fallback, container.firstChild);
+                }
+              }}
+            />
             <span className="font-bold">Play Game</span>
             <span className="text-xs mt-1">Start your adventure!</span>
           </Button>
@@ -42,7 +67,23 @@ const Index = () => {
             className="win95-button h-auto py-4 flex flex-col items-center"
             onClick={() => navigate('/shop')}
           >
-            <span className="text-2xl mb-2">🛒</span>
+            <img 
+              src={INDEX_ICON_IMAGES.shop} 
+              alt="Shop" 
+              className="h-8 w-8 mb-2 object-contain"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                // Add fallback emoji
+                const container = target.parentElement;
+                if (container) {
+                  const fallback = document.createElement('span');
+                  fallback.textContent = '🛒';
+                  fallback.className = 'text-2xl mb-2';
+                  container.insertBefore(fallback, container.firstChild);
+                }
+              }}
+            />
             <span className="font-bold">NFT Shop</span>
             <span className="text-xs mt-1">Buy awesome items!</span>
           </Button>

@@ -5,6 +5,15 @@ import SonicNFTDisplay from '@/components/SonicNFTDisplay';
 import PlayerCard from '@/components/player/PlayerCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+// Configurable shop icon images
+const SHOP_ICON_IMAGES = {
+  nftDisplay: "/assets/Icons/illuminati.webp",
+  playerCard: "/assets/Icons/illuminati.webp",
+  nftShop: "/assets/Icons/illuminati.webp",
+  sonic: "/assets/Icons/illuminati.webp",
+  featured: "/assets/Icons/illuminati.webp"
+};
+
 const Shop: React.FC = () => {
   const isMobile = useIsMobile();
   
@@ -12,16 +21,16 @@ const Shop: React.FC = () => {
     <div className="w-full min-h-screen p-2 md:p-4">
       <div className="max-w-6xl mx-auto space-y-4">
         {/* In mobile view, have PlayerCard at the top */}
-        {isMobile && <PlayerCard />}
+        {isMobile && <PlayerCard iconUrl={SHOP_ICON_IMAGES.playerCard} />}
         
         {/* On desktop, show a row with NFT display and player card */}
         {!isMobile && (
           <div className="grid grid-cols-4 gap-4">
             <div className="col-span-3">
-              <SonicNFTDisplay />
+              <SonicNFTDisplay iconUrl={SHOP_ICON_IMAGES.nftDisplay} />
             </div>
             <div className="col-span-1">
-              <PlayerCard />
+              <PlayerCard iconUrl={SHOP_ICON_IMAGES.playerCard} />
             </div>
           </div>
         )}
@@ -30,7 +39,7 @@ const Shop: React.FC = () => {
         <NFTShop />
         
         {/* In mobile view, place NFT display at the bottom */}
-        {isMobile && <SonicNFTDisplay />}
+        {isMobile && <SonicNFTDisplay iconUrl={SHOP_ICON_IMAGES.nftDisplay} />}
       </div>
     </div>
   );
