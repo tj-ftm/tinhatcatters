@@ -88,17 +88,18 @@ const Game: React.FC = () => {
             gameEngineRef.current.setEnemyImage(GAME_ICON_IMAGES.enemy);
           }
           
-          // Add an animation loop even when not playing to scroll background
-          const animateBackground = () => {
+          // Add an animation loop for the start screen
+          const animateStartScreen = () => {
             if (gameEngineRef.current && !gameState.gameStarted) {
-              // Create a minimal update just for scrolling the background
-              gameEngineRef.current.update(1, { left: false, right: false });
-              gameEngineRef.current.render();
+              // Render the start screen instead of the game when not started
+              gameEngineRef.current.renderStartScreen();
             }
-            requestAnimationFrame(animateBackground);
+            if (!gameState.gameStarted) {
+              requestAnimationFrame(animateStartScreen);
+            }
           };
           
-          animateBackground();
+          animateStartScreen();
         } catch (error) {
           console.error("Error initializing game assets:", error);
         }
@@ -181,6 +182,10 @@ const Game: React.FC = () => {
         score: 0,
         thcEarned: 0,
       }));
+      
+      // Start the game loop
+      lastFrameTime.current = 0;
+      animationFrameRef.current = requestAnimationFrame(gameLoop);
     }
   };
 
@@ -309,6 +314,10 @@ const Game: React.FC = () => {
     if (gameState.gameStarted && !gameState.gameOver && !gameState.paused) {
       lastFrameTime.current = 0;
       animationFrameRef.current = requestAnimationFrame(gameLoop);
+    } else if (!gameState.gameStarted && gameEngineRef.current) {
+      // When game is not started, render the start screen instead
+      cancelAnimationFrame(animationFrameRef.current);
+      gameEngineRef.current.renderStartScreen();
     }
 
     return () => {

@@ -685,6 +685,104 @@ class ReptilianAttackEngine {
     return this.getGameState();
   }
   
+  renderStartScreen() {
+    if (!this.canvas || !this.context) return;
+    
+    const ctx = this.context;
+    const width = this.canvas.width;
+    const height = this.canvas.height;
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+    
+    try {
+      // Draw static background
+      if (this.backgroundImage && this.imagesLoaded.background) {
+        try {
+          // Draw background to fit canvas
+          ctx.drawImage(this.backgroundImage, 0, 0, width, height);
+        } catch (error) {
+          console.error('Error drawing background:', error);
+          // Fallback
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(0, 0, width, height);
+        }
+      } else {
+        // Fallback if image is not loaded
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, width, height);
+      }
+      
+      // Draw floor
+      if (this.floorImage && this.imagesLoaded.floor) {
+        try {
+          ctx.drawImage(this.floorImage, 0, height - 20, width, 20);
+        } catch (error) {
+          console.error('Error drawing floor:', error);
+          // Fallback
+          ctx.fillStyle = '#444444';
+          ctx.fillRect(0, height - 20, width, 20);
+        }
+      } else {
+        ctx.fillStyle = '#444444';
+        ctx.fillRect(0, height - 20, width, 20);
+      }
+      
+      // Draw the player in a static position
+      if (this.playerImage && this.imagesLoaded.player) {
+        try {
+          ctx.drawImage(
+            this.playerImage, 
+            100, // Fixed x position 
+            height - this.player.height - 20, // On the ground
+            this.player.width, 
+            this.player.height
+          );
+        } catch (error) {
+          console.error('Error drawing player:', error);
+          // Fallback
+          ctx.fillStyle = '#00FF00';
+          ctx.fillRect(100, height - this.player.height - 20, this.player.width, this.player.height);
+        }
+      }
+      
+      // Draw start game text
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '48px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('REPTILIAN ATTACK', width / 2, height / 2 - 30);
+      
+      // Shadow for better readability
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(width / 2 - 200, height / 2 + 10, 400, 60);
+      
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '24px Arial';
+      ctx.fillText('Connect wallet & click START GAME', width / 2, height / 2 + 50);
+      
+      // Add illuminati enemy for show
+      if (this.enemyImage && this.imagesLoaded.enemy) {
+        try {
+          ctx.drawImage(
+            this.enemyImage, 
+            width - 100, 
+            height / 2 - 100, 
+            this.imageConfig.enemy.width, 
+            this.imageConfig.enemy.height
+          );
+        } catch (error) {
+          console.error('Error drawing enemy:', error);
+        }
+      }
+    } catch (error) {
+      console.error('General rendering error:', error);
+      // If all else fails, at least show something
+      ctx.fillStyle = '#FF0000';
+      ctx.font = '24px Arial';
+      ctx.fillText('Rendering Error - Check Console', width / 2 - 150, height / 2);
+    }
+  }
+  
   render() {
     if (!this.canvas || !this.context) return;
     
