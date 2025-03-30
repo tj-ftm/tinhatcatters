@@ -1,49 +1,34 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import WalletConnector from '@/components/WalletConnector';
-import { GameState } from '@/hooks/useGameState';
+import { Play, Pause, RefreshCw } from 'lucide-react';
 
 interface GameControlsProps {
-  gameState: GameState;
-  startGame: () => Promise<boolean>;
-  pauseGame: () => void;
-  address: string | null;
+  isPaused: boolean;
+  handlePauseToggle: () => void;
+  handleRestart: () => void;
 }
 
-const GAME_START_COST = 0.1;
-
-const GameControls: React.FC<GameControlsProps> = ({
-  gameState,
-  startGame,
-  pauseGame,
-  address
+const GameControls: React.FC<GameControlsProps> = ({ 
+  isPaused, 
+  handlePauseToggle, 
+  handleRestart 
 }) => {
   return (
-    <div>
-      {!gameState.gameStarted ? (
-        <>
-          {!address ? (
-            <WalletConnector />
-          ) : (
-            <Button onClick={startGame} className="win95-button h-8">
-              Start Game ({GAME_START_COST} $THC)
-            </Button>
-          )}
-        </>
-      ) : (
-        <>
-          {gameState.gameOver ? (
-            <Button onClick={startGame} className="win95-button h-8">
-              Play Again ({GAME_START_COST} $THC)
-            </Button>
-          ) : (
-            <Button onClick={pauseGame} className="win95-button h-8">
-              {gameState.paused ? "Resume" : "Pause"}
-            </Button>
-          )}
-        </>
-      )}
+    <div className="flex gap-2">
+      <button 
+        className="text-white hover:text-gray-300"
+        onClick={handlePauseToggle}
+        aria-label={isPaused ? 'Resume' : 'Pause'}
+      >
+        {isPaused ? <Play size={14} /> : <Pause size={14} />}
+      </button>
+      <button 
+        className="text-white hover:text-gray-300"
+        onClick={handleRestart}
+        aria-label="Restart"
+      >
+        <RefreshCw size={14} />
+      </button>
     </div>
   );
 };
