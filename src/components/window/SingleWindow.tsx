@@ -34,12 +34,19 @@ interface SingleWindowProps {
   isResizable?: boolean;
 }
 
+// Updated function to return the correct window titles
 const getWindowTitle = (windowId: string, defaultTitle: string) => {
   switch (windowId) {
     case 'game':
       return 'Reptilian Attack';
     case 'growroom':
       return 'THC Grow Room';
+    case 'leaderboard':
+      return 'Leaderboard';
+    case 'analytics':
+      return 'Analytics Dashboard';
+    case 'shop':
+      return 'Shop';
     default:
       return defaultTitle;
   }

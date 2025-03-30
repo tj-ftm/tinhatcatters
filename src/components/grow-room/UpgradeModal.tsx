@@ -30,20 +30,27 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({
   const getEquipmentImageSrc = (type: EquipmentType, isNextLevel: boolean = false) => {
     const level = isNextLevel ? 'advanced' : 'basic';
     
+    // Use our game assets for equipment images
     switch (type) {
       case EquipmentType.Light:
-        return `https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b?w=200&h=150&fit=crop&q=80`;
+        return `/assets/Icons/illuminati.webp`;
       case EquipmentType.Pot:
-        return `https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=200&h=150&fit=crop&q=80`;
+        return `/assets/Icons/weed.png`;
       case EquipmentType.Nutrients:
-        return `https://images.unsplash.com/photo-1598282524945-d0436638ae41?w=200&h=150&fit=crop&q=80`;
+        return `/assets/Icons/weed.png`;
       case EquipmentType.Ventilation:
-        return `https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=200&h=150&fit=crop&q=80`;
+        return `/assets/Icons/illuminati.webp`;
       case EquipmentType.Automation:
-        return `https://images.unsplash.com/photo-1535378917042-10a22c95931a?w=200&h=150&fit=crop&q=80`;
+        return `/assets/Icons/computer.png`;
       default:
         return '';
     }
+  };
+  
+  // Handling upgrade with animation
+  const handleUpgrade = () => {
+    // Show toast notification
+    onUpgrade(showUpgradeModal);
   };
   
   return (
@@ -62,7 +69,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({
                 <img 
                   src={getEquipmentImageSrc(showUpgradeModal)}
                   alt={`Current ${item.name}`}
-                  className="w-32 h-24 object-cover"
+                  className="w-32 h-24 object-contain"
                 />
               </div>
               <span className="text-sm text-center">{item.name}</span>
@@ -75,7 +82,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({
                 <img 
                   src={getEquipmentImageSrc(showUpgradeModal, true)}
                   alt={`Upgraded ${item.nextLevel.name}`}
-                  className="w-32 h-24 object-cover"
+                  className="w-32 h-24 object-contain"
                 />
               </div>
               <span className="text-sm text-center">{item.nextLevel.name}</span>
@@ -102,7 +109,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({
             <span className="win95-button cursor-pointer" onClick={onClose}>Cancel</span>
             <Button 
               className="win95-button flex items-center"
-              onClick={() => onUpgrade(showUpgradeModal)}
+              onClick={handleUpgrade}
               disabled={thcAmount < item.nextLevel.cost || isLoading}
             >
               <CircleDollarSign className="w-4 h-4 mr-1" />
