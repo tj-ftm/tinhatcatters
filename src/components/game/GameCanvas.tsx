@@ -20,7 +20,7 @@ const GAME_ICON_IMAGES = {
   player: "/playersprite.gif",
   enemy: "/assets/Icons/illuminati.webp",
   powerup: "/assets/Icons/weed.png",
-  background: "/assets/Icons/sidescrollerbg.webp",
+  background: "/assets/Icons/sidescrollerbgweed-min.png",
   playerSprite: "/playersprite.gif"
 };
 

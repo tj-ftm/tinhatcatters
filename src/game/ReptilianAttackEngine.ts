@@ -80,7 +80,7 @@ class ReptilianAttackEngine {
       frameWidth: 50
     },
     background: {
-      src: '/assets/Icons/sidescrollerbg.webp',
+      src: '/assets/Icons/sidescrollerbgweed-min.png',
       width: 800,
       height: 400
     },
@@ -212,7 +212,7 @@ class ReptilianAttackEngine {
       
       // Try with fallback
       this.backgroundImage = new Image();
-      this.backgroundImage.src = '/assets/Icons/sidescrollerbg.webp';
+      this.backgroundImage.src = '/assets/Icons/sidescrollerbgweed-min.png';
       this.backgroundImage.onload = () => {
         this.imagesLoaded.background = true;
         console.log("Background fallback image loaded");
@@ -422,7 +422,7 @@ class ReptilianAttackEngine {
       
       // Try to load fallback image
       const fallbackImage = new Image();
-      fallbackImage.src = '/assets/Icons/sidescrollerbg.webp';
+      fallbackImage.src = '/assets/Icons/sidescrollerbgweed-min.png';
       fallbackImage.onload = () => {
         this.backgroundImage = fallbackImage;
         this.imagesLoaded.background = true;
