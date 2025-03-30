@@ -10,9 +10,10 @@ import { useIsMobile } from '@/hooks/use-mobile';
 interface PlayerCardProps {
   showActions?: boolean;
   className?: string;
+  iconUrl?: string; // Added this prop to fix the error
 }
 
-const PlayerCard: React.FC<PlayerCardProps> = ({ showActions = true, className = '' }) => {
+const PlayerCard: React.FC<PlayerCardProps> = ({ showActions = true, className = '', iconUrl }) => {
   const { address } = useWeb3();
   const { getCurrentPlayerStats, getSortedLeaderboard } = useLeaderboard();
   const playerStats = getCurrentPlayerStats();

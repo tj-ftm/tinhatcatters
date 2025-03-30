@@ -8,9 +8,10 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SonicNFTDisplayProps {
   className?: string;
+  iconUrl?: string; // Added this prop to fix the error
 }
 
-const SonicNFTDisplay: React.FC<SonicNFTDisplayProps> = ({ className }) => {
+const SonicNFTDisplay: React.FC<SonicNFTDisplayProps> = ({ className, iconUrl }) => {
   const { address, sonicNFTs, refreshNFTs } = useWeb3();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const isMobile = useIsMobile();
