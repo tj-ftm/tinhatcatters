@@ -13,6 +13,7 @@ const Desktop: React.FC = () => {
   const [windowsMinimized, setWindowsMinimized] = useState<Record<string, boolean>>({});
   const [showWalletWindow, setShowWalletWindow] = useState(true);
   const [showChatDialog, setShowChatDialog] = useState(false);
+  const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Each desktop icon has its own URL that can be manually changed
@@ -22,6 +23,20 @@ const Desktop: React.FC = () => {
     growroom: "/assets/Icons/weed.png",
     shop: "/assets/Icons/nftshop.ico",
     chat: "/assets/Icons/illuminati.webp"
+  };
+
+  // Handle icon selection and navigation
+  const handleIconClick = (windowId: string, route?: string) => {
+    // Toggle selection on single click
+    setSelectedIcon(windowId);
+  };
+
+  // Handle double click to open window and navigate
+  const handleIconDoubleClick = (windowId: string, route?: string) => {
+    addWindow(windowId);
+    if (route) {
+      navigate(route);
+    }
   };
 
   const addWindow = (windowId: string) => {
@@ -47,13 +62,6 @@ const Desktop: React.FC = () => {
     setWindowsMinimized(prev => ({ ...prev, [windowId]: false }));
   };
 
-  const handleIconClick = (windowId: string, route?: string) => {
-    addWindow(windowId);
-    if (route) {
-      navigate(route);
-    }
-  };
-
   const handleChatClick = () => {
     if (activeWindows.includes('chat')) {
       restoreWindow('chat');
@@ -63,40 +71,65 @@ const Desktop: React.FC = () => {
     }
   };
 
+  // Clear selection when clicking on desktop background
+  const handleDesktopClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setSelectedIcon(null);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#1AB0ED] relative">
+    <div 
+      className="flex flex-col h-screen w-screen overflow-hidden bg-[#1AB0ED] relative" 
+      onClick={handleDesktopClick}
+    >
       <div className="flex-grow relative">
         {/* Desktop Icons */}
         <div className="absolute top-2 left-2 flex flex-col items-center gap-6">
           <DesktopIcon 
+            id="computer"
             label="My Computer" 
             iconSrc={desktopIconImages.computer}
             fallbackIcon="💻"
-            onClick={() => handleIconClick('computer')} 
+            onClick={() => handleIconClick('computer')}
+            onDoubleClick={() => handleIconDoubleClick('computer')}
+            isSelected={selectedIcon === 'computer'}
           />
           <DesktopIcon 
+            id="game"
             label="Reptilian Attack" 
             iconSrc={desktopIconImages.game}
             fallbackIcon="🎮"
-            onClick={() => handleIconClick('game', '/game')} 
+            onClick={() => handleIconClick('game')}
+            onDoubleClick={() => handleIconDoubleClick('game', '/game')}
+            isSelected={selectedIcon === 'game'}
           />
           <DesktopIcon 
+            id="growroom"
             label="THC Grow Room" 
             iconSrc={desktopIconImages.growroom}
             fallbackIcon="🌿"
-            onClick={() => handleIconClick('growroom', '/growroom')} 
+            onClick={() => handleIconClick('growroom')}
+            onDoubleClick={() => handleIconDoubleClick('growroom', '/growroom')}
+            isSelected={selectedIcon === 'growroom'}
           />
           <DesktopIcon 
+            id="shop"
             label="NFT Shop" 
             iconSrc={desktopIconImages.shop}
             fallbackIcon="🛒"
-            onClick={() => handleIconClick('shop', '/shop')} 
+            onClick={() => handleIconClick('shop')}
+            onDoubleClick={() => handleIconDoubleClick('shop', '/shop')}
+            isSelected={selectedIcon === 'shop'}
           />
           <DesktopIcon 
+            id="chat"
             label="Community Chat" 
             iconSrc={desktopIconImages.chat}
             fallbackIcon="💬"
-            onClick={handleChatClick} 
+            onClick={() => handleIconClick('chat')}
+            onDoubleClick={() => handleChatClick()}
+            isSelected={selectedIcon === 'chat'}
           />
         </div>
         
@@ -181,16 +214,26 @@ const Desktop: React.FC = () => {
 };
 
 const DesktopIcon: React.FC<{ 
+  id: string;
   label: string; 
   iconSrc: string;
   fallbackIcon: string;
-  onClick: () => void 
-}> = ({ label, iconSrc, fallbackIcon, onClick }) => {
+  onClick: () => void;
+  onDoubleClick: () => void;
+  isSelected: boolean;
+}> = ({ id, label, iconSrc, fallbackIcon, onClick, onDoubleClick, isSelected }) => {
   return (
     <div 
-      className="flex flex-col items-center cursor-pointer w-16 group hover:bg-win95-blue/20"
-      onClick={onClick}
-      onDoubleClick={onClick}
+      id={`desktop-icon-${id}`}
+      className={`flex flex-col items-center cursor-pointer w-16 group ${isSelected ? 'bg-win95-blue/40' : 'hover:bg-win95-blue/20'}`}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        onDoubleClick();
+      }}
     >
       <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">
         <img 
@@ -209,7 +252,7 @@ const DesktopIcon: React.FC<{
           }}
         />
       </div>
-      <span className="text-white text-xs text-center bg-win95-blue/80 px-1 py-0.5 w-full">
+      <span className={`text-white text-xs text-center ${isSelected ? 'bg-win95-blue' : 'bg-win95-blue/80'} px-1 py-0.5 w-full`}>
         {label}
       </span>
     </div>
