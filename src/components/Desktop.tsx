@@ -54,6 +54,18 @@ const Desktop: React.FC = () => {
     }
   };
 
+  const getIconImage = (alt: string, fallback: string = "🔍") => (
+    <img 
+      src="/assets/Icons/illuminati.webp" 
+      alt={alt} 
+      className="h-6 w-6 object-contain"
+      onError={(e) => {
+        const target = e.target as HTMLImageElement;
+        target.src = fallback;
+      }}
+    />
+  );
+
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#1AB0ED] relative">
       <div className="flex-grow relative">
@@ -61,35 +73,27 @@ const Desktop: React.FC = () => {
         <div className="absolute top-2 left-2 flex flex-col items-center gap-6">
           <DesktopIcon 
             label="My Computer" 
-            icon="💻" 
+            icon={getIconImage("My Computer", "💻")} 
             onClick={() => handleIconClick('computer')} 
           />
           <DesktopIcon 
             label="Reptilian Attack" 
-            icon="🎮" 
+            icon={getIconImage("Reptilian Attack", "🎮")} 
             onClick={() => handleIconClick('game', '/game')} 
           />
           <DesktopIcon 
             label="THC Grow Room" 
-            icon={<img 
-              src="/assets/Icons/illuminati.webp" 
-              alt="THC Grow Room" 
-              className="h-6 w-6 object-contain"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = '🌿';
-              }}
-            />}
+            icon={getIconImage("THC Grow Room", "🌿")}
             onClick={() => handleIconClick('growroom', '/growroom')} 
           />
           <DesktopIcon 
             label="NFT Shop" 
-            icon="🛒" 
+            icon={getIconImage("NFT Shop", "🛒")} 
             onClick={() => handleIconClick('shop', '/shop')} 
           />
           <DesktopIcon 
             label="Community Chat" 
-            icon="💬" 
+            icon={getIconImage("Community Chat", "💬")} 
             onClick={handleChatClick} 
           />
         </div>

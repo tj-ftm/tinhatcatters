@@ -8,6 +8,26 @@ interface ComputerContentProps {
 }
 
 const ComputerContent: React.FC<ComputerContentProps> = ({ handleOpenWindow }) => {
+  const getIconImage = (alt: string, fallback: React.ReactNode) => (
+    <img 
+      src="/assets/Icons/illuminati.webp" 
+      alt={alt} 
+      className="h-5 w-5 object-contain"
+      onError={(e) => {
+        const target = e.target as HTMLImageElement;
+        const fallbackElement = document.createElement('div');
+        if (typeof fallback === 'object') {
+          target.style.display = 'none';
+          return;
+        }
+        fallbackElement.innerHTML = typeof fallback === 'string' ? fallback : '🔍';
+        if (target.parentNode) {
+          target.parentNode.replaceChild(fallbackElement, target);
+        }
+      }}
+    />
+  );
+
   return (
     <div className="p-4">
       <h2 className="text-lg font-bold mb-4">My Computer</h2>
@@ -21,42 +41,42 @@ const ComputerContent: React.FC<ComputerContentProps> = ({ handleOpenWindow }) =
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         <FileIcon 
           label="Home" 
-          icon={<Home className="h-5 w-5" />} 
+          icon={getIconImage("Home", <Home className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('home', '/')} 
         />
         <FileIcon 
           label="Reptilian Attack" 
-          icon={<Gamepad2 className="h-5 w-5" />} 
+          icon={getIconImage("Reptilian Attack", <Gamepad2 className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('game', '/game')} 
         />
         <FileIcon 
           label="NFT Shop" 
-          icon={<ShoppingCart className="h-5 w-5" />} 
+          icon={getIconImage("NFT Shop", <ShoppingCart className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('shop', '/shop')} 
         />
         <FileIcon 
           label="THC Grow Room" 
-          icon={<Cannabis className="h-5 w-5" />} 
+          icon={getIconImage("THC Grow Room", <Cannabis className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('growroom', '/growroom')} 
         />
         <FileIcon 
           label="Wallet" 
-          icon={<Wallet className="h-5 w-5" />} 
+          icon={getIconImage("Wallet", <Wallet className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('wallet')} 
         />
         <FileIcon 
           label="Community Chat" 
-          icon={<MessageSquare className="h-5 w-5" />} 
+          icon={getIconImage("Community Chat", <MessageSquare className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('chat')} 
         />
         <FileIcon 
           label="Analytics" 
-          icon={<BarChart2 className="h-5 w-5" />} 
+          icon={getIconImage("Analytics", <BarChart2 className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('analytics', '/analytics')} 
         />
         <FileIcon 
           label="Help" 
-          icon={<HelpCircle className="h-5 w-5" />} 
+          icon={getIconImage("Help", <HelpCircle className="h-5 w-5" />)} 
           onClick={() => alert('Help not available in this version!')} 
         />
       </div>
