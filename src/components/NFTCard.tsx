@@ -8,6 +8,7 @@ interface NFTCardProps {
   id: string | number;
   name: string;
   image: string;
+  description?: string;  // Add the description prop
   boost?: {
     type: string;
     value: number;
@@ -26,6 +27,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
   id,
   name,
   image,
+  description,  // Add the description parameter
   boost,
   price,
   onSelect,
@@ -77,6 +79,15 @@ const NFTCard: React.FC<NFTCardProps> = ({
             </div>
           )}
         </div>
+        
+        {/* Description (if provided) */}
+        {description && (
+          <div className="w-full text-center mb-2">
+            <div className="win95-inset p-1 text-[10px]">
+              {description}
+            </div>
+          </div>
+        )}
         
         {/* Boost Info */}
         {boost && (
