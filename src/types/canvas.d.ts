@@ -10,7 +10,7 @@ export interface PlantPosition {
 
 // Plant with position information
 export interface PlantWithPosition extends Plant {
-  position?: PlantPosition;
+  position: PlantPosition;
 }
 
 // Canvas assets loaded in the global scope

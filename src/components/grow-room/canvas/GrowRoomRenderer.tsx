@@ -34,7 +34,7 @@ const GrowRoomRenderer: React.FC<GrowRoomRendererProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hoveredPlant, setHoveredPlant] = useState<number | null>(null);
   const [selectedPlant, setSelectedPlant] = useState<number | null>(null);
-  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
+  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 450 }); // Reduced height
   const [isImagesLoaded, setIsImagesLoaded] = useState(false);
   const animationFrameRef = useRef<number>(0);
   const plantPositionsRef = useRef<{x: number, y: number, size: number}[]>([]);
@@ -80,8 +80,11 @@ const GrowRoomRenderer: React.FC<GrowRoomRendererProps> = ({
     }
     
     // Cache plant positions for interactions
-    const plantsWithPositions = [...plants];
-    plantPositionsRef.current = [];
+    const plantsWithPositions = plants.map((plant, index) => {
+      const pos = calculatePlantPosition(index, canvas, plantCapacity, isMobile);
+      plantPositionsRef.current[index] = pos;
+      return { ...plant, position: pos };
+    });
     
     // Draw equipment
     renderEquipment(ctx, equipment, plantsWithPositions);
@@ -90,11 +93,6 @@ const GrowRoomRenderer: React.FC<GrowRoomRendererProps> = ({
     for (let i = 0; i < plantCapacity; i++) {
       const pos = calculatePlantPosition(i, canvas, plantCapacity, isMobile);
       plantPositionsRef.current[i] = pos;
-      
-      // Store position with plant for equipment connections
-      if (i < plants.length) {
-        plantsWithPositions[i] = { ...plantsWithPositions[i], position: pos };
-      }
       
       // Draw grid slot
       ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
@@ -157,16 +155,17 @@ const GrowRoomRenderer: React.FC<GrowRoomRendererProps> = ({
     animationFrameRef.current = requestAnimationFrame(renderGrowRoom);
   }, [plants, equipment, plantCapacity, selectedPlant, hoveredPlant, isImagesLoaded, isMobile, getGrowthColor]);
   
-  // Handle canvas resize
+  // Handle canvas resize with max height constraint
   const handleResize = useCallback(() => {
     if (!canvasRef.current || !containerRef.current) return;
     
     // Get container size
     const { width, height } = containerRef.current.getBoundingClientRect();
     
-    // Set canvas size
+    // Set canvas size with max height
+    const maxHeight = isMobile ? 350 : 450; // Lower max height for mobile
     const newWidth = Math.floor(width);
-    const newHeight = Math.floor(height);
+    const newHeight = Math.min(Math.floor(height), maxHeight);
     
     // Only update if size actually changed
     if (canvasSize.width !== newWidth || canvasSize.height !== newHeight) {
@@ -179,7 +178,7 @@ const GrowRoomRenderer: React.FC<GrowRoomRendererProps> = ({
       canvasRef.current.width = newWidth;
       canvasRef.current.height = newHeight;
     }
-  }, [canvasSize]);
+  }, [canvasSize, isMobile]);
   
   // Handle mouse move for hover detection
   const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -255,7 +254,7 @@ const GrowRoomRenderer: React.FC<GrowRoomRendererProps> = ({
   }, [equipment]);
   
   return (
-    <div className="w-full h-full relative flex flex-col" ref={containerRef}>
+    <div className="w-full relative flex flex-col" ref={containerRef} style={{ height: isMobile ? '350px' : '450px' }}>
       <canvas
         ref={canvasRef}
         width={canvasSize.width}

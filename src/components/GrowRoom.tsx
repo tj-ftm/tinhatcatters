@@ -43,7 +43,7 @@ const GrowRoom: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col" ref={containerRef}>
-      <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+      <div className="flex-1 flex flex-col gap-2 overflow-auto">
         {/* Stats Bar - Now at the top for mobile */}
         {isMobile && (
           <StatsBar 
@@ -60,7 +60,7 @@ const GrowRoom: React.FC = () => {
           <div className="win95-title-bar mb-2">
             <span>THC Grow Room</span>
           </div>
-          <div className="win95-inset p-2 h-[calc(100%-32px)]">
+          <div className="win95-inset p-1 h-auto">
             <GrowRoomCanvas
               plants={plants}
               equipment={equipment}

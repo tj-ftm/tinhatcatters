@@ -28,7 +28,7 @@ const GrowRoomCanvas: React.FC<GrowRoomCanvasProps> = ({
   const isMobile = useIsMobile();
   
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full relative" style={{ height: isMobile ? '350px' : '450px' }}>
       <GrowRoomRenderer
         plants={plants}
         equipment={equipment}
