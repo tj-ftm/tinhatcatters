@@ -62,7 +62,7 @@ const Desktop: React.FC = () => {
           <DesktopIcon 
             label="My Computer" 
             icon="💻" 
-            onClick={() => handleItemClick('computer')} 
+            onClick={() => handleIconClick('computer')} 
           />
           <DesktopIcon 
             label="Reptilian Attack" 
@@ -71,8 +71,16 @@ const Desktop: React.FC = () => {
           />
           <DesktopIcon 
             label="THC Grow Room" 
-            icon="https://github.com/tj-ftm/tinhatcatters/blob/dd96f78076778d599e5bca3dd9941faae63d1a8e/public/assets/Icons/illuminati.webp"
-            onClick={() => handleItemClick('growroom', '/growroom')} 
+            icon={<img 
+              src="/assets/Icons/illuminati.webp" 
+              alt="THC Grow Room" 
+              className="h-6 w-6 object-contain"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '🌿';
+              }}
+            />}
+            onClick={() => handleIconClick('growroom', '/growroom')} 
           />
           <DesktopIcon 
             label="NFT Shop" 
@@ -168,7 +176,7 @@ const Desktop: React.FC = () => {
 
 const DesktopIcon: React.FC<{ 
   label: string; 
-  icon: string; 
+  icon: string | React.ReactNode; 
   onClick: () => void 
 }> = ({ label, icon, onClick }) => {
   return (
@@ -177,7 +185,9 @@ const DesktopIcon: React.FC<{
       onClick={onClick}
       onDoubleClick={onClick}
     >
-      <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">{icon}</div>
+      <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">
+        {typeof icon === 'string' ? icon : icon}
+      </div>
       <span className="text-white text-xs text-center bg-win95-blue/80 px-1 py-0.5 w-full">
         {label}
       </span>
