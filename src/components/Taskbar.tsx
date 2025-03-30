@@ -31,7 +31,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
     computer: "/assets/Icons/illuminati.webp",
     home: "/assets/Icons/illuminati.webp",
     wallet: "/assets/Icons/illuminati.webp",
-    growroom: "/assets/Icons/illuminati.webp",
+    growroom: "/assets/Icons/weed.png",
     chat: "/assets/Icons/illuminati.webp",
     leaderboard: "/assets/Icons/illuminati.webp",
     analytics: "/assets/Icons/illuminati.webp"

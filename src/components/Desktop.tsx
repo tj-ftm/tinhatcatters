@@ -19,7 +19,7 @@ const Desktop: React.FC = () => {
   const desktopIconImages = {
     computer: "/assets/Icons/computer.png",
     game: "/assets/Icons/illuminati.webp",
-    growroom: "/assets/Icons/tinhatcat.webp",
+    growroom: "/assets/Icons/weed.png",
     shop: "/assets/Icons/nftshop.ico",
     chat: "/assets/Icons/illuminati.webp"
   };

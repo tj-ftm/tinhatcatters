@@ -13,7 +13,7 @@ const ComputerContent: React.FC<ComputerContentProps> = ({ handleOpenWindow }) =
     home: "/assets/Icons/tinhatcat.webp",
     game: "/assets/Icons/illuminati.webp",
     shop: "/assets/Icons/illuminati.webp",
-    growroom: "/assets/Icons/illuminati.webp",
+    growroom: "/assets/Icons/weed.png",
     wallet: "/assets/Icons/illuminati.webp",
     chat: "/assets/Icons/illuminati.webp",
     analytics: "/assets/Icons/illuminati.webp",
