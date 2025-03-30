@@ -14,9 +14,9 @@ const GAME_ICON_IMAGES = {
   fireRate: "/assets/Icons/illuminati.webp",
   health: "/assets/Icons/illuminati.webp",
   logo: "/assets/game/reptilian-logo.png",
-  player: "/assets/Icons/illuminati.webp",
+  player: "/assets/Icons/tinhatcat.webp",
   enemy: "/assets/Icons/illuminati.webp",
-  powerup: "/assets/Icons/illuminati.webp",
+  powerup: "/assets/Icons/weed.png",
   background: "/assets/Icons/sidescrollerbg.webp"
 };
 
