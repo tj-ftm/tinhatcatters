@@ -13,7 +13,7 @@ const GAME_ICON_IMAGES = {
   speed: "/assets/Icons/illuminati.webp",
   fireRate: "/assets/Icons/illuminati.webp",
   health: "/assets/Icons/illuminati.webp",
-  logo: "/assets/game/reptilian-logo.png",
+  logo: "/assets/Icons/illuminati.webp",
   player: "/assets/Icons/tinhatcat.webp",
   enemy: "/assets/Icons/illuminati.webp",
   powerup: "/assets/Icons/weed.png",
@@ -72,6 +72,12 @@ const Game: React.FC = () => {
     
     if (canvasRef.current) {
       gameEngineRef.current.initialize(canvasRef.current);
+      
+      if (gameEngineRef.current) {
+        gameEngineRef.current.setPlayerSprite(GAME_ICON_IMAGES.player);
+        gameEngineRef.current.setBackgroundImage(GAME_ICON_IMAGES.background);
+        gameEngineRef.current.setEnemyImage(GAME_ICON_IMAGES.enemy);
+      }
     }
     
     return () => {
