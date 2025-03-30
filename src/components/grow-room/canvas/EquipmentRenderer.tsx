@@ -5,8 +5,8 @@ import { EquipmentType, Equipment } from '@/types/growRoom';
 // Equipment images mapping (moved from GrowRoomCanvas)
 export const equipmentImages = {
   [EquipmentType.Light]: {
-    1: '/assets/Icons/illuminati.webp',
-    2: '/assets/Icons/illuminati.webp',
+    1: '/assets/Icons/lamp1.png',
+    2: '/assets/Icons/lamp2.png',
     3: '/assets/Icons/illuminati.webp',
   },
   [EquipmentType.Pot]: {
