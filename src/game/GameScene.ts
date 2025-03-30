@@ -1,4 +1,3 @@
-
 import Phaser from 'phaser';
 import { PLAYER_CONFIG } from './config';
 
@@ -20,11 +19,14 @@ export default class GameScene extends Phaser.Scene {
   healthBar!: Phaser.GameObjects.Graphics;
   isInvincible: boolean = false;
   invincibilityTimer?: Phaser.Time.TimerEvent;
+  livesIcons: Phaser.GameObjects.Image[] = [];
 
   // For boost effects
   boostEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
   dustEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
   playerSize: { width: number; height: number } = { width: 30, height: 45 };
+  lives: number = 3;
+  healthText!: Phaser.GameObjects.Text;
 
   constructor() {
     super('GameScene');
@@ -53,7 +55,7 @@ export default class GameScene extends Phaser.Scene {
     // Create particle effects
     this.createParticles();
     
-    // Create score display
+    // Create UI with lives icons and health bar
     this.createUI();
     
     // Set up controls
@@ -274,6 +276,22 @@ export default class GameScene extends Phaser.Scene {
       color: '#FFFF00' // Yellow
     }).setScrollFactor(0);
     
+    // Lives display (top center) using TinHatCat icons
+    this.livesIcons = [];
+    const livesLabel = this.add.text(this.cameras.main.width / 2 - 60, 16, 'Lives:', {
+      fontFamily: 'monospace',
+      fontSize: '20px',
+      color: '#FFFF00' // Yellow
+    }).setScrollFactor(0).setOrigin(0, 0);
+    
+    // Add initial life icons
+    for (let i = 0; i < this.lives; i++) {
+      const icon = this.add.image(livesLabel.x + livesLabel.width + 25 + (i * 35), livesLabel.y + 10, 'tinhat')
+        .setScrollFactor(0)
+        .setScale(0.8);
+      this.livesIcons.push(icon);
+    }
+    
     // Health bar (bottom left)
     this.healthBar = this.add.graphics().setScrollFactor(0);
     this.updateHealthBar();
@@ -297,6 +315,17 @@ export default class GameScene extends Phaser.Scene {
     // Border
     this.healthBar.lineStyle(2, 0xFFFF00);
     this.healthBar.strokeRect(16, this.cameras.main.height - 30, 150, 20);
+    
+    // Health text
+    if (!this.healthText) {
+      this.healthText = this.add.text(20, this.cameras.main.height - 28, `${this.health}%`, {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: '#000000'
+      }).setScrollFactor(0);
+    } else {
+      this.healthText.setText(`${this.health}%`);
+    }
   }
 
   handlePlayerMovement() {
@@ -424,7 +453,7 @@ export default class GameScene extends Phaser.Scene {
     this.scoreText.x = this.cameras.main.scrollX + 16;
     this.ringsText.x = this.cameras.main.scrollX + this.cameras.main.width - 150;
     
-    // Ensure health bar stays at the bottom
+    // Update health bar
     this.updateHealthBar();
   }
 
@@ -541,6 +570,18 @@ export default class GameScene extends Phaser.Scene {
     const knockbackDirection = player.x < enemy.x ? -1 : 1;
     player.setVelocity(knockbackDirection * 200, -200);
     
+    // Check if health is too low and should lose a life
+    if (this.health <= 0) {
+      // Lose a life
+      this.updateLives(this.lives - 1);
+      
+      // Reset health if still have lives
+      if (this.lives > 0) {
+        this.health = 100;
+        this.updateHealthBar();
+      }
+    }
+    
     // Briefly make invincible
     this.makeInvincible(1000);
   }
@@ -554,6 +595,18 @@ export default class GameScene extends Phaser.Scene {
     
     // Knockback effect
     player.setVelocityY(-200);
+    
+    // Check if health is too low and should lose a life
+    if (this.health <= 0) {
+      // Lose a life
+      this.updateLives(this.lives - 1);
+      
+      // Reset health if still have lives
+      if (this.lives > 0) {
+        this.health = 100;
+        this.updateHealthBar();
+      }
+    }
     
     // Briefly make invincible
     this.makeInvincible(1000);
@@ -710,5 +763,51 @@ export default class GameScene extends Phaser.Scene {
     });
     
     return rightmostX;
+  }
+
+  updateLives(newLives: number) {
+    const oldLives = this.lives;
+    this.lives = newLives;
+    
+    // If lives decreased, remove icons
+    if (newLives < oldLives) {
+      for (let i = oldLives - 1; i >= newLives; i--) {
+        if (this.livesIcons[i]) {
+          // Fade out and remove the icon
+          this.tweens.add({
+            targets: this.livesIcons[i],
+            alpha: 0,
+            scale: 0.5,
+            duration: 300,
+            onComplete: () => {
+              this.livesIcons[i].destroy();
+            }
+          });
+        }
+      }
+      this.livesIcons.splice(newLives, oldLives - newLives);
+    }
+    // If lives increased, add icons
+    else if (newLives > oldLives) {
+      const livesLabel = this.children.getByName('livesLabel');
+      const labelX = livesLabel ? (livesLabel as Phaser.GameObjects.Text).x : this.cameras.main.width / 2 - 60;
+      const labelWidth = livesLabel ? (livesLabel as Phaser.GameObjects.Text).width : 60;
+      
+      for (let i = oldLives; i < newLives; i++) {
+        const icon = this.add.image(labelX + labelWidth + 25 + (i * 35), 26, 'tinhat')
+          .setScrollFactor(0)
+          .setScale(0.8)
+          .setAlpha(0);
+        
+        this.tweens.add({
+          targets: icon,
+          alpha: 1,
+          scale: 0.8,
+          duration: 300
+        });
+        
+        this.livesIcons.push(icon);
+      }
+    }
   }
 }
