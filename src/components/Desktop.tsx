@@ -62,7 +62,7 @@ const Desktop: React.FC = () => {
           <DesktopIcon 
             label="My Computer" 
             icon="💻" 
-            onClick={() => handleIconClick('computer')} 
+            onClick={() => handleItemClick('computer')} 
           />
           <DesktopIcon 
             label="Reptilian Attack" 
