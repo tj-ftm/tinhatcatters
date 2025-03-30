@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { X, Minus } from 'lucide-react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import WalletConnector from './WalletConnector';
@@ -22,6 +22,11 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [imageLoadErrors, setImageLoadErrors] = useState<Record<string, boolean>>({});
+  const windowRef = useRef<HTMLDivElement>(null);
+  const [resizing, setResizing] = useState(false);
+  const [size, setSize] = useState({ width: 320, height: 'auto' });
+  const startResizePos = useRef({ x: 0, y: 0 });
+  const startSize = useRef({ width: 0, height: 0 });
   
   useEffect(() => {
     const loadNFTData = async () => {
@@ -49,9 +54,51 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
       [nftId]: true
     }));
   };
+
+  // Resize handling
+  const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setResizing(true);
+    startResizePos.current = { x: e.clientX, y: e.clientY };
+    if (windowRef.current) {
+      startSize.current = { 
+        width: windowRef.current.offsetWidth, 
+        height: windowRef.current.offsetHeight 
+      };
+    }
+    
+    document.addEventListener('mousemove', handleResize);
+    document.addEventListener('mouseup', stopResize);
+  };
+  
+  const handleResize = (e: MouseEvent) => {
+    if (!resizing) return;
+    
+    const dx = e.clientX - startResizePos.current.x;
+    const dy = e.clientY - startResizePos.current.y;
+    
+    setSize({
+      width: Math.max(280, startSize.current.width + dx),
+      height: 'auto' // Keep height auto for content flexibility
+    });
+  };
+  
+  const stopResize = () => {
+    setResizing(false);
+    document.removeEventListener('mousemove', handleResize);
+    document.removeEventListener('mouseup', stopResize);
+  };
   
   return (
-    <div className="win95-window w-80 shadow-lg z-20">
+    <div 
+      ref={windowRef}
+      className="win95-window shadow-lg z-20"
+      style={{ 
+        width: `${size.width}px`, 
+        height: size.height,
+        cursor: resizing ? 'se-resize' : 'default'
+      }}
+    >
       <div className="win95-title-bar flex justify-between items-center">
         <span className="text-white font-bold">Wallet</span>
         <div className="flex">
@@ -106,8 +153,6 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
               </div>
             </div>
             
-            {/* Removed "Your Tin Hat Catter" section */}
-            
             {/* Sonic NFTs Preview */}
             {sonicNFTs.length > 0 && (
               <div className="mb-2">
@@ -147,6 +192,17 @@ const WalletWindow: React.FC<WalletWindowProps> = ({ onClose, onMinimize }) => {
           </div>
         )}
       </div>
+      
+      {/* Resize handle */}
+      <div 
+        className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize"
+        onMouseDown={startResize}
+        style={{
+          backgroundImage: 'linear-gradient(135deg, transparent 50%, #000 50%, #000 60%, transparent 60%)',
+          backgroundSize: '8px 8px',
+          backgroundPosition: 'bottom right'
+        }}
+      />
     </div>
   );
 };

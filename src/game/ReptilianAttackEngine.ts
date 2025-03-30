@@ -1,5 +1,6 @@
-// This is a stub implementation for the ReptilianAttackEngine class
-// In a real implementation, this would be a full-featured game engine
+
+// This is a modified implementation for the ReptilianAttackEngine class
+// Now using images for rendering instead of drawing primitives
 
 class ReptilianAttackEngine {
   private canvas: HTMLCanvasElement | null = null;
@@ -31,9 +32,58 @@ class ReptilianAttackEngine {
   private startTime: number = 0;
   private gameTime: number = 0;
   
+  // Image assets
+  private playerImage: HTMLImageElement | null = null;
+  private backgroundImage: HTMLImageElement | null = null;
+  private obstacleImage: HTMLImageElement | null = null;
+  private enemyImage: HTMLImageElement | null = null;
+  private bulletImage: HTMLImageElement | null = null;
+  private enemyBulletImage: HTMLImageElement | null = null;
+  private floorImage: HTMLImageElement | null = null;
+  
+  // Image configurations
+  private imageConfig = {
+    player: {
+      src: 'https://placekitten.com/50/70', // Placeholder image
+      width: 50,
+      height: 70
+    },
+    background: {
+      src: 'https://placekitten.com/800/400', // Placeholder background
+      width: 800,
+      height: 400
+    },
+    obstacle: {
+      src: 'https://placekitten.com/40/60', // Placeholder obstacle
+      width: 40,
+      height: 60
+    },
+    enemy: {
+      src: 'https://placekitten.com/60/60', // Placeholder enemy
+      width: 60,
+      height: 60
+    },
+    bullet: {
+      src: 'https://placekitten.com/20/10', // Placeholder bullet
+      width: 20,
+      height: 10
+    },
+    enemyBullet: {
+      src: 'https://placekitten.com/20/10', // Placeholder enemy bullet
+      width: 20,
+      height: 10
+    },
+    floor: {
+      src: 'https://placekitten.com/800/20', // Placeholder floor
+      width: 800,
+      height: 20
+    }
+  };
+  
   initialize(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.context = canvas.getContext('2d');
+    this.loadImages();
     this.reset();
     this.startTime = Date.now();
   }
@@ -42,12 +92,83 @@ class ReptilianAttackEngine {
     this.collisionBehavior = behavior;
   }
   
+  // Load all game images
+  private loadImages() {
+    // Player image
+    this.playerImage = new Image();
+    this.playerImage.src = this.imageConfig.player.src;
+    
+    // Background image
+    this.backgroundImage = new Image();
+    this.backgroundImage.src = this.imageConfig.background.src;
+    
+    // Obstacle image
+    this.obstacleImage = new Image();
+    this.obstacleImage.src = this.imageConfig.obstacle.src;
+    
+    // Enemy image
+    this.enemyImage = new Image();
+    this.enemyImage.src = this.imageConfig.enemy.src;
+    
+    // Bullet image
+    this.bulletImage = new Image();
+    this.bulletImage.src = this.imageConfig.bullet.src;
+    
+    // Enemy bullet image
+    this.enemyBulletImage = new Image();
+    this.enemyBulletImage.src = this.imageConfig.enemyBullet.src;
+    
+    // Floor image
+    this.floorImage = new Image();
+    this.floorImage.src = this.imageConfig.floor.src;
+  }
+  
+  // Set player sprite
+  setPlayerSprite(imageSrc: string, width?: number, height?: number) {
+    this.imageConfig.player.src = imageSrc;
+    if (width) this.imageConfig.player.width = width;
+    if (height) this.imageConfig.player.height = height;
+    
+    this.playerImage = new Image();
+    this.playerImage.src = imageSrc;
+  }
+  
+  // Set background image
+  setBackgroundImage(imageSrc: string, width?: number, height?: number) {
+    this.imageConfig.background.src = imageSrc;
+    if (width) this.imageConfig.background.width = width;
+    if (height) this.imageConfig.background.height = height;
+    
+    this.backgroundImage = new Image();
+    this.backgroundImage.src = imageSrc;
+  }
+  
+  // Set obstacle image
+  setObstacleImage(imageSrc: string, width?: number, height?: number) {
+    this.imageConfig.obstacle.src = imageSrc;
+    if (width) this.imageConfig.obstacle.width = width;
+    if (height) this.imageConfig.obstacle.height = height;
+    
+    this.obstacleImage = new Image();
+    this.obstacleImage.src = imageSrc;
+  }
+  
+  // Set enemy image
+  setEnemyImage(imageSrc: string, width?: number, height?: number) {
+    this.imageConfig.enemy.src = imageSrc;
+    if (width) this.imageConfig.enemy.width = width;
+    if (height) this.imageConfig.enemy.height = height;
+    
+    this.enemyImage = new Image();
+    this.enemyImage.src = imageSrc;
+  }
+  
   reset(upgrades = { speed: 1, fireRate: 1, health: 1 }) {
     this.player = {
       x: 100,
       y: 200,
-      width: 30,
-      height: 50,
+      width: this.imageConfig.player.width,
+      height: this.imageConfig.player.height,
       velocityY: 0,
       isJumping: false
     };
@@ -107,9 +228,9 @@ class ReptilianAttackEngine {
     if (input.left && now - this.lastShootTime > 500 / fireRateMultiplier) {
       this.bullets.push({
         x: this.player.x + this.player.width,
-        y: this.player.y + this.player.height / 2,
-        width: 10,
-        height: 5,
+        y: this.player.y + this.player.height / 2 - this.imageConfig.bullet.height / 2,
+        width: this.imageConfig.bullet.width,
+        height: this.imageConfig.bullet.height,
         velocityX: 15 * speedMultiplier
       });
       this.lastShootTime = now;
@@ -117,11 +238,11 @@ class ReptilianAttackEngine {
     
     // Generate new obstacles
     if (now - this.lastObstacleTime > 2000 / (1 + this.gameSpeed / 20)) {
-      const obstacleHeight = 30 + Math.random() * 50;
+      const obstacleHeight = this.imageConfig.obstacle.height;
       this.obstacles.push({
         x: this.canvas.width,
         y: this.canvas.height - obstacleHeight - 20,
-        width: 30,
+        width: this.imageConfig.obstacle.width,
         height: obstacleHeight,
         hit: false
       });
@@ -133,8 +254,8 @@ class ReptilianAttackEngine {
       this.enemies.push({
         x: this.canvas.width,
         y: 50 + Math.random() * (this.canvas.height - 150),
-        width: 40,
-        height: 40,
+        width: this.imageConfig.enemy.width,
+        height: this.imageConfig.enemy.height,
         health: 2,
         hit: false
       });
@@ -148,9 +269,9 @@ class ReptilianAttackEngine {
         const shooter = shootingEnemies[Math.floor(Math.random() * shootingEnemies.length)];
         this.enemyBullets.push({
           x: shooter.x,
-          y: shooter.y + shooter.height / 2,
-          width: 10,
-          height: 5,
+          y: shooter.y + shooter.height / 2 - this.imageConfig.enemyBullet.height / 2,
+          width: this.imageConfig.enemyBullet.width,
+          height: this.imageConfig.enemyBullet.height,
           velocityX: -8
         });
         this.lastEnemyShootTime = now;
@@ -328,68 +449,100 @@ class ReptilianAttackEngine {
   }
   
   render() {
-    if (!this.canvas || !this.context) return;
+    if (!this.canvas || !this.context || !this.backgroundImage) return;
     
     const ctx = this.context;
     const width = this.canvas.width;
     const height = this.canvas.height;
     
     // Clear canvas
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, width, height);
+    ctx.clearRect(0, 0, width, height);
     
-    // Draw background grid
-    ctx.strokeStyle = '#222222';
-    ctx.lineWidth = 1;
-    const gridSize = 50;
-    for (let x = 0; x < width; x += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
-    }
-    for (let y = 0; y < height; y += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
+    // Draw background image
+    if (this.backgroundImage.complete) {
+      ctx.drawImage(this.backgroundImage, 0, 0, width, height);
+    } else {
+      // Fallback if image is not loaded
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, width, height);
     }
     
     // Draw floor
-    ctx.fillStyle = '#444444';
-    ctx.fillRect(0, height - 20, width, 20);
+    if (this.floorImage && this.floorImage.complete) {
+      ctx.drawImage(this.floorImage, 0, height - 20, width, 20);
+    } else {
+      ctx.fillStyle = '#444444';
+      ctx.fillRect(0, height - 20, width, 20);
+    }
     
     // Draw player
-    ctx.fillStyle = '#00FF00';
-    ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
+    if (this.playerImage && this.playerImage.complete) {
+      ctx.drawImage(this.playerImage, this.player.x, this.player.y, this.player.width, this.player.height);
+    } else {
+      // Fallback if image is not loaded
+      ctx.fillStyle = '#00FF00';
+      ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
+    }
     
     // Draw obstacles
-    ctx.fillStyle = '#FF0000';
-    this.obstacles.forEach(obstacle => {
-      if (!obstacle.hit) {
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-      }
-    });
+    if (this.obstacleImage && this.obstacleImage.complete) {
+      this.obstacles.forEach(obstacle => {
+        if (!obstacle.hit) {
+          ctx.drawImage(this.obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        }
+      });
+    } else {
+      // Fallback if image is not loaded
+      ctx.fillStyle = '#FF0000';
+      this.obstacles.forEach(obstacle => {
+        if (!obstacle.hit) {
+          ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        }
+      });
+    }
     
     // Draw enemies
-    ctx.fillStyle = '#FF00FF';
-    this.enemies.forEach(enemy => {
-      if (!enemy.hit) {
-        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-      }
-    });
+    if (this.enemyImage && this.enemyImage.complete) {
+      this.enemies.forEach(enemy => {
+        if (!enemy.hit) {
+          ctx.drawImage(this.enemyImage, enemy.x, enemy.y, enemy.width, enemy.height);
+        }
+      });
+    } else {
+      // Fallback if image is not loaded
+      ctx.fillStyle = '#FF00FF';
+      this.enemies.forEach(enemy => {
+        if (!enemy.hit) {
+          ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        }
+      });
+    }
     
     // Draw player bullets
-    ctx.fillStyle = '#FFFF00';
-    this.bullets.forEach(bullet => {
-      ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-    });
+    if (this.bulletImage && this.bulletImage.complete) {
+      this.bullets.forEach(bullet => {
+        ctx.drawImage(this.bulletImage, bullet.x, bullet.y, bullet.width, bullet.height);
+      });
+    } else {
+      // Fallback if image is not loaded
+      ctx.fillStyle = '#FFFF00';
+      this.bullets.forEach(bullet => {
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+      });
+    }
     
     // Draw enemy bullets
-    ctx.fillStyle = '#FF6600';
-    this.enemyBullets.forEach(bullet => {
-      ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-    });
+    if (this.enemyBulletImage && this.enemyBulletImage.complete) {
+      this.enemyBullets.forEach(bullet => {
+        ctx.drawImage(this.enemyBulletImage, bullet.x, bullet.y, bullet.width, bullet.height);
+      });
+    } else {
+      // Fallback if image is not loaded
+      ctx.fillStyle = '#FF6600';
+      this.enemyBullets.forEach(bullet => {
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+      });
+    }
     
     // Draw Game Over text
     if (this.gameOver) {
@@ -412,6 +565,26 @@ class ReptilianAttackEngine {
       thcEarned: this.thcEarned,
       gameOver: this.gameOver,
       gameTime: this.gameTime
+    };
+  }
+  
+  getUpgradePrices() {
+    return {
+      speed: {
+        name: "Speed Upgrade",
+        description: "Increases movement and attack speed",
+        price: 20 * this.upgrades.speed
+      },
+      fireRate: {
+        name: "Fire Rate Upgrade",
+        description: "Shoot faster and more bullets",
+        price: 15 * this.upgrades.fireRate
+      },
+      health: {
+        name: "Health Upgrade",
+        description: "Reduces damage taken from enemies",
+        price: 25 * this.upgrades.health
+      }
     };
   }
   

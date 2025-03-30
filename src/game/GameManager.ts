@@ -95,4 +95,9 @@ export default class GameManager {
     
     return false;
   }
+  
+  // Added method to access the game instance for GameUI
+  getGame(): Phaser.Game | null {
+    return this.game;
+  }
 }

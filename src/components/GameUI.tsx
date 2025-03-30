@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import GameManager from '@/game/GameManager';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Play, Pause, RefreshCw } from 'lucide-react';
+import { Play, Pause, RefreshCw, Upload } from 'lucide-react';
 
 interface GameUIProps {
   selectedPet: any | null;
@@ -14,6 +14,7 @@ const GameUI: React.FC<GameUIProps> = ({ selectedPet }) => {
   const gameManagerRef = useRef<GameManager | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Initialize game on component mount
   useEffect(() => {
@@ -70,6 +71,71 @@ const GameUI: React.FC<GameUIProps> = ({ selectedPet }) => {
     });
   };
   
+  // Handle player sprite upload
+  const handlePlayerSpriteUpload = () => {
+    fileInputRef.current?.click();
+  };
+  
+  // Process the uploaded image file
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageUrl = e.target?.result as string;
+      if (gameManagerRef.current) {
+        // Get access to the reptilian attack engine instance
+        const gameScene = gameManagerRef.current?.getGame()?.scene?.getScene('GameScene');
+        if (gameScene) {
+          // Set the player sprite image
+          const engine = (gameScene as any).reptilianEngine;
+          if (engine && engine.setPlayerSprite) {
+            engine.setPlayerSprite(imageUrl, 50, 70);
+            toast({
+              title: 'Sprite Updated',
+              description: 'Player sprite has been updated successfully.'
+            });
+          }
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+  
+  // Handle background image upload
+  const handleBackgroundUpload = () => {
+    const bgFileInput = document.createElement('input');
+    bgFileInput.type = 'file';
+    bgFileInput.accept = 'image/*';
+    bgFileInput.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageUrl = e.target?.result as string;
+        if (gameManagerRef.current) {
+          // Get access to the reptilian attack engine instance
+          const gameScene = gameManagerRef.current?.getGame()?.scene?.getScene('GameScene');
+          if (gameScene) {
+            // Set the background image
+            const engine = (gameScene as any).reptilianEngine;
+            if (engine && engine.setBackgroundImage) {
+              engine.setBackgroundImage(imageUrl, 800, 400);
+              toast({
+                title: 'Background Updated',
+                description: 'Game background has been updated successfully.'
+              });
+            }
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+    bgFileInput.click();
+  };
+  
   // Use snack in game
   const useSnack = (snackId: string) => {
     if (!gameManagerRef.current) return false;
@@ -79,7 +145,7 @@ const GameUI: React.FC<GameUIProps> = ({ selectedPet }) => {
   
   return (
     <div className="win95-window w-full h-full flex flex-col">
-      <div className="win95-title-bar">
+      <div className="win95-title-bar flex justify-between items-center">
         <span>Sonic Sidescroller Adventure</span>
         <div className="flex gap-2">
           <button 
@@ -105,6 +171,35 @@ const GameUI: React.FC<GameUIProps> = ({ selectedPet }) => {
           ref={gameContainerRef}
           className="w-full h-full"
         />
+        
+        {/* Customization panel */}
+        <div className="absolute top-2 right-2 flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="win95-button text-xs flex items-center gap-1"
+            onClick={handlePlayerSpriteUpload}
+          >
+            <Upload size={12} />
+            Player Sprite
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="win95-button text-xs flex items-center gap-1"
+            onClick={handleBackgroundUpload}
+          >
+            <Upload size={12} />
+            Background
+          </Button>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            accept="image/*" 
+            className="hidden" 
+            onChange={handleFileChange}
+          />
+        </div>
         
         {isPaused && (
           <div className="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center">

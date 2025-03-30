@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import NFTCard from './NFTCard';
 import { purchaseSnack } from '@/lib/web3';
@@ -9,6 +9,9 @@ import WalletSelectDialog from './WalletSelectDialog';
 import { usePoints } from '@/hooks/use-points';
 import WalletConnector from './WalletConnector';
 import { useIsMobile } from '@/hooks/use-mobile';
+
+// Import the ReptilianAttackEngine to access game upgrade info
+import ReptilianAttackEngine from '@/game/ReptilianAttackEngine';
 
 // Configurable icon URLs for each snack item
 const SNACK_ICON_IMAGES = {
@@ -20,25 +23,10 @@ const SNACK_ICON_IMAGES = {
   energybar: "/assets/Icons/illuminati.webp",
   speedpotion: "/assets/Icons/illuminati.webp",
   
-  // Jump Items
-  coffee: "/assets/Icons/illuminati.webp",
-  springs: "/assets/Icons/illuminati.webp",
-  jumpcandy: "/assets/Icons/illuminati.webp",
-  jetpack: "/assets/Icons/illuminati.webp",
-  jumpgum: "/assets/Icons/illuminati.webp",
-  helium: "/assets/Icons/illuminati.webp",
-  
-  // Health Items
-  firstaid: "/assets/Icons/illuminati.webp",
-  shield: "/assets/Icons/illuminati.webp",
-  potion: "/assets/Icons/illuminati.webp",
-  medkit: "/assets/Icons/illuminati.webp",
-  
-  // Growing Items
-  growfood: "/assets/Icons/illuminati.webp",
-  supersoil: "/assets/Icons/illuminati.webp",
-  seeds: "/assets/Icons/illuminati.webp",
-  water: "/assets/Icons/illuminati.webp",
+  // Game Upgrades
+  speedUpgrade: "/assets/Icons/illuminati.webp",
+  fireRateUpgrade: "/assets/Icons/illuminati.webp",
+  healthUpgrade: "/assets/Icons/illuminati.webp",
   
   // THC Items
   thcfert: "/assets/Icons/illuminati.webp",
@@ -49,218 +37,79 @@ const SNACK_ICON_IMAGES = {
   climatectrl: "/assets/Icons/illuminati.webp"
 };
 
-const AVAILABLE_SNACKS = {
-  speed: [
-    {
-      id: 'donut',
-      name: 'Energy Donut',
-      image: SNACK_ICON_IMAGES.donut,
-      price: 5,
-      boost: { type: 'speed', value: 20, duration: 10 }
-    },
-    {
-      id: 'cookie',
-      name: 'Speed Cookie',
-      image: SNACK_ICON_IMAGES.cookie,
-      price: 8,
-      boost: { type: 'speed', value: 30, duration: 5 }
-    },
-    {
-      id: 'soda',
-      name: 'Sonic Soda',
-      image: SNACK_ICON_IMAGES.soda,
-      price: 12,
-      boost: { type: 'speed', value: 40, duration: 8 }
-    },
-    {
-      id: 'shake',
-      name: 'Power Shake',
-      image: SNACK_ICON_IMAGES.shake,
-      price: 15,
-      boost: { type: 'speed', value: 50, duration: 7 }
-    },
-    {
-      id: 'energybar',
-      name: 'Energy Bar',
-      image: SNACK_ICON_IMAGES.energybar,
-      price: 10,
-      boost: { type: 'speed', value: 25, duration: 15 }
-    },
-    {
-      id: 'speedpotion',
-      name: 'Speed Potion',
-      image: SNACK_ICON_IMAGES.speedpotion,
-      price: 20,
-      boost: { type: 'speed', value: 60, duration: 6 }
-    }
-  ],
-  jump: [
-    {
-      id: 'coffee',
-      name: 'Jump Coffee',
-      image: SNACK_ICON_IMAGES.coffee,
-      price: 7,
-      boost: { type: 'jump', value: 25, duration: 10 }
-    },
-    {
-      id: 'springs',
-      name: 'Spring Boots',
-      image: SNACK_ICON_IMAGES.springs,
-      price: 15,
-      boost: { type: 'jump', value: 40, duration: 12 }
-    },
-    {
-      id: 'jumpcandy',
-      name: 'Bounce Candy',
-      image: SNACK_ICON_IMAGES.jumpcandy,
-      price: 9,
-      boost: { type: 'jump', value: 30, duration: 8 }
-    },
-    {
-      id: 'jetpack',
-      name: 'Mini Jetpack',
-      image: SNACK_ICON_IMAGES.jetpack,
-      price: 25,
-      boost: { type: 'jump', value: 50, duration: 6 }
-    },
-    {
-      id: 'jumpgum',
-      name: 'Bounce Gum',
-      image: SNACK_ICON_IMAGES.jumpgum,
-      price: 12,
-      boost: { type: 'jump', value: 35, duration: 14 }
-    },
-    {
-      id: 'helium',
-      name: 'Helium Balloon',
-      image: SNACK_ICON_IMAGES.helium,
-      price: 18,
-      boost: { type: 'jump', value: 45, duration: 9 }
-    }
-  ],
-  health: [
-    {
-      id: 'firstaid',
-      name: 'First Aid Kit',
-      image: SNACK_ICON_IMAGES.firstaid,
-      price: 20,
-      boost: { type: 'health', value: 50, duration: 0 }
-    },
-    {
-      id: 'shield',
-      name: 'Force Shield',
-      image: SNACK_ICON_IMAGES.shield,
-      price: 30,
-      boost: { type: 'invincibility', value: 100, duration: 10 }
-    },
-    {
-      id: 'potion',
-      name: 'Health Potion',
-      image: SNACK_ICON_IMAGES.potion,
-      price: 15,
-      boost: { type: 'health', value: 30, duration: 0 }
-    },
-    {
-      id: 'medkit',
-      name: 'Mega Medkit',
-      image: SNACK_ICON_IMAGES.medkit,
-      price: 40,
-      boost: { type: 'health', value: 100, duration: 0 }
-    }
-  ],
-  growing: [
-    {
-      id: 'growfood',
-      name: 'Growth Nutrient',
-      image: SNACK_ICON_IMAGES.growfood,
-      price: 25,
-      boost: { type: 'size', value: 50, duration: 15 }
-    },
-    {
-      id: 'supersoil',
-      name: 'Super Soil',
-      image: SNACK_ICON_IMAGES.supersoil,
-      price: 35,
-      boost: { type: 'growth', value: 100, duration: 0 }
-    },
-    {
-      id: 'seeds',
-      name: 'Sonic Seeds',
-      image: SNACK_ICON_IMAGES.seeds,
-      price: 15,
-      boost: { type: 'planting', value: 1, duration: 0 }
-    },
-    {
-      id: 'water',
-      name: 'Special Water',
-      image: SNACK_ICON_IMAGES.water,
-      price: 10,
-      boost: { type: 'hydration', value: 75, duration: 0 }
-    }
-  ],
-  thc: [
-    {
-      id: 'thcfert',
-      name: 'Premium THC Fertilizer',
-      image: SNACK_ICON_IMAGES.thcfert,
-      price: 20,
-      boost: { type: 'growth', value: 50, duration: 0 }
-    },
-    {
-      id: 'thcseed',
-      name: 'THC Premium Seeds',
-      image: SNACK_ICON_IMAGES.thcseed,
-      price: 30,
-      boost: { type: 'planting', value: 3, duration: 0 }
-    },
-    {
-      id: 'hydrokit',
-      name: 'Hydroponic System',
-      image: SNACK_ICON_IMAGES.hydrokit,
-      price: 50,
-      boost: { type: 'hydration', value: 100, duration: 0 }
-    },
-    {
-      id: 'ledlight',
-      name: 'LED Grow Light',
-      image: SNACK_ICON_IMAGES.ledlight,
-      price: 40,
-      boost: { type: 'lighting', value: 75, duration: 0 }
-    },
-    {
-      id: 'autofeeder',
-      name: 'Auto Feeding System',
-      image: SNACK_ICON_IMAGES.autofeeder,
-      price: 35,
-      boost: { type: 'feeding', value: 60, duration: 0 }
-    },
-    {
-      id: 'climatectrl',
-      name: 'Climate Control System',
-      image: SNACK_ICON_IMAGES.climatectrl,
-      price: 45,
-      boost: { type: 'environment', value: 80, duration: 0 }
-    }
-  ]
-};
-
 // Tab icon images that can be individually customized
 const TAB_ICON_IMAGES = {
-  speed: "/assets/Icons/illuminati.webp",
-  jump: "/assets/Icons/illuminati.webp",
-  health: "/assets/Icons/illuminati.webp",
-  growing: "/assets/Icons/illuminati.webp",
-  thc: "/assets/Icons/illuminati.webp"
+  gameUpgrades: "/assets/Icons/illuminati.webp",
+  thc: "/assets/Icons/weed.png"
 };
 
 const NFTShop: React.FC = () => {
   const { address, thcBalance, refreshNFTs, connect } = useWeb3();
   const [purchasing, setPurchasing] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('speed');
+  const [activeTab, setActiveTab] = useState<string>('gameUpgrades');
   const [showWalletDialog, setShowWalletDialog] = useState(false);
   const [pendingSnackId, setPendingSnackId] = useState<string | null>(null);
   const { addPoints } = usePoints();
   const isMobile = useIsMobile();
+  
+  // State for available upgrades
+  const [gameUpgrades, setGameUpgrades] = useState<any>({
+    reptilianAttack: [],
+    growRoom: []
+  });
+  
+  // Initialize the game engine to get upgrade prices
+  useEffect(() => {
+    // Get Reptilian Attack game upgrades
+    const reptilianEngine = new ReptilianAttackEngine();
+    const upgradePrices = reptilianEngine.getUpgradePrices();
+    
+    // Fetch available upgrades from both games
+    setGameUpgrades({
+      reptilianAttack: [
+        {
+          id: 'speedUpgrade',
+          name: upgradePrices.speed.name,
+          description: upgradePrices.speed.description,
+          image: SNACK_ICON_IMAGES.speedUpgrade,
+          price: upgradePrices.speed.price,
+          type: 'reptilianAttack'
+        },
+        {
+          id: 'fireRateUpgrade',
+          name: upgradePrices.fireRate.name,
+          description: upgradePrices.fireRate.description,
+          image: SNACK_ICON_IMAGES.fireRateUpgrade,
+          price: upgradePrices.fireRate.price,
+          type: 'reptilianAttack'
+        },
+        {
+          id: 'healthUpgrade',
+          name: upgradePrices.health.name,
+          description: upgradePrices.health.description,
+          image: SNACK_ICON_IMAGES.healthUpgrade,
+          price: upgradePrices.health.price,
+          type: 'reptilianAttack'
+        }
+      ],
+      growRoom: [
+        {
+          id: 'thcfert',
+          name: 'Premium THC Fertilizer',
+          image: SNACK_ICON_IMAGES.thcfert,
+          price: 20,
+          type: 'growRoom'
+        },
+        {
+          id: 'ledlight',
+          name: 'LED Grow Light',
+          image: SNACK_ICON_IMAGES.ledlight,
+          price: 40,
+          type: 'growRoom'
+        }
+      ]
+    });
+  }, []);
   
   const handleSelectWallet = async (walletId: string) => {
     try {
@@ -294,18 +143,34 @@ const NFTShop: React.FC = () => {
       return;
     }
     
-    let snack = null;
-    Object.values(AVAILABLE_SNACKS).forEach(category => {
-      const found = category.find(s => s.id === snackId);
-      if (found) snack = found;
+    // Find the selected upgrade
+    let selectedUpgrade = null;
+    
+    // Check in reptilianAttack upgrades
+    gameUpgrades.reptilianAttack.forEach((upgrade: any) => {
+      if (upgrade.id === snackId) selectedUpgrade = upgrade;
     });
     
-    if (!snack) return;
+    // Check in growRoom upgrades
+    if (!selectedUpgrade) {
+      gameUpgrades.growRoom.forEach((upgrade: any) => {
+        if (upgrade.id === snackId) selectedUpgrade = upgrade;
+      });
+    }
     
-    if (parseFloat(thcBalance || '0') < snack.price) {
+    if (!selectedUpgrade) {
+      toast({
+        title: 'Item Not Found',
+        description: 'The selected item could not be found.',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    if (parseFloat(thcBalance || '0') < selectedUpgrade.price) {
       toast({
         title: 'Insufficient Balance',
-        description: `You need at least ${snack.price} $THC to purchase this item.`,
+        description: `You need at least ${selectedUpgrade.price} $THC to purchase this item.`,
         variant: 'destructive'
       });
       return;
@@ -317,18 +182,18 @@ const NFTShop: React.FC = () => {
       const success = await purchaseSnack(Number(snackId));
       
       if (success) {
-        addPoints(address, snack.price * 10);
+        addPoints(address, selectedUpgrade.price * 10);
         
         toast({
           title: 'Purchase Successful',
-          description: `You have purchased ${snack.name}! Earned ${snack.price * 10} points.`
+          description: `You have purchased ${selectedUpgrade.name}! Earned ${selectedUpgrade.price * 10} points.`
         });
         refreshNFTs();
       }
     } catch (error) {
       toast({
         title: 'Purchase Failed',
-        description: error instanceof Error ? error.message : 'Failed to purchase snack',
+        description: error instanceof Error ? error.message : 'Failed to purchase item',
         variant: 'destructive'
       });
     } finally {
@@ -339,7 +204,7 @@ const NFTShop: React.FC = () => {
   return (
     <div className="win95-window w-full h-full">
       <div className="win95-title-bar mb-4">
-        <span>NFT Snack Shop</span>
+        <span>NFT Upgrades Shop</span>
       </div>
       
       <div className="p-2 md:p-4">
@@ -369,54 +234,20 @@ const NFTShop: React.FC = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-2 md:mb-4">
           <TabsList className="win95-window p-0 flex w-full mb-2 md:mb-4 overflow-x-auto">
             <TabsTrigger 
-              value="speed" 
+              value="gameUpgrades" 
               className={`flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black ${isMobile ? 'text-[10px] py-1' : ''}`}
             >
               <div className="flex items-center gap-1">
                 <img 
-                  src={TAB_ICON_IMAGES.speed} 
-                  alt="Speed" 
+                  src={TAB_ICON_IMAGES.gameUpgrades} 
+                  alt="Game Upgrades" 
                   className="h-4 w-4 object-contain"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
                   }}
                 />
-                {isMobile ? 'Speed' : 'Speed Boosts'}
-              </div>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="jump" 
-              className={`flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black ${isMobile ? 'text-[10px] py-1' : ''}`}
-            >
-              <div className="flex items-center gap-1">
-                <img 
-                  src={TAB_ICON_IMAGES.jump} 
-                  alt="Jump" 
-                  className="h-4 w-4 object-contain"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                  }}
-                />
-                {isMobile ? 'Jump' : 'Jump Boosts'}
-              </div>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="health" 
-              className={`flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black ${isMobile ? 'text-[10px] py-1' : ''}`}
-            >
-              <div className="flex items-center gap-1">
-                <img 
-                  src={TAB_ICON_IMAGES.health} 
-                  alt="Health" 
-                  className="h-4 w-4 object-contain"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                  }}
-                />
-                {isMobile ? 'Health' : 'Health Items'}
+                {isMobile ? 'Games' : 'Game Upgrades'}
               </div>
             </TabsTrigger>
             <TabsTrigger 
@@ -438,75 +269,44 @@ const NFTShop: React.FC = () => {
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="speed" className="m-0">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {AVAILABLE_SNACKS.speed.map((snack) => (
-                <NFTCard
-                  key={snack.id}
-                  id={snack.id}
-                  name={snack.name}
-                  image={snack.image}
-                  boost={snack.boost}
-                  price={snack.price}
-                  onPurchase={() => handlePurchaseClick(snack.id)}
-                  className="w-full"
-                  disabled={!address}
-                />
-              ))}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="jump" className="m-0">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {AVAILABLE_SNACKS.jump.map((snack) => (
-                <NFTCard
-                  key={snack.id}
-                  id={snack.id}
-                  name={snack.name}
-                  image={snack.image}
-                  boost={snack.boost}
-                  price={snack.price}
-                  onPurchase={() => handlePurchaseClick(snack.id)}
-                  className="w-full"
-                  disabled={!address}
-                />
-              ))}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="health" className="m-0">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {AVAILABLE_SNACKS.health.map((snack) => (
-                <NFTCard
-                  key={snack.id}
-                  id={snack.id}
-                  name={snack.name}
-                  image={snack.image}
-                  boost={snack.boost}
-                  price={snack.price}
-                  onPurchase={() => handlePurchaseClick(snack.id)}
-                  className="w-full"
-                  disabled={!address}
-                />
-              ))}
+          <TabsContent value="gameUpgrades" className="m-0">
+            <div className="win95-window p-2 mb-4">
+              <h3 className="text-sm font-bold mb-2">Reptilian Attack Upgrades</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {gameUpgrades.reptilianAttack.map((upgrade: any) => (
+                  <NFTCard
+                    key={upgrade.id}
+                    id={upgrade.id}
+                    name={upgrade.name}
+                    image={upgrade.image}
+                    description={upgrade.description}
+                    price={upgrade.price}
+                    onPurchase={() => handlePurchaseClick(upgrade.id)}
+                    className="w-full"
+                    disabled={!address}
+                  />
+                ))}
+              </div>
             </div>
           </TabsContent>
           
           <TabsContent value="thc" className="m-0">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {AVAILABLE_SNACKS.thc.map((snack) => (
-                <NFTCard
-                  key={snack.id}
-                  id={snack.id}
-                  name={snack.name}
-                  image={snack.image}
-                  boost={snack.boost}
-                  price={snack.price}
-                  onPurchase={() => handlePurchaseClick(snack.id)}
-                  className="w-full"
-                  disabled={!address}
-                />
-              ))}
+            <div className="win95-window p-2 mb-4">
+              <h3 className="text-sm font-bold mb-2">THC Grow Room Items</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {gameUpgrades.growRoom.map((upgrade: any) => (
+                  <NFTCard
+                    key={upgrade.id}
+                    id={upgrade.id}
+                    name={upgrade.name}
+                    image={upgrade.image}
+                    price={upgrade.price}
+                    onPurchase={() => handlePurchaseClick(upgrade.id)}
+                    className="w-full"
+                    disabled={!address}
+                  />
+                ))}
+              </div>
             </div>
           </TabsContent>
         </Tabs>

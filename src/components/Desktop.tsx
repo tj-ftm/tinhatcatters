@@ -239,7 +239,7 @@ const DesktopIcon: React.FC<{
         <img 
           src={iconSrc} 
           alt={label} 
-          className="h-6 w-6 object-contain"
+          className="h-8 w-8 object-contain" /* Made icons bigger */
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.style.display = 'none';

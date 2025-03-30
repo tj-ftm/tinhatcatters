@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Computer, ShoppingCart, Gamepad2, Home, Wallet, Cannabis, MessageSquare, TrendingUp, BarChart2 } from 'lucide-react';
+import { Computer, ShoppingCart, Gamepad2, Wallet, Cannabis, MessageSquare, TrendingUp, BarChart2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import WalletConnector from './WalletConnector';
 
@@ -27,9 +27,8 @@ const Taskbar: React.FC<TaskbarProps> = ({
   // Taskbar button icons - individually configurable
   const taskbarIconImages = {
     game: "/assets/Icons/illuminati.webp",
-    shop: "/assets/Icons/illuminati.webp",
-    computer: "/assets/Icons/illuminati.webp",
-    home: "/assets/Icons/illuminati.webp",
+    shop: "/assets/Icons/nftshop.ico",
+    computer: "/assets/Icons/computer.png",
     wallet: "/assets/Icons/illuminati.webp",
     growroom: "/assets/Icons/weed.png",
     chat: "/assets/Icons/illuminati.webp",
@@ -37,19 +36,17 @@ const Taskbar: React.FC<TaskbarProps> = ({
     analytics: "/assets/Icons/illuminati.webp"
   };
 
-  // Start menu icons - individually configurable
+  // Start menu icons - individually configurable - Now using the same icons as desktop
   const startMenuIconImages = {
-    home: "/assets/Icons/illuminati.webp",
+    computer: "/assets/Icons/computer.png",
     games: "/assets/Icons/illuminati.webp",
     reptilianAttack: "/assets/Icons/illuminati.webp",
-    thcGrowRoom: "/assets/Icons/illuminati.webp",
-    nftShop: "/assets/Icons/illuminati.webp",
+    thcGrowRoom: "/assets/Icons/weed.png",
+    nftShop: "/assets/Icons/nftshop.ico",
     leaderboard: "/assets/Icons/illuminati.webp",
     analytics: "/assets/Icons/illuminati.webp",
     wallet: "/assets/Icons/illuminati.webp",
-    chat: "/assets/Icons/illuminati.webp",
-    computer: "/assets/Icons/illuminati.webp",
-    help: "/assets/Icons/illuminati.webp"
+    chat: "/assets/Icons/illuminati.webp"
   };
 
   const handleStartClick = () => {
@@ -79,7 +76,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
       >
         <span className="text-sm font-bold flex items-center">
           <img 
-            src="/windows-logo.png" 
+            src="/assets/Icons/computer.png" 
             alt="Windows" 
             className="h-5 w-5 mr-1"
             onError={(e) => {
@@ -124,8 +121,8 @@ const Taskbar: React.FC<TaskbarProps> = ({
         ))}
       </div>
 
-      {/* Clock */}
-      <div className="win95-panel px-2 flex items-center text-xs mr-1">
+      {/* Clock - Made to match Start button styling */}
+      <div className="win95-button px-2 flex items-center text-sm font-bold mr-1">
         <Clock />
       </div>
 
@@ -134,7 +131,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
         <div className="fixed left-0 bottom-11 win95-window w-56 border-2 z-[9999]">
           <div className="bg-win95-blue h-full w-8 absolute left-0 top-0 bottom-0">
             <div className="flex flex-col justify-end h-full pb-2 text-white font-bold">
-              <span className="transform -rotate-90 whitespace-nowrap origin-bottom-left translate-y-0 translate-x-0 absolute bottom-12">
+              <span className="transform rotate-90 whitespace-nowrap origin-center absolute left-[-14px] bottom-1/2 translate-y-[80px]">
                 TinhatCatters
               </span>
             </div>
@@ -145,24 +142,24 @@ const Taskbar: React.FC<TaskbarProps> = ({
             
             <div className="flex flex-col">
               <StartMenuItem 
-                iconSrc={startMenuIconImages.home}
-                label="Home"
-                onClick={() => handleItemClick('/', 'home')}
+                iconSrc={startMenuIconImages.computer}
+                label="My Computer"
+                onClick={() => handleItemClick('/', 'computer')}
               />
               
               {/* Games submenu */}
               <div className="relative group">
                 <div className="flex items-center p-1 hover:bg-win95-blue hover:text-white cursor-pointer">
-                  <div className="w-6 h-6 flex items-center justify-center mr-2">
+                  <div className="w-8 h-8 flex items-center justify-center mr-2">
                     <img 
                       src={startMenuIconImages.games} 
                       alt="Games" 
-                      className="h-4 w-4 object-contain"
+                      className="h-6 w-6 object-contain"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
                         const fallback = document.createElement('div');
-                        fallback.innerHTML = '<span class="h-4 w-4"><span>';
+                        fallback.innerHTML = '<span class="h-6 w-6"><span>';
                         if (target.parentNode) {
                           target.parentNode.appendChild(fallback.firstChild as Node);
                         }
@@ -220,19 +217,8 @@ const Taskbar: React.FC<TaskbarProps> = ({
                   onChatClick();
                 }}
               />
-              <StartMenuItem 
-                iconSrc={startMenuIconImages.computer}
-                label="My Computer"
-                onClick={() => handleItemClick('/', 'computer')}
-              />
               
               <div className="border-t border-win95-darkGray my-1"></div>
-              
-              <StartMenuItem 
-                iconSrc={startMenuIconImages.help}
-                label="Help"
-                onClick={() => alert('Help not available in this version!')}
-              />
             </div>
           </div>
         </div>
@@ -251,11 +237,11 @@ const StartMenuItem: React.FC<{
       className="flex items-center p-1 hover:bg-win95-blue hover:text-white cursor-pointer"
       onClick={onClick}
     >
-      <div className="w-6 h-6 flex items-center justify-center mr-2">
+      <div className="w-8 h-8 flex items-center justify-center mr-2">
         <img 
           src={iconSrc} 
           alt={`${label} icon`} 
-          className="h-4 w-4 object-contain"
+          className="h-6 w-6 object-contain" /* Made icons bigger */
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.style.display = 'none';
@@ -280,7 +266,6 @@ const getIconComponent = (windowId: string) => {
     case 'game': return <Gamepad2 className="h-4 w-4" />;
     case 'shop': return <ShoppingCart className="h-4 w-4" />;
     case 'computer': return <Computer className="h-4 w-4" />;
-    case 'home': return <Home className="h-4 w-4" />;
     case 'wallet': return <Wallet className="h-4 w-4" />;
     case 'growroom': return <Cannabis className="h-4 w-4" />;
     case 'chat': return <MessageSquare className="h-4 w-4" />;
@@ -302,7 +287,7 @@ const Clock: React.FC = () => {
   }, []);
   
   return (
-    <div className="text-xs">
+    <div className="text-sm font-bold">
       {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
     </div>
   );
