@@ -41,40 +41,51 @@ class ReptilianAttackEngine {
   private enemyBulletImage: HTMLImageElement | null = null;
   private floorImage: HTMLImageElement | null = null;
   
+  // Track image loading status
+  private imagesLoaded: {[key: string]: boolean} = {
+    player: false,
+    background: false,
+    obstacle: false,
+    enemy: false,
+    bullet: false,
+    enemyBullet: false,
+    floor: false
+  };
+  
   // Image configurations
   private imageConfig = {
     player: {
-      src: 'https://placekitten.com/50/70', // Placeholder image
+      src: '/assets/Icons/illuminati.webp', // Using local asset instead of external URL
       width: 50,
       height: 70
     },
     background: {
-      src: 'https://placekitten.com/800/400', // Placeholder background
+      src: '/assets/Icons/illuminati.webp', // Using local asset instead of external URL
       width: 800,
       height: 400
     },
     obstacle: {
-      src: 'https://placekitten.com/40/60', // Placeholder obstacle
+      src: '/assets/Icons/illuminati.webp', // Using local asset instead of external URL
       width: 40,
       height: 60
     },
     enemy: {
-      src: 'https://placekitten.com/60/60', // Placeholder enemy
+      src: '/assets/Icons/illuminati.webp', // Using local asset instead of external URL
       width: 60,
       height: 60
     },
     bullet: {
-      src: 'https://placekitten.com/20/10', // Placeholder bullet
+      src: '/assets/Icons/illuminati.webp', // Using local asset instead of external URL
       width: 20,
       height: 10
     },
     enemyBullet: {
-      src: 'https://placekitten.com/20/10', // Placeholder enemy bullet
+      src: '/assets/Icons/illuminati.webp', // Using local asset instead of external URL
       width: 20,
       height: 10
     },
     floor: {
-      src: 'https://placekitten.com/800/20', // Placeholder floor
+      src: '/assets/Icons/illuminati.webp', // Using local asset instead of external URL 
       width: 800,
       height: 20
     }
@@ -92,55 +103,145 @@ class ReptilianAttackEngine {
     this.collisionBehavior = behavior;
   }
   
-  // Load all game images
+  // Load all game images with error handling
   private loadImages() {
     // Player image
     this.playerImage = new Image();
+    this.playerImage.onload = () => {
+      this.imagesLoaded.player = true;
+    };
+    this.playerImage.onerror = () => {
+      console.error('Failed to load player image');
+      // Force a render with fallback shapes
+      this.imagesLoaded.player = false;
+    };
     this.playerImage.src = this.imageConfig.player.src;
     
     // Background image
     this.backgroundImage = new Image();
+    this.backgroundImage.onload = () => {
+      this.imagesLoaded.background = true;
+    };
+    this.backgroundImage.onerror = () => {
+      console.error('Failed to load background image');
+      this.imagesLoaded.background = false;
+    };
     this.backgroundImage.src = this.imageConfig.background.src;
     
     // Obstacle image
     this.obstacleImage = new Image();
+    this.obstacleImage.onload = () => {
+      this.imagesLoaded.obstacle = true;
+    };
+    this.obstacleImage.onerror = () => {
+      console.error('Failed to load obstacle image');
+      this.imagesLoaded.obstacle = false;
+    };
     this.obstacleImage.src = this.imageConfig.obstacle.src;
     
     // Enemy image
     this.enemyImage = new Image();
+    this.enemyImage.onload = () => {
+      this.imagesLoaded.enemy = true;
+    };
+    this.enemyImage.onerror = () => {
+      console.error('Failed to load enemy image');
+      this.imagesLoaded.enemy = false;
+    };
     this.enemyImage.src = this.imageConfig.enemy.src;
     
     // Bullet image
     this.bulletImage = new Image();
+    this.bulletImage.onload = () => {
+      this.imagesLoaded.bullet = true;
+    };
+    this.bulletImage.onerror = () => {
+      console.error('Failed to load bullet image');
+      this.imagesLoaded.bullet = false;
+    };
     this.bulletImage.src = this.imageConfig.bullet.src;
     
     // Enemy bullet image
     this.enemyBulletImage = new Image();
+    this.enemyBulletImage.onload = () => {
+      this.imagesLoaded.enemyBullet = true;
+    };
+    this.enemyBulletImage.onerror = () => {
+      console.error('Failed to load enemy bullet image');
+      this.imagesLoaded.enemyBullet = false;
+    };
     this.enemyBulletImage.src = this.imageConfig.enemyBullet.src;
     
     // Floor image
     this.floorImage = new Image();
+    this.floorImage.onload = () => {
+      this.imagesLoaded.floor = true;
+    };
+    this.floorImage.onerror = () => {
+      console.error('Failed to load floor image');
+      this.imagesLoaded.floor = false;
+    };
     this.floorImage.src = this.imageConfig.floor.src;
   }
   
-  // Set player sprite
+  // Set player sprite with error handling
   setPlayerSprite(imageSrc: string, width?: number, height?: number) {
     this.imageConfig.player.src = imageSrc;
     if (width) this.imageConfig.player.width = width;
     if (height) this.imageConfig.player.height = height;
     
-    this.playerImage = new Image();
-    this.playerImage.src = imageSrc;
+    // Reset loaded state
+    this.imagesLoaded.player = false;
+    
+    // Create new image with error handling
+    const newImage = new Image();
+    newImage.onload = () => {
+      this.playerImage = newImage;
+      this.imagesLoaded.player = true;
+    };
+    newImage.onerror = () => {
+      console.error('Failed to load custom player image:', imageSrc);
+      this.imagesLoaded.player = false;
+      
+      // Try to load fallback image
+      const fallbackImage = new Image();
+      fallbackImage.src = '/assets/Icons/illuminati.webp';
+      fallbackImage.onload = () => {
+        this.playerImage = fallbackImage;
+        this.imagesLoaded.player = true;
+      };
+    };
+    newImage.src = imageSrc;
   }
   
-  // Set background image
+  // Set background image with error handling
   setBackgroundImage(imageSrc: string, width?: number, height?: number) {
     this.imageConfig.background.src = imageSrc;
     if (width) this.imageConfig.background.width = width;
     if (height) this.imageConfig.background.height = height;
     
-    this.backgroundImage = new Image();
-    this.backgroundImage.src = imageSrc;
+    // Reset loaded state
+    this.imagesLoaded.background = false;
+    
+    // Create new image with error handling
+    const newImage = new Image();
+    newImage.onload = () => {
+      this.backgroundImage = newImage;
+      this.imagesLoaded.background = true;
+    };
+    newImage.onerror = () => {
+      console.error('Failed to load custom background image:', imageSrc);
+      this.imagesLoaded.background = false;
+      
+      // Try to load fallback image
+      const fallbackImage = new Image();
+      fallbackImage.src = '/assets/Icons/illuminati.webp';
+      fallbackImage.onload = () => {
+        this.backgroundImage = fallbackImage;
+        this.imagesLoaded.background = true;
+      };
+    };
+    newImage.src = imageSrc;
   }
   
   // Set obstacle image
@@ -149,8 +250,28 @@ class ReptilianAttackEngine {
     if (width) this.imageConfig.obstacle.width = width;
     if (height) this.imageConfig.obstacle.height = height;
     
-    this.obstacleImage = new Image();
-    this.obstacleImage.src = imageSrc;
+    // Reset loaded state
+    this.imagesLoaded.obstacle = false;
+    
+    // Create new image with error handling
+    const newImage = new Image();
+    newImage.onload = () => {
+      this.obstacleImage = newImage;
+      this.imagesLoaded.obstacle = true;
+    };
+    newImage.onerror = () => {
+      console.error('Failed to load custom obstacle image:', imageSrc);
+      this.imagesLoaded.obstacle = false;
+      
+      // Try to load fallback image
+      const fallbackImage = new Image();
+      fallbackImage.src = '/assets/Icons/illuminati.webp';
+      fallbackImage.onload = () => {
+        this.obstacleImage = fallbackImage;
+        this.imagesLoaded.obstacle = true;
+      };
+    };
+    newImage.src = imageSrc;
   }
   
   // Set enemy image
@@ -159,8 +280,28 @@ class ReptilianAttackEngine {
     if (width) this.imageConfig.enemy.width = width;
     if (height) this.imageConfig.enemy.height = height;
     
-    this.enemyImage = new Image();
-    this.enemyImage.src = imageSrc;
+    // Reset loaded state
+    this.imagesLoaded.enemy = false;
+    
+    // Create new image with error handling
+    const newImage = new Image();
+    newImage.onload = () => {
+      this.enemyImage = newImage;
+      this.imagesLoaded.enemy = true;
+    };
+    newImage.onerror = () => {
+      console.error('Failed to load custom enemy image:', imageSrc);
+      this.imagesLoaded.enemy = false;
+      
+      // Try to load fallback image
+      const fallbackImage = new Image();
+      fallbackImage.src = '/assets/Icons/illuminati.webp';
+      fallbackImage.onload = () => {
+        this.enemyImage = fallbackImage;
+        this.imagesLoaded.enemy = true;
+      };
+    };
+    newImage.src = imageSrc;
   }
   
   reset(upgrades = { speed: 1, fireRate: 1, health: 1 }) {
@@ -449,7 +590,7 @@ class ReptilianAttackEngine {
   }
   
   render() {
-    if (!this.canvas || !this.context || !this.backgroundImage) return;
+    if (!this.canvas || !this.context) return;
     
     const ctx = this.context;
     const width = this.canvas.width;
@@ -458,9 +599,16 @@ class ReptilianAttackEngine {
     // Clear canvas
     ctx.clearRect(0, 0, width, height);
     
-    // Draw background image
-    if (this.backgroundImage.complete) {
-      ctx.drawImage(this.backgroundImage, 0, 0, width, height);
+    // Draw background
+    if (this.backgroundImage && this.imagesLoaded.background) {
+      try {
+        ctx.drawImage(this.backgroundImage, 0, 0, width, height);
+      } catch (error) {
+        console.error('Error drawing background:', error);
+        // Fallback
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, width, height);
+      }
     } else {
       // Fallback if image is not loaded
       ctx.fillStyle = '#000000';
@@ -468,16 +616,30 @@ class ReptilianAttackEngine {
     }
     
     // Draw floor
-    if (this.floorImage && this.floorImage.complete) {
-      ctx.drawImage(this.floorImage, 0, height - 20, width, 20);
+    if (this.floorImage && this.imagesLoaded.floor) {
+      try {
+        ctx.drawImage(this.floorImage, 0, height - 20, width, 20);
+      } catch (error) {
+        console.error('Error drawing floor:', error);
+        // Fallback
+        ctx.fillStyle = '#444444';
+        ctx.fillRect(0, height - 20, width, 20);
+      }
     } else {
       ctx.fillStyle = '#444444';
       ctx.fillRect(0, height - 20, width, 20);
     }
     
     // Draw player
-    if (this.playerImage && this.playerImage.complete) {
-      ctx.drawImage(this.playerImage, this.player.x, this.player.y, this.player.width, this.player.height);
+    if (this.playerImage && this.imagesLoaded.player) {
+      try {
+        ctx.drawImage(this.playerImage, this.player.x, this.player.y, this.player.width, this.player.height);
+      } catch (error) {
+        console.error('Error drawing player:', error);
+        // Fallback
+        ctx.fillStyle = '#00FF00';
+        ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
+      }
     } else {
       // Fallback if image is not loaded
       ctx.fillStyle = '#00FF00';
@@ -485,64 +647,80 @@ class ReptilianAttackEngine {
     }
     
     // Draw obstacles
-    if (this.obstacleImage && this.obstacleImage.complete) {
-      this.obstacles.forEach(obstacle => {
-        if (!obstacle.hit) {
-          ctx.drawImage(this.obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-        }
-      });
-    } else {
-      // Fallback if image is not loaded
-      ctx.fillStyle = '#FF0000';
-      this.obstacles.forEach(obstacle => {
-        if (!obstacle.hit) {
+    this.obstacles.forEach(obstacle => {
+      if (!obstacle.hit) {
+        if (this.obstacleImage && this.imagesLoaded.obstacle) {
+          try {
+            ctx.drawImage(this.obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+          } catch (error) {
+            console.error('Error drawing obstacle:', error);
+            // Fallback
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+          }
+        } else {
+          // Fallback if image is not loaded
+          ctx.fillStyle = '#FF0000';
           ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
         }
-      });
-    }
+      }
+    });
     
     // Draw enemies
-    if (this.enemyImage && this.enemyImage.complete) {
-      this.enemies.forEach(enemy => {
-        if (!enemy.hit) {
-          ctx.drawImage(this.enemyImage, enemy.x, enemy.y, enemy.width, enemy.height);
-        }
-      });
-    } else {
-      // Fallback if image is not loaded
-      ctx.fillStyle = '#FF00FF';
-      this.enemies.forEach(enemy => {
-        if (!enemy.hit) {
+    this.enemies.forEach(enemy => {
+      if (!enemy.hit) {
+        if (this.enemyImage && this.imagesLoaded.enemy) {
+          try {
+            ctx.drawImage(this.enemyImage, enemy.x, enemy.y, enemy.width, enemy.height);
+          } catch (error) {
+            console.error('Error drawing enemy:', error);
+            // Fallback
+            ctx.fillStyle = '#FF00FF';
+            ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+          }
+        } else {
+          // Fallback if image is not loaded
+          ctx.fillStyle = '#FF00FF';
           ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
         }
-      });
-    }
+      }
+    });
     
     // Draw player bullets
-    if (this.bulletImage && this.bulletImage.complete) {
-      this.bullets.forEach(bullet => {
-        ctx.drawImage(this.bulletImage, bullet.x, bullet.y, bullet.width, bullet.height);
-      });
-    } else {
-      // Fallback if image is not loaded
-      ctx.fillStyle = '#FFFF00';
-      this.bullets.forEach(bullet => {
+    this.bullets.forEach(bullet => {
+      if (this.bulletImage && this.imagesLoaded.bullet) {
+        try {
+          ctx.drawImage(this.bulletImage, bullet.x, bullet.y, bullet.width, bullet.height);
+        } catch (error) {
+          console.error('Error drawing bullet:', error);
+          // Fallback
+          ctx.fillStyle = '#FFFF00';
+          ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        }
+      } else {
+        // Fallback if image is not loaded
+        ctx.fillStyle = '#FFFF00';
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-      });
-    }
+      }
+    });
     
     // Draw enemy bullets
-    if (this.enemyBulletImage && this.enemyBulletImage.complete) {
-      this.enemyBullets.forEach(bullet => {
-        ctx.drawImage(this.enemyBulletImage, bullet.x, bullet.y, bullet.width, bullet.height);
-      });
-    } else {
-      // Fallback if image is not loaded
-      ctx.fillStyle = '#FF6600';
-      this.enemyBullets.forEach(bullet => {
+    this.enemyBullets.forEach(bullet => {
+      if (this.enemyBulletImage && this.imagesLoaded.enemyBullet) {
+        try {
+          ctx.drawImage(this.enemyBulletImage, bullet.x, bullet.y, bullet.width, bullet.height);
+        } catch (error) {
+          console.error('Error drawing enemy bullet:', error);
+          // Fallback
+          ctx.fillStyle = '#FF6600';
+          ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        }
+      } else {
+        // Fallback if image is not loaded
+        ctx.fillStyle = '#FF6600';
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-      });
-    }
+      }
+    });
     
     // Draw Game Over text
     if (this.gameOver) {

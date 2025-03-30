@@ -64,6 +64,7 @@ export default class GameManager {
     const gameScene = this.game?.scene.getScene('GameScene') as GameScene;
     if (gameScene) {
       // Update snacks in the game
+      console.log('Setting snacks in game:', snacks);
     }
   }
   
@@ -73,6 +74,7 @@ export default class GameManager {
     const gameScene = this.game?.scene.getScene('GameScene') as GameScene;
     if (gameScene) {
       // Update pet in the game
+      console.log('Setting pet in game:', pet);
     }
   }
   
@@ -85,12 +87,17 @@ export default class GameManager {
     // Apply snack effect in the game
     const gameScene = this.game?.scene.getScene('GameScene') as GameScene;
     if (gameScene && snack.boost) {
-      gameScene.applyBoost(
-        snack.boost.type, 
-        snack.boost.value, 
-        snack.boost.duration * 1000
-      );
-      return true;
+      try {
+        gameScene.applyBoost(
+          snack.boost.type, 
+          snack.boost.value, 
+          snack.boost.duration * 1000
+        );
+        return true;
+      } catch (error) {
+        console.error('Error applying boost:', error);
+        return false;
+      }
     }
     
     return false;
@@ -99,5 +106,15 @@ export default class GameManager {
   // Added method to access the game instance for GameUI
   getGame(): Phaser.Game | null {
     return this.game;
+  }
+  
+  // Helper method to preload image and check validity
+  preloadImage(url: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = url;
+    });
   }
 }
