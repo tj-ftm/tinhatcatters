@@ -71,7 +71,7 @@ const Desktop: React.FC = () => {
           />
           <DesktopIcon 
             label="THC Grow Room" 
-            icon="public/assets/Icons/illuminati.webp"
+            img="public/assets/Icons/illuminati.webp"
             onClick={() => handleItemClick('growroom', '/growroom')} 
           />
           <DesktopIcon 
