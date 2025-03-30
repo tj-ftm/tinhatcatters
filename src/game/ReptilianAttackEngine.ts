@@ -351,7 +351,7 @@ class ReptilianAttackEngine {
       
       // Try to load fallback image
       const fallbackImage = new Image();
-      fallbackImage.src = '/assets/Icons/tinhatcat.webp';
+      fallbackImage.src = '/assets/Icons/playersprite.gif';
       fallbackImage.onload = () => {
         this.playerImage = fallbackImage;
         this.imagesLoaded.player = true;
