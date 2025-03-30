@@ -72,7 +72,7 @@ const Desktop: React.FC = () => {
           <DesktopIcon 
             label="THC Grow Room" 
             icon="🌿" 
-            onClick={() => handleIconClick('growroom', '/growroom')} 
+            onClick={() => handleItemClick('growroom', '/growroom')} 
           />
           <DesktopIcon 
             label="NFT Shop" 
