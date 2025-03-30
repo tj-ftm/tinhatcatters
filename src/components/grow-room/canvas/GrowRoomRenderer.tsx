@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Plant, GrowthStage, Equipment, EquipmentType } from '@/types/growRoom';
 import { renderPlant, drawSelectedPlantDetails } from './PlantRenderer';
@@ -34,13 +33,12 @@ const GrowRoomRenderer: React.FC<GrowRoomRendererProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hoveredPlant, setHoveredPlant] = useState<number | null>(null);
   const [selectedPlant, setSelectedPlant] = useState<number | null>(null);
-  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 450 }); // Reduced height
+  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 450 });
   const [isImagesLoaded, setIsImagesLoaded] = useState(false);
   const animationFrameRef = useRef<number>(0);
   const plantPositionsRef = useRef<{x: number, y: number, size: number}[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Main render function
   const renderGrowRoom = useCallback(() => {
     cancelAnimationFrame(animationFrameRef.current);
     
@@ -50,12 +48,9 @@ const GrowRoomRenderer: React.FC<GrowRoomRendererProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Only proceed if images are loaded
     if (!isImagesLoaded) {
-      // Draw loading message
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = '#ffffff';
@@ -65,53 +60,38 @@ const GrowRoomRenderer: React.FC<GrowRoomRendererProps> = ({
       return;
     }
     
-    // Draw background
     if (window.__plantCanvasAssets?.floorImage) {
-      // Create pattern and fill background
       const pattern = ctx.createPattern(window.__plantCanvasAssets.floorImage, 'repeat');
       if (pattern) {
         ctx.fillStyle = pattern;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
     } else {
-      // Fallback background
       ctx.fillStyle = '#e5e7eb';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     
-    // Cache plant positions for interactions
     const plantsWithPositions = plants.map((plant, index) => {
       const pos = calculatePlantPosition(index, canvas, plantCapacity, isMobile);
       plantPositionsRef.current[index] = pos;
       return { ...plant, position: pos };
     });
     
-    // Draw equipment
     renderEquipment(ctx, equipment, plantsWithPositions);
     
-    // Draw plant grid slots
     for (let i = 0; i < plantCapacity; i++) {
       const pos = calculatePlantPosition(i, canvas, plantCapacity, isMobile);
       plantPositionsRef.current[i] = pos;
       
-      // Draw grid slot
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-      ctx.beginPath();
-      ctx.arc(pos.x, pos.y + pos.size/2, pos.size/2.5, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Draw plus sign if slot is empty
       if (i >= plants.length) {
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
         ctx.lineWidth = 2;
         
-        // Horizontal line
         ctx.beginPath();
         ctx.moveTo(pos.x - 10, pos.y + pos.size/2);
         ctx.lineTo(pos.x + 10, pos.y + pos.size/2);
         ctx.stroke();
         
-        // Vertical line
         ctx.beginPath();
         ctx.moveTo(pos.x, pos.y + pos.size/2 - 10);
         ctx.lineTo(pos.x, pos.y + pos.size/2 + 10);
@@ -119,7 +99,6 @@ const GrowRoomRenderer: React.FC<GrowRoomRendererProps> = ({
       }
     }
     
-    // Draw plants
     plants.forEach((plant, index) => {
       const pos = plantPositionsRef.current[index];
       if (pos) {
@@ -137,7 +116,6 @@ const GrowRoomRenderer: React.FC<GrowRoomRendererProps> = ({
       }
     });
     
-    // Draw empty slot message if no plants
     if (plants.length === 0) {
       ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
       ctx.font = isMobile ? '16px sans-serif' : '20px sans-serif';
@@ -145,42 +123,34 @@ const GrowRoomRenderer: React.FC<GrowRoomRendererProps> = ({
       ctx.fillText('Plant a seed to get started!', canvas.width/2, canvas.height/2);
     }
     
-    // Draw selected plant details
     if (selectedPlant !== null && plants[selectedPlant]) {
       const speedMultiplier = calculateGrowthRate(plants[selectedPlant], equipment);
       drawSelectedPlantDetails(ctx, plants[selectedPlant], canvas, speedMultiplier);
     }
     
-    // Request next frame for animations
     animationFrameRef.current = requestAnimationFrame(renderGrowRoom);
   }, [plants, equipment, plantCapacity, selectedPlant, hoveredPlant, isImagesLoaded, isMobile, getGrowthColor]);
   
-  // Handle canvas resize with max height constraint
   const handleResize = useCallback(() => {
     if (!canvasRef.current || !containerRef.current) return;
     
-    // Get container size
     const { width, height } = containerRef.current.getBoundingClientRect();
     
-    // Set canvas size with max height
-    const maxHeight = isMobile ? 350 : 450; // Lower max height for mobile
+    const maxHeight = isMobile ? 280 : 320;
     const newWidth = Math.floor(width);
     const newHeight = Math.min(Math.floor(height), maxHeight);
     
-    // Only update if size actually changed
     if (canvasSize.width !== newWidth || canvasSize.height !== newHeight) {
       setCanvasSize({
         width: newWidth,
         height: newHeight
       });
       
-      // Update canvas dimensions
       canvasRef.current.width = newWidth;
       canvasRef.current.height = newHeight;
     }
   }, [canvasSize, isMobile]);
   
-  // Handle mouse move for hover detection
   const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -198,7 +168,6 @@ const GrowRoomRenderer: React.FC<GrowRoomRendererProps> = ({
     interaction.handleMove();
   };
   
-  // Handle canvas click
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -216,18 +185,14 @@ const GrowRoomRenderer: React.FC<GrowRoomRendererProps> = ({
     interaction.handleClick();
   };
   
-  // Initialize canvas, load images, and set up resize handler
   useEffect(() => {
-    // Load images
     preloadCanvasImages(equipment, () => {
       setIsImagesLoaded(true);
     });
     
-    // Set up resize handler
     handleResize();
     window.addEventListener('resize', handleResize);
     
-    // Start animation loop
     animationFrameRef.current = requestAnimationFrame(renderGrowRoom);
     
     return () => {
@@ -236,7 +201,6 @@ const GrowRoomRenderer: React.FC<GrowRoomRendererProps> = ({
     };
   }, [equipment, handleResize, renderGrowRoom]);
   
-  // Update canvas whenever size changes
   useEffect(() => {
     if (canvasRef.current) {
       canvasRef.current.width = canvasSize.width;
@@ -245,16 +209,14 @@ const GrowRoomRenderer: React.FC<GrowRoomRendererProps> = ({
     }
   }, [canvasSize, renderGrowRoom]);
   
-  // Re-render when equipment changes
   useEffect(() => {
-    // Reload images when equipment changes
     preloadCanvasImages(equipment, () => {
       setIsImagesLoaded(true);
     });
   }, [equipment]);
   
   return (
-    <div className="w-full relative flex flex-col" ref={containerRef} style={{ height: isMobile ? '350px' : '450px' }}>
+    <div className="w-full relative flex flex-col" ref={containerRef} style={{ height: isMobile ? '280px' : '320px' }}>
       <canvas
         ref={canvasRef}
         width={canvasSize.width}

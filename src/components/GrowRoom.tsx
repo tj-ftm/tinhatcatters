@@ -43,24 +43,22 @@ const GrowRoom: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col" ref={containerRef}>
-      <div className="flex-1 flex flex-col gap-2 overflow-auto">
-        {/* Stats Bar - Now at the top for mobile */}
-        {isMobile && (
-          <StatsBar 
-            thcAmount={thcAmount}
-            plantCount={plants.length}
-            plantCapacity={plantCapacity}
-            isLoading={isLoading}
-            onPlantSeed={plantSeed}
-          />
-        )}
-        
-        {/* Visual Grow Room Canvas - This is the main view now */}
-        <div className="flex-1 win95-window p-2">
+      {/* Stats Bar - Always at the top now */}
+      <StatsBar 
+        thcAmount={thcAmount}
+        plantCount={plants.length}
+        plantCapacity={plantCapacity}
+        isLoading={isLoading}
+        onPlantSeed={plantSeed}
+      />
+      
+      <div className="flex-1 flex flex-col gap-2">
+        {/* Visual Grow Room Canvas - Smaller size */}
+        <div className="win95-window p-2">
           <div className="win95-title-bar mb-2">
             <span>THC Grow Room</span>
           </div>
-          <div className="win95-inset p-1 h-auto">
+          <div className="win95-inset p-1">
             <GrowRoomCanvas
               plants={plants}
               equipment={equipment}
@@ -82,17 +80,6 @@ const GrowRoom: React.FC = () => {
           onUpgradeCapacity={upgradeCapacity}
           isMobile={isMobile}
         />
-
-        {/* Stats Bar - At the bottom for desktop */}
-        {!isMobile && (
-          <StatsBar 
-            thcAmount={thcAmount}
-            plantCount={plants.length}
-            plantCapacity={plantCapacity}
-            isLoading={isLoading}
-            onPlantSeed={plantSeed}
-          />
-        )}
       </div>
       
       {/* Modals and Overlays */}
