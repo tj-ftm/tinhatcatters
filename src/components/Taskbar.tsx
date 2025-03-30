@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Computer, ShoppingCart, Gamepad2, Home, Wallet, Cannabis, MessageSquare, TrendingUp, BarChart2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -43,10 +42,10 @@ const Taskbar: React.FC<TaskbarProps> = ({
     }
   };
 
-  const getIconImage = (alt: string, fallback: React.ReactNode) => (
+  const getIconImage = (iconName: string, fallback: React.ReactNode) => (
     <img 
       src="/assets/Icons/illuminati.webp" 
-      alt={alt} 
+      alt={iconName} 
       className="h-4 w-4 object-contain"
       onError={(e) => {
         const target = e.target as HTMLImageElement;
@@ -91,15 +90,15 @@ const Taskbar: React.FC<TaskbarProps> = ({
             className={`win95-button px-2 py-1 h-8 text-sm flex items-center ${!windowsMinimized[window] ? 'border-inset' : ''}`}
             onClick={() => handleWindowButtonClick(window)}
           >
-            {window === 'game' && getIconImage("Reptilian Attack", <Gamepad2 className="h-4 w-4 mr-1" />)}
-            {window === 'shop' && getIconImage("NFT Shop", <ShoppingCart className="h-4 w-4 mr-1" />)}
-            {window === 'computer' && getIconImage("My Computer", <Computer className="h-4 w-4 mr-1" />)}
-            {window === 'home' && getIconImage("Home", <Home className="h-4 w-4 mr-1" />)}
-            {window === 'wallet' && getIconImage("Wallet", <Wallet className="h-4 w-4 mr-1" />)}
-            {window === 'growroom' && getIconImage("THC Grow Room", <Cannabis className="h-4 w-4 mr-1" />)}
-            {window === 'chat' && getIconImage("Community Chat", <MessageSquare className="h-4 w-4 mr-1" />)}
-            {window === 'leaderboard' && getIconImage("Leaderboard", <TrendingUp className="h-4 w-4 mr-1" />)}
-            {window === 'analytics' && getIconImage("Analytics", <BarChart2 className="h-4 w-4 mr-1" />)}
+            {window === 'game' && getIconImage("game-button-icon", <Gamepad2 className="h-4 w-4 mr-1" />)}
+            {window === 'shop' && getIconImage("shop-button-icon", <ShoppingCart className="h-4 w-4 mr-1" />)}
+            {window === 'computer' && getIconImage("computer-button-icon", <Computer className="h-4 w-4 mr-1" />)}
+            {window === 'home' && getIconImage("home-button-icon", <Home className="h-4 w-4 mr-1" />)}
+            {window === 'wallet' && getIconImage("wallet-button-icon", <Wallet className="h-4 w-4 mr-1" />)}
+            {window === 'growroom' && getIconImage("growroom-button-icon", <Cannabis className="h-4 w-4 mr-1" />)}
+            {window === 'chat' && getIconImage("chat-button-icon", <MessageSquare className="h-4 w-4 mr-1" />)}
+            {window === 'leaderboard' && getIconImage("leaderboard-button-icon", <TrendingUp className="h-4 w-4 mr-1" />)}
+            {window === 'analytics' && getIconImage("analytics-button-icon", <BarChart2 className="h-4 w-4 mr-1" />)}
             {window.charAt(0).toUpperCase() + window.slice(1)}
           </button>
         ))}
@@ -126,7 +125,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
             
             <div className="flex flex-col">
               <StartMenuItem 
-                icon={getIconImage("Home", <Home className="h-4 w-4" />)} 
+                icon={getIconImage("home-menu-icon", <Home className="h-4 w-4" />)} 
                 label="Home"
                 onClick={() => handleItemClick('/', 'home')}
               />
@@ -135,7 +134,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
               <div className="relative group">
                 <div className="flex items-center p-1 hover:bg-win95-blue hover:text-white cursor-pointer">
                   <div className="w-6 h-6 flex items-center justify-center mr-2">
-                    {getIconImage("Games", <Gamepad2 className="h-4 w-4" />)}
+                    {getIconImage("games-menu-icon", <Gamepad2 className="h-4 w-4" />)}
                   </div>
                   <span>Games</span>
                   <span className="ml-auto">▶</span>
@@ -144,12 +143,12 @@ const Taskbar: React.FC<TaskbarProps> = ({
                 <div className="hidden group-hover:block absolute left-full top-0 win95-window w-48 border-2 z-[9999]">
                   <div className="py-1">
                     <StartMenuItem 
-                      icon={getIconImage("Reptilian Attack", <Gamepad2 className="h-4 w-4" />)} 
+                      icon={getIconImage("reptilian-submenu-icon", <Gamepad2 className="h-4 w-4" />)} 
                       label="Reptilian Attack"
                       onClick={() => handleItemClick('/game', 'game')}
                     />
                     <StartMenuItem 
-                      icon={getIconImage("THC Grow Room", <Cannabis className="h-4 w-4" />)} 
+                      icon={getIconImage("thc-grow-submenu-icon", <Cannabis className="h-4 w-4" />)} 
                       label="THC Grow Room"
                       onClick={() => handleItemClick('/growroom', 'growroom')}
                     />
@@ -158,22 +157,22 @@ const Taskbar: React.FC<TaskbarProps> = ({
               </div>
               
               <StartMenuItem 
-                icon={getIconImage("NFT Shop", <ShoppingCart className="h-4 w-4" />)}
+                icon={getIconImage("nft-shop-menu-icon", <ShoppingCart className="h-4 w-4" />)}
                 label="NFT Shop"
                 onClick={() => handleItemClick('/shop', 'shop')}
               />
               <StartMenuItem 
-                icon={getIconImage("Leaderboard", <TrendingUp className="h-4 w-4" />)}
+                icon={getIconImage("leaderboard-menu-icon", <TrendingUp className="h-4 w-4" />)}
                 label="Leaderboard"
                 onClick={() => handleItemClick('/leaderboard', 'leaderboard')}
               />
               <StartMenuItem 
-                icon={getIconImage("Analytics Dashboard", <BarChart2 className="h-4 w-4" />)}
+                icon={getIconImage("analytics-menu-icon", <BarChart2 className="h-4 w-4" />)}
                 label="Analytics Dashboard"
                 onClick={() => handleItemClick('/analytics', 'analytics')}
               />
               <StartMenuItem 
-                icon={getIconImage("Wallet", <Wallet className="h-4 w-4" />)}
+                icon={getIconImage("wallet-menu-icon", <Wallet className="h-4 w-4" />)}
                 label="Wallet"
                 onClick={() => {
                   setStartMenuOpen(false);
@@ -181,7 +180,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
                 }}
               />
               <StartMenuItem 
-                icon={getIconImage("Community Chat", <MessageSquare className="h-4 w-4" />)}
+                icon={getIconImage("community-chat-menu-icon", <MessageSquare className="h-4 w-4" />)}
                 label="Community Chat"
                 onClick={() => {
                   setStartMenuOpen(false);
@@ -189,7 +188,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
                 }}
               />
               <StartMenuItem 
-                icon={getIconImage("My Computer", <Computer className="h-4 w-4" />)}
+                icon={getIconImage("computer-menu-icon", <Computer className="h-4 w-4" />)}
                 label="My Computer"
                 onClick={() => handleItemClick('/', 'computer')}
               />
@@ -197,7 +196,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
               <div className="border-t border-win95-darkGray my-1"></div>
               
               <StartMenuItem 
-                icon={getIconImage("Help", "❓")} 
+                icon={getIconImage("help-menu-icon", "❓")} 
                 label="Help"
                 onClick={() => alert('Help not available in this version!')}
               />

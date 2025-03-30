@@ -8,10 +8,10 @@ interface ComputerContentProps {
 }
 
 const ComputerContent: React.FC<ComputerContentProps> = ({ handleOpenWindow }) => {
-  const getIconImage = (alt: string, fallback: React.ReactNode) => (
+  const getIconImage = (iconName: string, fallback: React.ReactNode) => (
     <img 
       src="/assets/Icons/illuminati.webp" 
-      alt={alt} 
+      alt={iconName} 
       className="h-5 w-5 object-contain"
       onError={(e) => {
         const target = e.target as HTMLImageElement;
@@ -41,42 +41,42 @@ const ComputerContent: React.FC<ComputerContentProps> = ({ handleOpenWindow }) =
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         <FileIcon 
           label="Home" 
-          icon={getIconImage("Home", <Home className="h-5 w-5" />)} 
+          icon={getIconImage("home-icon", <Home className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('home', '/')} 
         />
         <FileIcon 
           label="Reptilian Attack" 
-          icon={getIconImage("Reptilian Attack", <Gamepad2 className="h-5 w-5" />)} 
+          icon={getIconImage("game-icon", <Gamepad2 className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('game', '/game')} 
         />
         <FileIcon 
           label="NFT Shop" 
-          icon={getIconImage("NFT Shop", <ShoppingCart className="h-5 w-5" />)} 
+          icon={getIconImage("shop-icon", <ShoppingCart className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('shop', '/shop')} 
         />
         <FileIcon 
           label="THC Grow Room" 
-          icon={getIconImage("THC Grow Room", <Cannabis className="h-5 w-5" />)} 
+          icon={getIconImage("grow-icon", <Cannabis className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('growroom', '/growroom')} 
         />
         <FileIcon 
           label="Wallet" 
-          icon={getIconImage("Wallet", <Wallet className="h-5 w-5" />)} 
+          icon={getIconImage("wallet-icon", <Wallet className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('wallet')} 
         />
         <FileIcon 
           label="Community Chat" 
-          icon={getIconImage("Community Chat", <MessageSquare className="h-5 w-5" />)} 
+          icon={getIconImage("chat-icon", <MessageSquare className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('chat')} 
         />
         <FileIcon 
           label="Analytics" 
-          icon={getIconImage("Analytics", <BarChart2 className="h-5 w-5" />)} 
+          icon={getIconImage("analytics-icon", <BarChart2 className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('analytics', '/analytics')} 
         />
         <FileIcon 
           label="Help" 
-          icon={getIconImage("Help", <HelpCircle className="h-5 w-5" />)} 
+          icon={getIconImage("help-icon", <HelpCircle className="h-5 w-5" />)} 
           onClick={() => alert('Help not available in this version!')} 
         />
       </div>

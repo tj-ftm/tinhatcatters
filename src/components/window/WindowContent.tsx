@@ -5,6 +5,8 @@ import Game from '../../pages/Game';
 import Shop from '../../pages/Shop';
 import GrowRoom from '../GrowRoom';
 import ComputerContent from './ComputerContent';
+import Leaderboard from '../../pages/Leaderboard';
+import Analytics from '../../pages/Analytics';
 
 interface WindowContentProps {
   windowId: string;
@@ -20,6 +22,9 @@ const WindowContent: React.FC<WindowContentProps> = ({ windowId, handleOpenWindo
           {windowId === 'shop' && <Shop />}
           {windowId === 'growroom' && <GrowRoom />}
           {windowId === 'computer' && <ComputerContent handleOpenWindow={handleOpenWindow} />}
+          {windowId === 'leaderboard' && <Leaderboard />}
+          {windowId === 'analytics' && <Analytics />}
+          {windowId === 'home' && <div className="p-4">Welcome to the Home window!</div>}
         </div>
       </ScrollArea>
     </div>

@@ -54,10 +54,10 @@ const Desktop: React.FC = () => {
     }
   };
 
-  const getIconImage = (alt: string, fallback: string = "🔍") => (
+  const getIconImage = (iconName: string, fallback: string = "🔍") => (
     <img 
       src="/assets/Icons/illuminati.webp" 
-      alt={alt} 
+      alt={iconName} 
       className="h-6 w-6 object-contain"
       onError={(e) => {
         const target = e.target as HTMLImageElement;
@@ -73,27 +73,27 @@ const Desktop: React.FC = () => {
         <div className="absolute top-2 left-2 flex flex-col items-center gap-6">
           <DesktopIcon 
             label="My Computer" 
-            icon={getIconImage("My Computer", "💻")} 
+            icon={getIconImage("computer-desktop-icon", "💻")} 
             onClick={() => handleIconClick('computer')} 
           />
           <DesktopIcon 
             label="Reptilian Attack" 
-            icon={getIconImage("Reptilian Attack", "🎮")} 
+            icon={getIconImage("game-desktop-icon", "🎮")} 
             onClick={() => handleIconClick('game', '/game')} 
           />
           <DesktopIcon 
             label="THC Grow Room" 
-            icon={getIconImage("THC Grow Room", "🌿")}
+            icon={getIconImage("growroom-desktop-icon", "🌿")}
             onClick={() => handleIconClick('growroom', '/growroom')} 
           />
           <DesktopIcon 
             label="NFT Shop" 
-            icon={getIconImage("NFT Shop", "🛒")} 
+            icon={getIconImage("shop-desktop-icon", "🛒")} 
             onClick={() => handleIconClick('shop', '/shop')} 
           />
           <DesktopIcon 
             label="Community Chat" 
-            icon={getIconImage("Community Chat", "💬")} 
+            icon={getIconImage("chat-desktop-icon", "💬")} 
             onClick={handleChatClick} 
           />
         </div>
