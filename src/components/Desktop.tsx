@@ -71,7 +71,7 @@ const Desktop: React.FC = () => {
           />
           <DesktopIcon 
             label="THC Grow Room" 
-            img="https://github.com/tj-ftm/tinhatcatters/blob/dd96f78076778d599e5bca3dd9941faae63d1a8e/public/assets/Icons/illuminati.webp"
+            icon="https://github.com/tj-ftm/tinhatcatters/blob/dd96f78076778d599e5bca3dd9941faae63d1a8e/public/assets/Icons/illuminati.webp"
             onClick={() => handleItemClick('growroom', '/growroom')} 
           />
           <DesktopIcon 
