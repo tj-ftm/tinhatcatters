@@ -32,7 +32,7 @@ export const equipmentImages = {
 };
 
 // Room background image
-export const roomBackgroundImage = '/assets/Icons/floor.png';
+export const roomBackgroundImage = '/assets/Icons/growroombg.png';
 
 // Function to render equipment
 export const renderEquipment = (
