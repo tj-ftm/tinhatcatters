@@ -85,29 +85,29 @@ class ReptilianAttackEngine {
       height: 400
     },
     obstacle: {
-      src: '/assets/Icons/illuminati.webp',
+      src: '/assets/Icons/barrier.png',
       width: 40,
       height: 60
     },
     enemy: {
-      src: '/assets/Icons/illuminati.webp',
+      src: '/assets/Icons/enemy.gif',
       width: 60,
       height: 60
     },
     bullet: {
-      src: '/assets/Icons/illuminati.webp',
+      src: '/assets/Icons/icecreamcone.png',
       width: 20,
       height: 10
     },
     enemyBullet: {
-      src: '/assets/Icons/illuminati.webp',
+      src: '/assets/Icons/icecreamcone.png',
       width: 20,
       height: 10
     },
     floor: {
-      src: '/assets/Icons/illuminati.webp',
+      src: '/assets/Icons/floor',
       width: 800,
-      height: 20
+      height: 40
     }
   };
   
@@ -233,7 +233,7 @@ class ReptilianAttackEngine {
       
       // Try to load fallback image
       const fallbackImage = new Image();
-      fallbackImage.src = '/assets/Icons/illuminati.webp';
+      fallbackImage.src = '/assets/Icons/barrier.png';
       fallbackImage.onload = () => {
         this.obstacleImage = fallbackImage;
         this.imagesLoaded.obstacle = true;
