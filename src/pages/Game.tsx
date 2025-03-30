@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { Button } from '@/components/ui/button';
@@ -75,22 +74,34 @@ const Game: React.FC = () => {
       gameEngineRef.current.initialize(canvasRef.current);
       
       if (gameEngineRef.current) {
-        // Set the game assets immediately so they appear before game starts
-        gameEngineRef.current.setPlayerSprite(GAME_ICON_IMAGES.player);
-        gameEngineRef.current.setBackgroundImage(GAME_ICON_IMAGES.background);
-        gameEngineRef.current.setEnemyImage(GAME_ICON_IMAGES.enemy);
-        
-        // Add an animation loop even when not playing to scroll background
-        const animateBackground = () => {
-          if (gameEngineRef.current && !gameState.gameStarted) {
-            // Create a minimal update just for scrolling the background
-            gameEngineRef.current.update(1, { left: false, right: false });
-            gameEngineRef.current.render();
+        try {
+          // Set the game assets immediately so they appear before game starts
+          if (typeof gameEngineRef.current.setPlayerSprite === 'function') {
+            gameEngineRef.current.setPlayerSprite(GAME_ICON_IMAGES.player);
           }
-          requestAnimationFrame(animateBackground);
-        };
-        
-        animateBackground();
+          
+          if (typeof gameEngineRef.current.setBackgroundImage === 'function') {
+            gameEngineRef.current.setBackgroundImage(GAME_ICON_IMAGES.background);
+          }
+          
+          if (typeof gameEngineRef.current.setEnemyImage === 'function') {
+            gameEngineRef.current.setEnemyImage(GAME_ICON_IMAGES.enemy);
+          }
+          
+          // Add an animation loop even when not playing to scroll background
+          const animateBackground = () => {
+            if (gameEngineRef.current && !gameState.gameStarted) {
+              // Create a minimal update just for scrolling the background
+              gameEngineRef.current.update(1, { left: false, right: false });
+              gameEngineRef.current.render();
+            }
+            requestAnimationFrame(animateBackground);
+          };
+          
+          animateBackground();
+        } catch (error) {
+          console.error("Error initializing game assets:", error);
+        }
       }
     }
     

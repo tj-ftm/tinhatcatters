@@ -264,6 +264,76 @@ class ReptilianAttackEngine {
     this.floorImage.src = this.imageConfig.floor.src;
   }
   
+  // Set player sprite image
+  setPlayerSprite(imageSrc: string, width?: number, height?: number) {
+    console.log("Setting player sprite:", imageSrc);
+    this.imageConfig.player.src = imageSrc;
+    if (width) this.imageConfig.player.width = width;
+    if (height) this.imageConfig.player.height = height;
+    
+    // Reset loaded state
+    this.imagesLoaded.player = false;
+    
+    // Create new image with error handling
+    const newImage = new Image();
+    newImage.onload = () => {
+      this.playerImage = newImage;
+      this.imagesLoaded.player = true;
+      console.log("Player sprite loaded successfully");
+      this.render(); // Re-render with new sprite
+    };
+    newImage.onerror = () => {
+      console.error('Failed to load custom player image:', imageSrc);
+      this.imagesLoaded.player = false;
+      
+      // Try to load fallback image
+      const fallbackImage = new Image();
+      fallbackImage.src = '/assets/Icons/tinhatcat.webp';
+      fallbackImage.onload = () => {
+        this.playerImage = fallbackImage;
+        this.imagesLoaded.player = true;
+        console.log("Player fallback image loaded");
+        this.render(); // Re-render once fallback is loaded
+      };
+    };
+    newImage.src = imageSrc;
+  }
+  
+  // Set background image
+  setBackgroundImage(imageSrc: string, width?: number, height?: number) {
+    console.log("Setting background image:", imageSrc);
+    this.imageConfig.background.src = imageSrc;
+    if (width) this.imageConfig.background.width = width;
+    if (height) this.imageConfig.background.height = height;
+    
+    // Reset loaded state
+    this.imagesLoaded.background = false;
+    
+    // Create new image with error handling
+    const newImage = new Image();
+    newImage.onload = () => {
+      this.backgroundImage = newImage;
+      this.imagesLoaded.background = true;
+      console.log("Background image loaded successfully");
+      this.render(); // Re-render with new background
+    };
+    newImage.onerror = () => {
+      console.error('Failed to load custom background image:', imageSrc);
+      this.imagesLoaded.background = false;
+      
+      // Try to load fallback image
+      const fallbackImage = new Image();
+      fallbackImage.src = '/assets/Icons/sidescrollerbg.webp';
+      fallbackImage.onload = () => {
+        this.backgroundImage = fallbackImage;
+        this.imagesLoaded.background = true;
+        console.log("Background fallback image loaded");
+        this.render(); // Re-render once fallback is loaded
+      };
+    };
+    newImage.src = imageSrc;
+  }
+  
   // Set obstacle image
   setObstacleImage(imageSrc: string, width?: number, height?: number) {
     this.imageConfig.obstacle.src = imageSrc;
