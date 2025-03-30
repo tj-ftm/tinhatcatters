@@ -17,10 +17,10 @@ const Desktop: React.FC = () => {
 
   // Each desktop icon has its own URL that can be manually changed
   const desktopIconImages = {
-    computer: "/assets/Icons/illuminati.webp",
+    computer: "/assets/Icons/computer.png",
     game: "/assets/Icons/illuminati.webp",
-    growroom: "/assets/Icons/illuminati.webp",
-    shop: "/assets/Icons/illuminati.webp",
+    growroom: "/assets/Icons/tinhatcat.webp",
+    shop: "/assets/Icons/nftshop.ico",
     chat: "/assets/Icons/illuminati.webp"
   };
 
