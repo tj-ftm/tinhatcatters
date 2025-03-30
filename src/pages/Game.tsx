@@ -17,7 +17,7 @@ const GAME_ICON_IMAGES = {
   player: "/assets/Icons/illuminati.webp",
   enemy: "/assets/Icons/illuminati.webp",
   powerup: "/assets/Icons/illuminati.webp",
-  background: "/assets/Icons/illuminati.webp"
+  background: "/assets/Icons/sidescrollerbg.webp"
 };
 
 const RECIPIENT_ADDRESS = '0x097766e8dE97A0A53B3A31AB4dB02d0004C8cc4F';
