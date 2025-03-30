@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import WalletConnector from '@/components/WalletConnector';
 import { GameState } from '@/hooks/useGameState';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface GameControlsProps {
   gameState: GameState;
@@ -19,14 +20,16 @@ const GameControls: React.FC<GameControlsProps> = ({
   pauseGame,
   address
 }) => {
+  const isMobile = useIsMobile();
+  
   return (
-    <div>
+    <div className={`${isMobile ? 'flex justify-center' : ''}`}>
       {!gameState.gameStarted ? (
         <>
           {!address ? (
             <WalletConnector />
           ) : (
-            <Button onClick={startGame} className="win95-button h-8">
+            <Button onClick={startGame} className="win95-button h-8 whitespace-nowrap text-xs">
               Start Game ({GAME_START_COST} $THC)
             </Button>
           )}
@@ -34,11 +37,11 @@ const GameControls: React.FC<GameControlsProps> = ({
       ) : (
         <>
           {gameState.gameOver ? (
-            <Button onClick={startGame} className="win95-button h-8">
+            <Button onClick={startGame} className="win95-button h-8 whitespace-nowrap text-xs">
               Play Again ({GAME_START_COST} $THC)
             </Button>
           ) : (
-            <Button onClick={pauseGame} className="win95-button h-8">
+            <Button onClick={pauseGame} className="win95-button h-8 whitespace-nowrap text-xs">
               {gameState.paused ? "Resume" : "Pause"}
             </Button>
           )}

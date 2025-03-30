@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Taskbar from './Taskbar';
 import WindowManager from './WindowManager';
@@ -25,13 +25,7 @@ const Desktop: React.FC = () => {
     chat: "/assets/Icons/illuminati.webp"
   };
 
-  // Handle icon selection and navigation
-  const handleIconClick = (windowId: string, route?: string) => {
-    // Toggle selection on single click
-    setSelectedIcon(windowId);
-  };
-
-  // Handle double click to open window and navigate
+  // Handle icon double click to open window and navigate
   const handleIconDoubleClick = (windowId: string, route?: string) => {
     addWindow(windowId);
     if (route) {
@@ -71,6 +65,11 @@ const Desktop: React.FC = () => {
     }
   };
 
+  // Handle icon selection
+  const handleIconClick = (iconId: string) => {
+    setSelectedIcon(prev => prev === iconId ? null : iconId);
+  };
+
   // Clear selection when clicking on desktop background
   const handleDesktopClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -83,9 +82,10 @@ const Desktop: React.FC = () => {
       className="flex flex-col h-screen w-screen overflow-hidden bg-[#1AB0ED] relative" 
       onClick={handleDesktopClick}
     >
+      {/* Desktop content area */}
       <div className="flex-grow relative">
-        {/* Desktop Icons */}
-        <div className="absolute top-2 left-2 flex flex-col items-center gap-6">
+        {/* Desktop Icons with improved click handling */}
+        <div className="absolute top-2 left-2 grid grid-cols-1 gap-6">
           <DesktopIcon 
             id="computer"
             label="My Computer" 
@@ -194,25 +194,29 @@ const Desktop: React.FC = () => {
         </div>
       </div>
       
-      <Taskbar 
-        activeWindows={activeWindows} 
-        windowsMinimized={windowsMinimized}
-        addWindow={addWindow}
-        restoreWindow={restoreWindow}
-        onWalletClick={() => {
-          if (activeWindows.includes('wallet')) {
-            restoreWindow('wallet');
-            setShowWalletWindow(false);
-          } else {
-            setShowWalletWindow(true);
-          }
-        }}
-        onChatClick={handleChatClick}
-      />
+      {/* Taskbar always on top with fixed position */}
+      <div className="fixed bottom-0 left-0 right-0 z-50">
+        <Taskbar 
+          activeWindows={activeWindows} 
+          windowsMinimized={windowsMinimized}
+          addWindow={addWindow}
+          restoreWindow={restoreWindow}
+          onWalletClick={() => {
+            if (activeWindows.includes('wallet')) {
+              restoreWindow('wallet');
+              setShowWalletWindow(false);
+            } else {
+              setShowWalletWindow(true);
+            }
+          }}
+          onChatClick={handleChatClick}
+        />
+      </div>
     </div>
   );
 };
 
+// Improved Desktop Icon component with better click handling
 const DesktopIcon: React.FC<{ 
   id: string;
   label: string; 
@@ -222,24 +226,45 @@ const DesktopIcon: React.FC<{
   onDoubleClick: () => void;
   isSelected: boolean;
 }> = ({ id, label, iconSrc, fallbackIcon, onClick, onDoubleClick, isSelected }) => {
+  // Use a ref to track clicks for double-click detection
+  const clickTimeoutRef = React.useRef<number | null>(null);
+  const clickCountRef = React.useRef(0);
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    clickCountRef.current += 1;
+    
+    if (clickCountRef.current === 1) {
+      if (clickTimeoutRef.current) {
+        window.clearTimeout(clickTimeoutRef.current);
+      }
+      
+      clickTimeoutRef.current = window.setTimeout(() => {
+        if (clickCountRef.current === 1) {
+          // Single click
+          onClick();
+        } else {
+          // Double click
+          onDoubleClick();
+        }
+        clickCountRef.current = 0;
+        clickTimeoutRef.current = null;
+      }, 250); // Double click timeout
+    }
+  };
+  
   return (
     <div 
       id={`desktop-icon-${id}`}
       className={`flex flex-col items-center cursor-pointer w-16 group ${isSelected ? 'bg-win95-blue/40' : 'hover:bg-win95-blue/20'}`}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}
-      onDoubleClick={(e) => {
-        e.stopPropagation();
-        onDoubleClick();
-      }}
+      onClick={handleClick}
     >
       <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">
         <img 
           src={iconSrc} 
           alt={label} 
-          className="h-8 w-8 object-contain" /* Made icons bigger */
+          className="h-8 w-8 object-contain"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.style.display = 'none';

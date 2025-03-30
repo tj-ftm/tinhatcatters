@@ -34,6 +34,17 @@ interface SingleWindowProps {
   isResizable?: boolean;
 }
 
+const getWindowTitle = (windowId: string, defaultTitle: string) => {
+  switch (windowId) {
+    case 'game':
+      return 'Reptilian Attack';
+    case 'growroom':
+      return 'THC Grow Room';
+    default:
+      return defaultTitle;
+  }
+};
+
 const SingleWindow: React.FC<SingleWindowProps> = ({
   windowId,
   pos,
@@ -51,6 +62,8 @@ const SingleWindow: React.FC<SingleWindowProps> = ({
   resizing,
   isResizable = true
 }) => {
+  const displayTitle = getWindowTitle(windowId, title);
+  
   return (
     <div 
       className="absolute win95-window border-2 border-gray-400 rounded-none overflow-hidden"
@@ -64,10 +77,11 @@ const SingleWindow: React.FC<SingleWindowProps> = ({
                 `${resizing.direction}-resize` : 'default'
       }}
       onClick={() => bringToFront(windowId)}
+      data-id={windowId}
     >
       <WindowTitleBar
         windowId={windowId}
-        title={title}
+        title={displayTitle}
         startDrag={startDrag}
         minimizeWindow={minimizeWindow}
         toggleMaximize={toggleMaximize}

@@ -8,6 +8,7 @@ import GameStats from '@/components/game/GameStats';
 import GameControls from '@/components/game/GameControls';
 import GameUpgrades from '@/components/game/GameUpgrades';
 import GameOverlay from '@/components/game/GameOverlay';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Game: React.FC = () => {
   const { 
@@ -25,6 +26,7 @@ const Game: React.FC = () => {
   const [windowIsMaximized, setWindowIsMaximized] = useState(false);
   const gameEngineRef = useRef<ReptilianAttackEngine | null>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   // Show notification when THC is earned
   useEffect(() => {
@@ -40,7 +42,7 @@ const Game: React.FC = () => {
     <div className="win95-window w-full h-full overflow-hidden flex flex-col">
       <div className="p-2 bg-[#c0c0c0] flex flex-col h-full">
         <div className="w-full mb-2 win95-panel p-2">
-          <div className="flex flex-row justify-between items-center">
+          <div className={`${isMobile ? 'flex flex-col space-y-2' : 'flex flex-row justify-between'} items-center`}>
             <GameStats 
               gameState={gameState} 
               thcBalance={thcBalance} 

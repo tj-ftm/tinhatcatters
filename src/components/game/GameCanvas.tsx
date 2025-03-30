@@ -184,8 +184,23 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         const containerWidth = gameContainerRef.current.clientWidth;
         const containerHeight = gameContainerRef.current.clientHeight;
         
-        canvasRef.current.width = containerWidth;
-        canvasRef.current.height = containerHeight;
+        // Force landscape orientation for the game canvas on mobile
+        if (isMobile) {
+          // For mobile, use landscape orientation with proper aspect ratio
+          const aspectRatio = 16 / 9;
+          const height = Math.min(containerHeight, containerWidth / aspectRatio);
+          const width = height * aspectRatio;
+          
+          canvasRef.current.width = width;
+          canvasRef.current.height = height;
+          
+          // Center the canvas
+          canvasRef.current.style.margin = "0 auto";
+        } else {
+          // For desktop, use the container dimensions
+          canvasRef.current.width = containerWidth;
+          canvasRef.current.height = containerHeight;
+        }
         
         if (gameEngineRef.current) {
           gameEngineRef.current.render();
@@ -269,16 +284,16 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   // Mobile controls help tooltip
   const MobileControlsHelp = () => (
     <div className="absolute top-2 left-2 right-2 bg-black bg-opacity-70 text-white p-2 rounded text-xs z-10">
-      <p>Touch left side to shoot. Touch right side to jump.</p>
+      <p>Touch left side to move left. Touch right side to move right/jump.</p>
     </div>
   );
 
   return (
     <div className="flex-grow flex flex-col relative" style={{ minHeight: "0", display: "flex", flex: "1 1 auto" }}>
-      <div className="win95-inset p-1 w-full h-full" ref={gameContainerRef}>
+      <div className="win95-inset p-1 w-full h-full flex items-center justify-center" ref={gameContainerRef}>
         <canvas
           ref={canvasRef}
-          className="w-full h-full object-contain"
+          className={`${isMobile ? 'max-w-full max-h-full' : 'w-full h-full'} object-contain`}
         />
         {isMobile && gameState.gameStarted && !gameState.paused && !gameState.gameOver && (
           <MobileControlsHelp />

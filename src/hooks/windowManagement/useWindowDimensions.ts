@@ -1,5 +1,5 @@
 
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { Position, Size } from './types';
 import { usePositioning } from './usePositioning';
 import { useSizing } from './useSizing';
@@ -24,6 +24,26 @@ export function useWindowDimensions(containerRef: React.RefObject<HTMLDivElement
     setIsMaximized,
     setPreMaximizeState
   } = useMaximize();
+  
+  // Update window dimensions on resize
+  useEffect(() => {
+    const handleResize = () => {
+      // Update maximized windows to fit the new screen size
+      for (const windowId in isMaximized) {
+        if (isMaximized[windowId]) {
+          const container = containerRef.current;
+          const containerWidth = container?.clientWidth || window.innerWidth;
+          const containerHeight = container?.clientHeight || window.innerHeight - 40;
+          
+          updatePositions(windowId, { x: 0, y: 0 });
+          updateSizes(windowId, { width: containerWidth, height: containerHeight });
+        }
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMaximized]);
 
   const toggleMaximize = (windowId: string) => {
     const currentlyMaximized = isMaximized[windowId];
