@@ -32,10 +32,14 @@ const GrowRoom: React.FC = () => {
 
   const { toggleMaximize } = useWindowManagement(containerRef);
 
-  // Maximize window on load
+  // Maximize window on load - but only once
   useEffect(() => {
-    toggleMaximize('growroom');
-  }, [toggleMaximize]);
+    const timer = setTimeout(() => {
+      toggleMaximize('growroom');
+    }, 200);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="h-full flex flex-col" ref={containerRef}>

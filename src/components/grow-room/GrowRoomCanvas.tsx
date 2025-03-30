@@ -1,10 +1,9 @@
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { GrowthStage, Equipment, EquipmentType, Plant } from '@/types/growRoom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Sprout } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
 import { createPlantSVGAnimation } from '@/utils/plantAnimations';
 
 interface GrowRoomCanvasProps {
@@ -32,6 +31,9 @@ const GrowRoomCanvas: React.FC<GrowRoomCanvasProps> = ({
   const [hoveredPlant, setHoveredPlant] = useState<number | null>(null);
   const [selectedPlant, setSelectedPlant] = useState<number | null>(null);
   const isMobile = useIsMobile();
+  const animationFrameRef = useRef<number>(0);
+  const imagesLoadedRef = useRef<boolean>(false);
+  const assetsRef = useRef<Record<string, HTMLImageElement>>({});
   
   // Equipment images
   const equipmentImages = {
@@ -64,6 +66,40 @@ const GrowRoomCanvas: React.FC<GrowRoomCanvasProps> = ({
 
   // Room background image
   const roomBackgroundImage = '/assets/Icons/floor.png';
+
+  // Preload images to prevent flickering
+  const preloadImages = useCallback(() => {
+    const imagesToLoad = [
+      roomBackgroundImage,
+      ...Object.values(equipmentImages).flatMap(levelImages => 
+        Object.values(levelImages)
+      )
+    ];
+    
+    let loadedCount = 0;
+    imagesToLoad.forEach(src => {
+      if (assetsRef.current[src]) return;
+      
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        loadedCount++;
+        assetsRef.current[src] = img;
+        if (loadedCount === imagesToLoad.length) {
+          imagesLoadedRef.current = true;
+          renderGrowRoom();
+        }
+      };
+      img.onerror = () => {
+        loadedCount++;
+        console.error(`Failed to load image: ${src}`);
+        if (loadedCount === imagesToLoad.length) {
+          imagesLoadedRef.current = true;
+          renderGrowRoom();
+        }
+      };
+    });
+  }, []);
   
   // Get plant name based on stage
   const getPlantStageName = (stage: GrowthStage): string => {
@@ -77,7 +113,7 @@ const GrowRoomCanvas: React.FC<GrowRoomCanvasProps> = ({
     }
   };
   
-  // Function to render a single plant
+  // Function to render a single plant with double buffering
   const renderPlant = (
     ctx: CanvasRenderingContext2D, 
     plant: Plant, 
@@ -98,11 +134,10 @@ const GrowRoomCanvas: React.FC<GrowRoomCanvasProps> = ({
     }
     
     // Draw pot
-    const potImg = new Image();
-    potImg.src = equipmentImages[EquipmentType.Pot][equipment[EquipmentType.Pot].level] || '/assets/Icons/weed.png';
-    potImg.onload = () => {
-      ctx.drawImage(potImg, x - size/3, y + size/2, size*2/3, size/2);
-    };
+    const potSrc = equipmentImages[EquipmentType.Pot][equipment[EquipmentType.Pot].level] || '/assets/Icons/weed.png';
+    if (assetsRef.current[potSrc]) {
+      ctx.drawImage(assetsRef.current[potSrc], x - size/3, y + size/2, size*2/3, size/2);
+    }
     
     // Get color based on growth stage
     const color = getGrowthColor(plant.stage).replace('bg-', '');
@@ -189,10 +224,9 @@ const GrowRoomCanvas: React.FC<GrowRoomCanvasProps> = ({
     if (!canvas) return;
     
     // Draw light at top
-    const lightImg = new Image();
-    lightImg.src = equipmentImages[EquipmentType.Light][equipment[EquipmentType.Light].level] || '/assets/Icons/illuminati.webp';
-    lightImg.onload = () => {
-      ctx.drawImage(lightImg, canvas.width/2 - 50, 20, 100, 60);
+    const lightSrc = equipmentImages[EquipmentType.Light][equipment[EquipmentType.Light].level] || '/assets/Icons/illuminati.webp';
+    if (assetsRef.current[lightSrc]) {
+      ctx.drawImage(assetsRef.current[lightSrc], canvas.width/2 - 50, 20, 100, 60);
       
       // Draw light rays effect based on light level
       const lightLevel = equipment[EquipmentType.Light].level;
@@ -204,13 +238,12 @@ const GrowRoomCanvas: React.FC<GrowRoomCanvasProps> = ({
       ctx.lineTo(canvas.width/2 + 150, canvas.height/2);
       ctx.closePath();
       ctx.fill();
-    };
+    }
     
     // Draw ventilation on the right
-    const ventImg = new Image();
-    ventImg.src = equipmentImages[EquipmentType.Ventilation][equipment[EquipmentType.Ventilation].level] || '/assets/Icons/illuminati.webp';
-    ventImg.onload = () => {
-      ctx.drawImage(ventImg, canvas.width - 80, canvas.height/2 - 40, 60, 80);
+    const ventSrc = equipmentImages[EquipmentType.Ventilation][equipment[EquipmentType.Ventilation].level] || '/assets/Icons/illuminati.webp';
+    if (assetsRef.current[ventSrc]) {
+      ctx.drawImage(assetsRef.current[ventSrc], canvas.width - 80, canvas.height/2 - 40, 60, 80);
       
       // Animation effect for ventilation
       const now = Date.now();
@@ -233,13 +266,12 @@ const GrowRoomCanvas: React.FC<GrowRoomCanvasProps> = ({
         ctx.lineTo(canvas.width - 110 - offset * 20, canvas.height/2);
         ctx.stroke();
       }
-    };
+    }
     
     // Draw nutrients on the left
-    const nutrientsImg = new Image();
-    nutrientsImg.src = equipmentImages[EquipmentType.Nutrients][equipment[EquipmentType.Nutrients].level] || '/assets/Icons/illuminati.webp';
-    nutrientsImg.onload = () => {
-      ctx.drawImage(nutrientsImg, 20, canvas.height/2 - 30, 60, 60);
+    const nutrientsSrc = equipmentImages[EquipmentType.Nutrients][equipment[EquipmentType.Nutrients].level] || '/assets/Icons/illuminati.webp';
+    if (assetsRef.current[nutrientsSrc]) {
+      ctx.drawImage(assetsRef.current[nutrientsSrc], 20, canvas.height/2 - 30, 60, 60);
       
       // Show nutrient effect based on level
       const nutrientLevel = equipment[EquipmentType.Nutrients].level;
@@ -255,13 +287,12 @@ const GrowRoomCanvas: React.FC<GrowRoomCanvasProps> = ({
         ctx.arc(x, y, 3, 0, Math.PI * 2);
         ctx.fill();
       }
-    };
+    }
     
     // Draw automation system at bottom
-    const autoImg = new Image();
-    autoImg.src = equipmentImages[EquipmentType.Automation][equipment[EquipmentType.Automation].level] || '/assets/Icons/computer.png';
-    autoImg.onload = () => {
-      ctx.drawImage(autoImg, canvas.width/2 - 40, canvas.height - 80, 80, 60);
+    const autoSrc = equipmentImages[EquipmentType.Automation][equipment[EquipmentType.Automation].level] || '/assets/Icons/computer.png';
+    if (assetsRef.current[autoSrc]) {
+      ctx.drawImage(assetsRef.current[autoSrc], canvas.width/2 - 40, canvas.height - 80, 80, 60);
       
       // Show automation effect based on level
       const autoLevel = equipment[EquipmentType.Automation].level;
@@ -291,7 +322,7 @@ const GrowRoomCanvas: React.FC<GrowRoomCanvasProps> = ({
           ctx.fill();
         });
       }
-    };
+    }
   };
 
   // Calculate the position for a plant at a given index
@@ -320,8 +351,10 @@ const GrowRoomCanvas: React.FC<GrowRoomCanvasProps> = ({
     return { x, y, size: plantSize };
   };
 
-  // Main render function
-  const renderGrowRoom = () => {
+  // Main render function with double buffering
+  const renderGrowRoom = useCallback(() => {
+    cancelAnimationFrame(animationFrameRef.current);
+    
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -331,69 +364,86 @@ const GrowRoomCanvas: React.FC<GrowRoomCanvasProps> = ({
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
+    // Only proceed if images are loaded
+    if (!imagesLoadedRef.current) {
+      // Draw loading message
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Loading grow room...', canvas.width/2, canvas.height/2);
+      return;
+    }
+    
     // Draw background
-    const bgImg = new Image();
-    bgImg.src = roomBackgroundImage;
-    bgImg.onload = () => {
+    if (assetsRef.current[roomBackgroundImage]) {
       // Create pattern and fill background
-      const pattern = ctx.createPattern(bgImg, 'repeat');
+      const pattern = ctx.createPattern(assetsRef.current[roomBackgroundImage], 'repeat');
       if (pattern) {
         ctx.fillStyle = pattern;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Draw equipment (on top of background)
-        renderEquipment(ctx);
-        
-        // Draw plant grid slots
-        for (let i = 0; i < plantCapacity; i++) {
-          const { x, y, size } = calculatePlantPosition(i);
-          
-          // Draw grid slot
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-          ctx.beginPath();
-          ctx.arc(x, y + size/2, size/2.5, 0, Math.PI * 2);
-          ctx.fill();
-          
-          // Draw plus sign if slot is empty
-          if (i >= plants.length) {
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-            ctx.lineWidth = 2;
-            
-            // Horizontal line
-            ctx.beginPath();
-            ctx.moveTo(x - 10, y + size/2);
-            ctx.lineTo(x + 10, y + size/2);
-            ctx.stroke();
-            
-            // Vertical line
-            ctx.beginPath();
-            ctx.moveTo(x, y + size/2 - 10);
-            ctx.lineTo(x, y + size/2 + 10);
-            ctx.stroke();
-          }
-        }
-        
-        // Draw plants (on top of equipment and background)
-        plants.forEach((plant, index) => {
-          const { x, y, size } = calculatePlantPosition(index);
-          renderPlant(ctx, plant, x, y, size, index);
-        });
-        
-        // Draw empty slot message if no plants
-        if (plants.length === 0) {
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-          ctx.font = isMobile ? '16px sans-serif' : '20px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('Plant a seed to get started!', canvas.width/2, canvas.height/2);
-        }
-        
-        // Draw selected plant details
-        if (selectedPlant !== null && plants[selectedPlant]) {
-          drawSelectedPlantDetails(ctx, plants[selectedPlant]);
-        }
       }
-    };
-  };
+    } else {
+      // Fallback background
+      ctx.fillStyle = '#e5e7eb';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    
+    // Draw equipment (on top of background)
+    renderEquipment(ctx);
+    
+    // Draw plant grid slots
+    for (let i = 0; i < plantCapacity; i++) {
+      const { x, y, size } = calculatePlantPosition(i);
+      
+      // Draw grid slot
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      ctx.beginPath();
+      ctx.arc(x, y + size/2, size/2.5, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Draw plus sign if slot is empty
+      if (i >= plants.length) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.lineWidth = 2;
+        
+        // Horizontal line
+        ctx.beginPath();
+        ctx.moveTo(x - 10, y + size/2);
+        ctx.lineTo(x + 10, y + size/2);
+        ctx.stroke();
+        
+        // Vertical line
+        ctx.beginPath();
+        ctx.moveTo(x, y + size/2 - 10);
+        ctx.lineTo(x, y + size/2 + 10);
+        ctx.stroke();
+      }
+    }
+    
+    // Draw plants (on top of equipment and background)
+    plants.forEach((plant, index) => {
+      const { x, y, size } = calculatePlantPosition(index);
+      renderPlant(ctx, plant, x, y, size, index);
+    });
+    
+    // Draw empty slot message if no plants
+    if (plants.length === 0) {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.font = isMobile ? '16px sans-serif' : '20px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Plant a seed to get started!', canvas.width/2, canvas.height/2);
+    }
+    
+    // Draw selected plant details
+    if (selectedPlant !== null && plants[selectedPlant]) {
+      drawSelectedPlantDetails(ctx, plants[selectedPlant]);
+    }
+    
+    // Request next frame for animations
+    animationFrameRef.current = requestAnimationFrame(renderGrowRoom);
+  }, [plants, equipment, plantCapacity, selectedPlant, hoveredPlant]);
   
   // Draw selected plant details
   const drawSelectedPlantDetails = (ctx: CanvasRenderingContext2D, plant: Plant) => {
@@ -460,26 +510,39 @@ const GrowRoomCanvas: React.FC<GrowRoomCanvasProps> = ({
   
   // Calculate growth rate for display
   const calculateGrowthRate = (plant: Plant) => {
-    const { speedMultiplier } = calculateMultipliers();
+    // Calculate multipliers based on equipment
+    let speedMultiplier = 1;
+    
+    Object.values(equipment).forEach(item => {
+      speedMultiplier *= item.effect.speedBoost;
+    });
+    
     return speedMultiplier.toFixed(1);
   };
   
   // Handle canvas resize
-  const handleResize = () => {
-    if (!canvasRef.current) return;
-    
-    const container = containerRef.current;
-    if (!container) return;
+  const handleResize = useCallback(() => {
+    if (!canvasRef.current || !containerRef.current) return;
     
     // Get container size
-    const { width, height } = container.getBoundingClientRect();
+    const { width, height } = containerRef.current.getBoundingClientRect();
     
     // Set canvas size
-    setCanvasSize({
-      width: Math.floor(width),
-      height: Math.floor(height)
-    });
-  };
+    const newWidth = Math.floor(width);
+    const newHeight = Math.floor(height);
+    
+    // Only update if size actually changed
+    if (canvasSize.width !== newWidth || canvasSize.height !== newHeight) {
+      setCanvasSize({
+        width: newWidth,
+        height: newHeight
+      });
+      
+      // Update canvas dimensions
+      canvasRef.current.width = newWidth;
+      canvasRef.current.height = newHeight;
+    }
+  }, [canvasSize]);
   
   // Handle mouse move for hover detection
   const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -588,33 +651,37 @@ const GrowRoomCanvas: React.FC<GrowRoomCanvasProps> = ({
     setSelectedPlant(null);
   };
 
-  // Calculate multipliers for the speed display
-  const calculateMultipliers = () => {
-    let speedMultiplier = 1;
-    let qualityMultiplier = 1;
-
-    Object.values(equipment).forEach(item => {
-      speedMultiplier *= item.effect.speedBoost;
-      qualityMultiplier *= item.effect.qualityBoost;
-    });
-
-    return { speedMultiplier, qualityMultiplier };
-  };
-  
-  // Initialize canvas and set up resize handler
+  // Initialize canvas, load images, and set up resize handler
   useEffect(() => {
+    // Load images
+    preloadImages();
+    
+    // Set up resize handler
     handleResize();
     window.addEventListener('resize', handleResize);
     
+    // Start animation loop
+    animationFrameRef.current = requestAnimationFrame(renderGrowRoom);
+    
     return () => {
       window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameRef.current);
     };
   }, []);
   
-  // Re-render when plants, equipment, or canvas size changes
+  // Update canvas whenever size changes
+  useEffect(() => {
+    if (canvasRef.current) {
+      canvasRef.current.width = canvasSize.width;
+      canvasRef.current.height = canvasSize.height;
+      renderGrowRoom();
+    }
+  }, [canvasSize, renderGrowRoom]);
+  
+  // Re-render when plants, equipment, or capacity changes
   useEffect(() => {
     renderGrowRoom();
-  }, [plants, equipment, canvasSize, plantCapacity, isMobile, hoveredPlant, selectedPlant]);
+  }, [plants, equipment, plantCapacity, isMobile, renderGrowRoom]);
   
   return (
     <div className="w-full h-full relative flex flex-col" ref={containerRef}>
@@ -627,7 +694,13 @@ const GrowRoomCanvas: React.FC<GrowRoomCanvasProps> = ({
         onClick={handleCanvasClick}
       />
       
-      {plants.length === 0 && (
+      {plants.length === 0 && !imagesLoadedRef.current && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <p className="text-gray-600 mb-2 text-center">Loading grow room...</p>
+        </div>
+      )}
+      
+      {plants.length === 0 && imagesLoadedRef.current && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <Button 
             className={`win95-button flex items-center ${isMobile ? 'text-sm px-2 py-1' : ''}`}
