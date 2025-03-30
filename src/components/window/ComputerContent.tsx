@@ -10,7 +10,7 @@ interface ComputerContentProps {
 const ComputerContent: React.FC<ComputerContentProps> = ({ handleOpenWindow }) => {
   // Each icon has its own URL that can be manually changed
   const iconImages = {
-    home: "/assets/Icons/illuminati.webp",
+    home: "/assets/Icons/tinhatcat.webp",
     game: "/assets/Icons/illuminati.webp",
     shop: "/assets/Icons/illuminati.webp",
     growroom: "/assets/Icons/illuminati.webp",
