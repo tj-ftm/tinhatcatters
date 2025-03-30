@@ -17,7 +17,7 @@ const GAME_ICON_IMAGES = {
   fireRate: "/assets/Icons/illuminati.webp",
   health: "/assets/Icons/illuminati.webp",
   logo: "/assets/Icons/illuminati.webp",
-  player: "/assets/Icons/tinhatcat.webp",
+  player: "/playersprite.gif",
   enemy: "/assets/Icons/illuminati.webp",
   powerup: "/assets/Icons/weed.png",
   background: "/assets/Icons/sidescrollerbg.webp",

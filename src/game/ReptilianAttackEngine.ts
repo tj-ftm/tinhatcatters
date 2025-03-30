@@ -68,7 +68,7 @@ class ReptilianAttackEngine {
   // Image configurations
   private imageConfig = {
     player: {
-      src: '/assets/Icons/tinhatcat.webp',
+      src: '/playersprite.gif',
       width: 50,
       height: 70
     },
