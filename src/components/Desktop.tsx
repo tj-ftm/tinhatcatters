@@ -15,6 +15,15 @@ const Desktop: React.FC = () => {
   const [showChatDialog, setShowChatDialog] = useState(false);
   const navigate = useNavigate();
 
+  // Each desktop icon has its own URL that can be manually changed
+  const desktopIconImages = {
+    computer: "/assets/Icons/illuminati.webp",
+    game: "/assets/Icons/illuminati.webp",
+    growroom: "/assets/Icons/illuminati.webp",
+    shop: "/assets/Icons/illuminati.webp",
+    chat: "/assets/Icons/illuminati.webp"
+  };
+
   const addWindow = (windowId: string) => {
     if (!activeWindows.includes(windowId)) {
       setActiveWindows(prev => [...prev, windowId]);
@@ -54,18 +63,6 @@ const Desktop: React.FC = () => {
     }
   };
 
-  const getIconImage = (iconName: string, fallback: string = "🔍") => (
-    <img 
-      src="/assets/Icons/illuminati.webp" 
-      alt={iconName} 
-      className="h-6 w-6 object-contain"
-      onError={(e) => {
-        const target = e.target as HTMLImageElement;
-        target.src = fallback;
-      }}
-    />
-  );
-
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#1AB0ED] relative">
       <div className="flex-grow relative">
@@ -73,27 +70,32 @@ const Desktop: React.FC = () => {
         <div className="absolute top-2 left-2 flex flex-col items-center gap-6">
           <DesktopIcon 
             label="My Computer" 
-            icon={getIconImage("computer-desktop-icon", "💻")} 
+            iconSrc={desktopIconImages.computer}
+            fallbackIcon="💻"
             onClick={() => handleIconClick('computer')} 
           />
           <DesktopIcon 
             label="Reptilian Attack" 
-            icon={getIconImage("game-desktop-icon", "🎮")} 
+            iconSrc={desktopIconImages.game}
+            fallbackIcon="🎮"
             onClick={() => handleIconClick('game', '/game')} 
           />
           <DesktopIcon 
             label="THC Grow Room" 
-            icon={getIconImage("growroom-desktop-icon", "🌿")}
+            iconSrc={desktopIconImages.growroom}
+            fallbackIcon="🌿"
             onClick={() => handleIconClick('growroom', '/growroom')} 
           />
           <DesktopIcon 
             label="NFT Shop" 
-            icon={getIconImage("shop-desktop-icon", "🛒")} 
+            iconSrc={desktopIconImages.shop}
+            fallbackIcon="🛒"
             onClick={() => handleIconClick('shop', '/shop')} 
           />
           <DesktopIcon 
             label="Community Chat" 
-            icon={getIconImage("chat-desktop-icon", "💬")} 
+            iconSrc={desktopIconImages.chat}
+            fallbackIcon="💬"
             onClick={handleChatClick} 
           />
         </div>
@@ -180,9 +182,10 @@ const Desktop: React.FC = () => {
 
 const DesktopIcon: React.FC<{ 
   label: string; 
-  icon: string | React.ReactNode; 
+  iconSrc: string;
+  fallbackIcon: string;
   onClick: () => void 
-}> = ({ label, icon, onClick }) => {
+}> = ({ label, iconSrc, fallbackIcon, onClick }) => {
   return (
     <div 
       className="flex flex-col items-center cursor-pointer w-16 group hover:bg-win95-blue/20"
@@ -190,7 +193,21 @@ const DesktopIcon: React.FC<{
       onDoubleClick={onClick}
     >
       <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">
-        {typeof icon === 'string' ? icon : icon}
+        <img 
+          src={iconSrc} 
+          alt={label} 
+          className="h-6 w-6 object-contain"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            const fallbackElement = document.createElement('div');
+            fallbackElement.textContent = fallbackIcon;
+            fallbackElement.className = 'text-2xl';
+            if (target.parentNode) {
+              target.parentNode.appendChild(fallbackElement);
+            }
+          }}
+        />
       </div>
       <span className="text-white text-xs text-center bg-win95-blue/80 px-1 py-0.5 w-full">
         {label}

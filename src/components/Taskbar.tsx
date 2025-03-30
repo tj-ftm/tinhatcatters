@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Computer, ShoppingCart, Gamepad2, Home, Wallet, Cannabis, MessageSquare, TrendingUp, BarChart2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -23,6 +24,34 @@ const Taskbar: React.FC<TaskbarProps> = ({
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const navigate = useNavigate();
 
+  // Taskbar button icons - individually configurable
+  const taskbarIconImages = {
+    game: "/assets/Icons/illuminati.webp",
+    shop: "/assets/Icons/illuminati.webp",
+    computer: "/assets/Icons/illuminati.webp",
+    home: "/assets/Icons/illuminati.webp",
+    wallet: "/assets/Icons/illuminati.webp",
+    growroom: "/assets/Icons/illuminati.webp",
+    chat: "/assets/Icons/illuminati.webp",
+    leaderboard: "/assets/Icons/illuminati.webp",
+    analytics: "/assets/Icons/illuminati.webp"
+  };
+
+  // Start menu icons - individually configurable
+  const startMenuIconImages = {
+    home: "/assets/Icons/illuminati.webp",
+    games: "/assets/Icons/illuminati.webp",
+    reptilianAttack: "/assets/Icons/illuminati.webp",
+    thcGrowRoom: "/assets/Icons/illuminati.webp",
+    nftShop: "/assets/Icons/illuminati.webp",
+    leaderboard: "/assets/Icons/illuminati.webp",
+    analytics: "/assets/Icons/illuminati.webp",
+    wallet: "/assets/Icons/illuminati.webp",
+    chat: "/assets/Icons/illuminati.webp",
+    computer: "/assets/Icons/illuminati.webp",
+    help: "/assets/Icons/illuminati.webp"
+  };
+
   const handleStartClick = () => {
     setStartMenuOpen(!startMenuOpen);
   };
@@ -41,22 +70,6 @@ const Taskbar: React.FC<TaskbarProps> = ({
       // or you could implement a focus behavior here
     }
   };
-
-  const getIconImage = (iconName: string, fallback: React.ReactNode) => (
-    <img 
-      src="/assets/Icons/illuminati.webp" 
-      alt={iconName} 
-      className="h-4 w-4 object-contain"
-      onError={(e) => {
-        const target = e.target as HTMLImageElement;
-        const fallbackElement = document.createElement('div');
-        fallbackElement.innerHTML = '🔍';
-        if (target.parentNode) {
-          target.parentNode.replaceChild(fallbackElement, target);
-        }
-      }}
-    />
-  );
 
   return (
     <div className="win95-window h-11 flex items-stretch z-50 border-t-2 w-full">
@@ -90,15 +103,22 @@ const Taskbar: React.FC<TaskbarProps> = ({
             className={`win95-button px-2 py-1 h-8 text-sm flex items-center ${!windowsMinimized[window] ? 'border-inset' : ''}`}
             onClick={() => handleWindowButtonClick(window)}
           >
-            {window === 'game' && getIconImage("game-button-icon", <Gamepad2 className="h-4 w-4 mr-1" />)}
-            {window === 'shop' && getIconImage("shop-button-icon", <ShoppingCart className="h-4 w-4 mr-1" />)}
-            {window === 'computer' && getIconImage("computer-button-icon", <Computer className="h-4 w-4 mr-1" />)}
-            {window === 'home' && getIconImage("home-button-icon", <Home className="h-4 w-4 mr-1" />)}
-            {window === 'wallet' && getIconImage("wallet-button-icon", <Wallet className="h-4 w-4 mr-1" />)}
-            {window === 'growroom' && getIconImage("growroom-button-icon", <Cannabis className="h-4 w-4 mr-1" />)}
-            {window === 'chat' && getIconImage("chat-button-icon", <MessageSquare className="h-4 w-4 mr-1" />)}
-            {window === 'leaderboard' && getIconImage("leaderboard-button-icon", <TrendingUp className="h-4 w-4 mr-1" />)}
-            {window === 'analytics' && getIconImage("analytics-button-icon", <BarChart2 className="h-4 w-4 mr-1" />)}
+            <img 
+              src={taskbarIconImages[window as keyof typeof taskbarIconImages] || "/assets/Icons/illuminati.webp"} 
+              alt={`${window}-icon`} 
+              className="h-4 w-4 mr-1 object-contain"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                // Use fallback icon
+                const IconComponent = getIconComponent(window);
+                if (target.parentNode && IconComponent) {
+                  const iconContainer = document.createElement('div');
+                  iconContainer.className = "h-4 w-4 mr-1 flex items-center justify-center";
+                  target.parentNode.insertBefore(iconContainer, target.nextSibling);
+                }
+              }}
+            />
             {window.charAt(0).toUpperCase() + window.slice(1)}
           </button>
         ))}
@@ -125,7 +145,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
             
             <div className="flex flex-col">
               <StartMenuItem 
-                icon={getIconImage("home-menu-icon", <Home className="h-4 w-4" />)} 
+                iconSrc={startMenuIconImages.home}
                 label="Home"
                 onClick={() => handleItemClick('/', 'home')}
               />
@@ -134,7 +154,20 @@ const Taskbar: React.FC<TaskbarProps> = ({
               <div className="relative group">
                 <div className="flex items-center p-1 hover:bg-win95-blue hover:text-white cursor-pointer">
                   <div className="w-6 h-6 flex items-center justify-center mr-2">
-                    {getIconImage("games-menu-icon", <Gamepad2 className="h-4 w-4" />)}
+                    <img 
+                      src={startMenuIconImages.games} 
+                      alt="Games" 
+                      className="h-4 w-4 object-contain"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const fallback = document.createElement('div');
+                        fallback.innerHTML = '<span class="h-4 w-4"><span>';
+                        if (target.parentNode) {
+                          target.parentNode.appendChild(fallback.firstChild as Node);
+                        }
+                      }}
+                    />
                   </div>
                   <span>Games</span>
                   <span className="ml-auto">▶</span>
@@ -143,12 +176,12 @@ const Taskbar: React.FC<TaskbarProps> = ({
                 <div className="hidden group-hover:block absolute left-full top-0 win95-window w-48 border-2 z-[9999]">
                   <div className="py-1">
                     <StartMenuItem 
-                      icon={getIconImage("reptilian-submenu-icon", <Gamepad2 className="h-4 w-4" />)} 
+                      iconSrc={startMenuIconImages.reptilianAttack}
                       label="Reptilian Attack"
                       onClick={() => handleItemClick('/game', 'game')}
                     />
                     <StartMenuItem 
-                      icon={getIconImage("thc-grow-submenu-icon", <Cannabis className="h-4 w-4" />)} 
+                      iconSrc={startMenuIconImages.thcGrowRoom}
                       label="THC Grow Room"
                       onClick={() => handleItemClick('/growroom', 'growroom')}
                     />
@@ -157,22 +190,22 @@ const Taskbar: React.FC<TaskbarProps> = ({
               </div>
               
               <StartMenuItem 
-                icon={getIconImage("nft-shop-menu-icon", <ShoppingCart className="h-4 w-4" />)}
+                iconSrc={startMenuIconImages.nftShop}
                 label="NFT Shop"
                 onClick={() => handleItemClick('/shop', 'shop')}
               />
               <StartMenuItem 
-                icon={getIconImage("leaderboard-menu-icon", <TrendingUp className="h-4 w-4" />)}
+                iconSrc={startMenuIconImages.leaderboard}
                 label="Leaderboard"
                 onClick={() => handleItemClick('/leaderboard', 'leaderboard')}
               />
               <StartMenuItem 
-                icon={getIconImage("analytics-menu-icon", <BarChart2 className="h-4 w-4" />)}
+                iconSrc={startMenuIconImages.analytics}
                 label="Analytics Dashboard"
                 onClick={() => handleItemClick('/analytics', 'analytics')}
               />
               <StartMenuItem 
-                icon={getIconImage("wallet-menu-icon", <Wallet className="h-4 w-4" />)}
+                iconSrc={startMenuIconImages.wallet}
                 label="Wallet"
                 onClick={() => {
                   setStartMenuOpen(false);
@@ -180,7 +213,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
                 }}
               />
               <StartMenuItem 
-                icon={getIconImage("community-chat-menu-icon", <MessageSquare className="h-4 w-4" />)}
+                iconSrc={startMenuIconImages.chat}
                 label="Community Chat"
                 onClick={() => {
                   setStartMenuOpen(false);
@@ -188,7 +221,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
                 }}
               />
               <StartMenuItem 
-                icon={getIconImage("computer-menu-icon", <Computer className="h-4 w-4" />)}
+                iconSrc={startMenuIconImages.computer}
                 label="My Computer"
                 onClick={() => handleItemClick('/', 'computer')}
               />
@@ -196,7 +229,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
               <div className="border-t border-win95-darkGray my-1"></div>
               
               <StartMenuItem 
-                icon={getIconImage("help-menu-icon", "❓")} 
+                iconSrc={startMenuIconImages.help}
                 label="Help"
                 onClick={() => alert('Help not available in this version!')}
               />
@@ -209,21 +242,52 @@ const Taskbar: React.FC<TaskbarProps> = ({
 };
 
 const StartMenuItem: React.FC<{ 
-  icon: React.ReactNode | string; 
+  iconSrc: string; 
   label: string; 
   onClick: () => void 
-}> = ({ icon, label, onClick }) => {
+}> = ({ iconSrc, label, onClick }) => {
   return (
     <div 
       className="flex items-center p-1 hover:bg-win95-blue hover:text-white cursor-pointer"
       onClick={onClick}
     >
       <div className="w-6 h-6 flex items-center justify-center mr-2">
-        {icon}
+        <img 
+          src={iconSrc} 
+          alt={`${label} icon`} 
+          className="h-4 w-4 object-contain"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            // Fallback to text
+            const fallback = document.createElement('span');
+            fallback.textContent = '•';
+            fallback.className = 'text-center';
+            if (target.parentNode) {
+              target.parentNode.appendChild(fallback);
+            }
+          }}
+        />
       </div>
       <span>{label}</span>
     </div>
   );
+};
+
+// Helper function to get the fallback icon component for window buttons
+const getIconComponent = (windowId: string) => {
+  switch (windowId) {
+    case 'game': return <Gamepad2 className="h-4 w-4" />;
+    case 'shop': return <ShoppingCart className="h-4 w-4" />;
+    case 'computer': return <Computer className="h-4 w-4" />;
+    case 'home': return <Home className="h-4 w-4" />;
+    case 'wallet': return <Wallet className="h-4 w-4" />;
+    case 'growroom': return <Cannabis className="h-4 w-4" />;
+    case 'chat': return <MessageSquare className="h-4 w-4" />;
+    case 'leaderboard': return <TrendingUp className="h-4 w-4" />;
+    case 'analytics': return <BarChart2 className="h-4 w-4" />;
+    default: return <div>📄</div>;
+  }
 };
 
 const Clock: React.FC = () => {

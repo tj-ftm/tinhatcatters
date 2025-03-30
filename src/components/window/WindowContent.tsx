@@ -25,6 +25,8 @@ const WindowContent: React.FC<WindowContentProps> = ({ windowId, handleOpenWindo
           {windowId === 'leaderboard' && <Leaderboard />}
           {windowId === 'analytics' && <Analytics />}
           {windowId === 'home' && <div className="p-4">Welcome to the Home window!</div>}
+          {windowId === 'chat' && <div className="p-4">Community Chat Window</div>}
+          {windowId === 'wallet' && <div className="p-4">Wallet Window</div>}
         </div>
       </ScrollArea>
     </div>

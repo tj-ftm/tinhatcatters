@@ -8,21 +8,32 @@ interface ComputerContentProps {
 }
 
 const ComputerContent: React.FC<ComputerContentProps> = ({ handleOpenWindow }) => {
-  const getIconImage = (iconName: string, fallback: React.ReactNode) => (
+  // Each icon has its own URL that can be manually changed
+  const iconImages = {
+    home: "/assets/Icons/illuminati.webp",
+    game: "/assets/Icons/illuminati.webp",
+    shop: "/assets/Icons/illuminati.webp",
+    growroom: "/assets/Icons/illuminati.webp",
+    wallet: "/assets/Icons/illuminati.webp",
+    chat: "/assets/Icons/illuminati.webp",
+    analytics: "/assets/Icons/illuminati.webp",
+    help: "/assets/Icons/illuminati.webp"
+  };
+
+  const renderIcon = (iconKey: keyof typeof iconImages, fallback: React.ReactNode) => (
     <img 
-      src="/assets/Icons/illuminati.webp" 
-      alt={iconName} 
+      src={iconImages[iconKey]} 
+      alt={`${iconKey}-icon`} 
       className="h-5 w-5 object-contain"
       onError={(e) => {
         const target = e.target as HTMLImageElement;
-        const fallbackElement = document.createElement('div');
-        if (typeof fallback === 'object') {
-          target.style.display = 'none';
-          return;
-        }
-        fallbackElement.innerHTML = typeof fallback === 'string' ? fallback : '🔍';
-        if (target.parentNode) {
-          target.parentNode.replaceChild(fallbackElement, target);
+        target.style.display = 'none';
+        // Use fallback icon when image fails to load
+        if (target.parentNode && typeof fallback === 'object') {
+          const fallbackElement = document.createElement('div');
+          fallbackElement.className = "h-5 w-5 flex items-center justify-center";
+          target.parentNode.appendChild(fallbackElement);
+          // React component will be rendered separately
         }
       }}
     />
@@ -41,42 +52,42 @@ const ComputerContent: React.FC<ComputerContentProps> = ({ handleOpenWindow }) =
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         <FileIcon 
           label="Home" 
-          icon={getIconImage("home-icon", <Home className="h-5 w-5" />)} 
+          icon={renderIcon("home", <Home className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('home', '/')} 
         />
         <FileIcon 
           label="Reptilian Attack" 
-          icon={getIconImage("game-icon", <Gamepad2 className="h-5 w-5" />)} 
+          icon={renderIcon("game", <Gamepad2 className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('game', '/game')} 
         />
         <FileIcon 
           label="NFT Shop" 
-          icon={getIconImage("shop-icon", <ShoppingCart className="h-5 w-5" />)} 
+          icon={renderIcon("shop", <ShoppingCart className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('shop', '/shop')} 
         />
         <FileIcon 
           label="THC Grow Room" 
-          icon={getIconImage("grow-icon", <Cannabis className="h-5 w-5" />)} 
+          icon={renderIcon("growroom", <Cannabis className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('growroom', '/growroom')} 
         />
         <FileIcon 
           label="Wallet" 
-          icon={getIconImage("wallet-icon", <Wallet className="h-5 w-5" />)} 
+          icon={renderIcon("wallet", <Wallet className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('wallet')} 
         />
         <FileIcon 
           label="Community Chat" 
-          icon={getIconImage("chat-icon", <MessageSquare className="h-5 w-5" />)} 
+          icon={renderIcon("chat", <MessageSquare className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('chat')} 
         />
         <FileIcon 
           label="Analytics" 
-          icon={getIconImage("analytics-icon", <BarChart2 className="h-5 w-5" />)} 
+          icon={renderIcon("analytics", <BarChart2 className="h-5 w-5" />)} 
           onClick={() => handleOpenWindow('analytics', '/analytics')} 
         />
         <FileIcon 
           label="Help" 
-          icon={getIconImage("help-icon", <HelpCircle className="h-5 w-5" />)} 
+          icon={renderIcon("help", <HelpCircle className="h-5 w-5" />)} 
           onClick={() => alert('Help not available in this version!')} 
         />
       </div>
