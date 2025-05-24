@@ -47,11 +47,59 @@ class ReptilianAttackEngine {
   private enemyBulletImage: HTMLImageElement | null = null;
   private floorImage: HTMLImageElement | null = null;
   
-  // Sprite animation
-  private spriteAnimationRunning: boolean = false;
-  private spriteTotalFrames: number = 4; // Default, will be determined when sprite loads
-  private spriteFrameWidth: number = 50; // Default, will be determined when sprite loads
-  private spriteFrameHeight: number = 70; // Default, will be determined when sprite loads
+  // Animation properties for all sprites
+  private animations = {
+    player: {
+      running: true,
+      totalFrames: 4,
+      frameWidth: 50,
+      frameHeight: 70,
+      currentFrame: 0,
+      lastFrameTime: 0,
+      frameRate: 100, // ms per frame
+      isGif: false
+    },
+    enemy: {
+      running: true,
+      totalFrames: 1,
+      frameWidth: 60,
+      frameHeight: 60,
+      currentFrame: 0,
+      lastFrameTime: 0,
+      frameRate: 150,
+      isGif: false
+    },
+    obstacle: {
+      running: false,
+      totalFrames: 1,
+      frameWidth: 40,
+      frameHeight: 60,
+      currentFrame: 0,
+      lastFrameTime: 0,
+      frameRate: 200,
+      isGif: false
+    },
+    bullet: {
+      running: false,
+      totalFrames: 1,
+      frameWidth: 20,
+      frameHeight: 10,
+      currentFrame: 0,
+      lastFrameTime: 0,
+      frameRate: 100,
+      isGif: false
+    },
+    enemyBullet: {
+      running: false,
+      totalFrames: 1,
+      frameWidth: 20,
+      frameHeight: 10,
+      currentFrame: 0,
+      lastFrameTime: 0,
+      frameRate: 100,
+      isGif: false
+    }
+  };
   
   // Track image loading status
   private imagesLoaded: {[key: string]: boolean} = {
@@ -118,6 +166,9 @@ class ReptilianAttackEngine {
     this.reset();
     this.startTime = Date.now();
     
+    // Start animation loop for sprites
+    this.startAnimationLoop();
+    
     // Initial render to show images before game starts
     if (this.canvas && this.context) {
       this.render();
@@ -128,12 +179,48 @@ class ReptilianAttackEngine {
     this.collisionBehavior = behavior;
   }
   
+  // Start the animation loop for all sprites
+  private startAnimationLoop() {
+    const animateSprites = () => {
+      const now = Date.now();
+      
+      // Update all sprite animations
+      Object.entries(this.animations).forEach(([key, anim]) => {
+        if (anim.running && now - anim.lastFrameTime > anim.frameRate) {
+          anim.currentFrame = (anim.currentFrame + 1) % anim.totalFrames;
+          anim.lastFrameTime = now;
+        }
+      });
+      
+      requestAnimationFrame(animateSprites);
+    };
+    
+    animateSprites();
+  }
+  
   // Set animation state
   setAnimationRunning(running: boolean) {
-    this.spriteAnimationRunning = running;
-    // Reset animation frame when we start or stop
-    this.animationFrame = 0;
-    this.lastAnimationFrameTime = 0;
+    this.animations.player.running = running;
+    this.animations.enemy.running = running;
+    
+    // Reset animation frames when we start or stop
+    if (running) {
+      Object.values(this.animations).forEach(anim => {
+        anim.currentFrame = 0;
+        anim.lastFrameTime = 0;
+      });
+    }
+  }
+  
+  // Detect if image is GIF and update animation properties
+  private detectImageType(imageSrc: string, animationKey: keyof typeof this.animations) {
+    const isGif = imageSrc.toLowerCase().endsWith('.gif');
+    this.animations[animationKey].isGif = isGif;
+    
+    if (isGif) {
+      // For GIFs, let the browser handle animation
+      this.animations[animationKey].running = false;
+    }
   }
   
   // Load all game images with error handling
@@ -142,6 +229,7 @@ class ReptilianAttackEngine {
     this.playerImage = new Image();
     this.playerImage.onload = () => {
       this.imagesLoaded.player = true;
+      this.detectImageType(this.imageConfig.player.src, 'player');
       console.log("Player image loaded successfully");
       this.render(); // Re-render once image is loaded
     };
@@ -165,6 +253,7 @@ class ReptilianAttackEngine {
     this.playerSpriteSheet = new Image();
     this.playerSpriteSheet.onload = () => {
       this.imagesLoaded.playerSprite = true;
+      this.detectImageType(this.imageConfig.playerSprite.src, 'player');
       console.log("Player sprite sheet loaded successfully");
       
       // Try to detect frame count based on image dimensions
@@ -172,19 +261,19 @@ class ReptilianAttackEngine {
         // If it's a proper sprite sheet, update frame information
         const aspectRatio = this.playerSpriteSheet.width / this.playerSpriteSheet.height;
         if (aspectRatio > 1) { // Horizontal sprite sheet
-          this.spriteTotalFrames = Math.round(aspectRatio);
-          this.spriteFrameWidth = this.playerSpriteSheet.width / this.spriteTotalFrames;
-          this.spriteFrameHeight = this.playerSpriteSheet.height;
+          this.animations.player.totalFrames = Math.round(aspectRatio);
+          this.animations.player.frameWidth = this.playerSpriteSheet.width / this.animations.player.totalFrames;
+          this.animations.player.frameHeight = this.playerSpriteSheet.height;
           
-          this.imageConfig.playerSprite.frames = this.spriteTotalFrames;
-          this.imageConfig.playerSprite.frameWidth = this.spriteFrameWidth;
+          this.imageConfig.playerSprite.frames = this.animations.player.totalFrames;
+          this.imageConfig.playerSprite.frameWidth = this.animations.player.frameWidth;
           
-          console.log(`Detected ${this.spriteTotalFrames} frames in sprite sheet`);
+          console.log(`Detected ${this.animations.player.totalFrames} frames in sprite sheet`);
         } else {
-          // Use defaults if it appears to be a single image
-          this.spriteTotalFrames = 1;
-          this.spriteFrameWidth = this.playerSpriteSheet.width;
-          this.spriteFrameHeight = this.playerSpriteSheet.height;
+          // Use defaults if it appears to be a single image or GIF
+          this.animations.player.totalFrames = 1;
+          this.animations.player.frameWidth = this.playerSpriteSheet.width;
+          this.animations.player.frameHeight = this.playerSpriteSheet.height;
         }
       }
       
@@ -225,6 +314,7 @@ class ReptilianAttackEngine {
     this.obstacleImage = new Image();
     this.obstacleImage.onload = () => {
       this.imagesLoaded.obstacle = true;
+      this.detectImageType(this.imageConfig.obstacle.src, 'obstacle');
       this.render(); // Re-render once image is loaded
     };
     this.obstacleImage.onerror = () => {
@@ -246,6 +336,7 @@ class ReptilianAttackEngine {
     this.enemyImage = new Image();
     this.enemyImage.onload = () => {
       this.imagesLoaded.enemy = true;
+      this.detectImageType(this.imageConfig.enemy.src, 'enemy');
       this.render(); // Re-render once image is loaded
     };
     this.enemyImage.onerror = () => {
@@ -267,6 +358,7 @@ class ReptilianAttackEngine {
     this.bulletImage = new Image();
     this.bulletImage.onload = () => {
       this.imagesLoaded.bullet = true;
+      this.detectImageType(this.imageConfig.bullet.src, 'bullet');
       this.render(); // Re-render once image is loaded
     };
     this.bulletImage.onerror = () => {
@@ -288,6 +380,7 @@ class ReptilianAttackEngine {
     this.enemyBulletImage = new Image();
     this.enemyBulletImage.onload = () => {
       this.imagesLoaded.enemyBullet = true;
+      this.detectImageType(this.imageConfig.enemyBullet.src, 'enemyBullet');
       this.render(); // Re-render once image is loaded
     };
     this.enemyBulletImage.onerror = () => {
@@ -342,6 +435,7 @@ class ReptilianAttackEngine {
     newImage.onload = () => {
       this.playerImage = newImage;
       this.imagesLoaded.player = true;
+      this.detectImageType(imageSrc, 'player');
       console.log("Player sprite loaded successfully");
       this.render(); // Re-render with new sprite
     };
@@ -378,12 +472,13 @@ class ReptilianAttackEngine {
     newImage.onload = () => {
       this.playerSpriteSheet = newImage;
       this.imagesLoaded.playerSprite = true;
+      this.detectImageType(imageSrc, 'player');
       
       // Update frame information
-      this.spriteTotalFrames = frames;
-      this.spriteFrameWidth = newImage.width / frames;
-      this.spriteFrameHeight = newImage.height;
-      this.imageConfig.playerSprite.frameWidth = this.spriteFrameWidth;
+      this.animations.player.totalFrames = frames;
+      this.animations.player.frameWidth = newImage.width / frames;
+      this.animations.player.frameHeight = newImage.height;
+      this.imageConfig.playerSprite.frameWidth = this.animations.player.frameWidth;
       
       console.log("Player animated sprite loaded successfully");
       this.render(); // Re-render with new sprite
@@ -447,6 +542,7 @@ class ReptilianAttackEngine {
     newImage.onload = () => {
       this.obstacleImage = newImage;
       this.imagesLoaded.obstacle = true;
+      this.detectImageType(imageSrc, 'obstacle');
     };
     newImage.onerror = () => {
       console.error('Failed to load custom obstacle image:', imageSrc);
@@ -477,6 +573,7 @@ class ReptilianAttackEngine {
     newImage.onload = () => {
       this.enemyImage = newImage;
       this.imagesLoaded.enemy = true;
+      this.detectImageType(imageSrc, 'enemy');
     };
     newImage.onerror = () => {
       console.error('Failed to load custom enemy image:', imageSrc);
@@ -518,9 +615,11 @@ class ReptilianAttackEngine {
     this.upgrades = upgrades;
     this.startTime = Date.now();
     
-    // Reset animation
-    this.animationFrame = 0;
-    this.lastAnimationFrameTime = 0;
+    // Reset all animations
+    Object.values(this.animations).forEach(anim => {
+      anim.currentFrame = 0;
+      anim.lastFrameTime = 0;
+    });
     
     // Reset background scroll position
     this.backgroundScrollX = 0;
@@ -532,13 +631,6 @@ class ReptilianAttackEngine {
     // Calculate game time if game is not over
     if (!this.gameOver) {
       this.gameTime = Date.now() - this.startTime;
-    }
-    
-    // Update animation frame
-    const now = Date.now();
-    if (this.spriteAnimationRunning && now - this.lastAnimationFrameTime > 100) { // Frame duration in ms
-      this.animationFrame = (this.animationFrame + 1) % this.spriteTotalFrames;
-      this.lastAnimationFrameTime = now;
     }
     
     // Apply upgrades
@@ -571,6 +663,7 @@ class ReptilianAttackEngine {
     }
     
     // Handle shooting with left mouse button
+    const now = Date.now();
     if (input.left && now - this.lastShootTime > 500 / fireRateMultiplier) {
       this.bullets.push({
         x: this.player.x + this.player.width,
@@ -840,18 +933,29 @@ class ReptilianAttackEngine {
       // Draw the player in a static position - use sprite sheet but with a single frame
       if (this.playerSpriteSheet && this.imagesLoaded.playerSprite) {
         try {
-          // Use first frame of the sprite (paused state)
-          ctx.drawImage(
-            this.playerSpriteSheet, 
-            0, // First frame x
-            0, // First frame y
-            this.spriteFrameWidth, 
-            this.spriteFrameHeight,
-            100, // Position on canvas x
-            height - this.spriteFrameHeight - 20, // Position on canvas y
-            this.imageConfig.playerSprite.width, 
-            this.imageConfig.playerSprite.height
-          );
+          // If it's a GIF, just draw the whole image
+          if (this.animations.player.isGif) {
+            ctx.drawImage(
+              this.playerSpriteSheet, 
+              100, 
+              height - this.imageConfig.playerSprite.height - 20, 
+              this.imageConfig.playerSprite.width, 
+              this.imageConfig.playerSprite.height
+            );
+          } else {
+            // Use first frame of the sprite (paused state)
+            ctx.drawImage(
+              this.playerSpriteSheet, 
+              0, // First frame x
+              0, // First frame y
+              this.animations.player.frameWidth, 
+              this.animations.player.frameHeight,
+              100, // Position on canvas x
+              height - this.animations.player.frameHeight - 20, // Position on canvas y
+              this.imageConfig.playerSprite.width, 
+              this.imageConfig.playerSprite.height
+            );
+          }
         } catch (error) {
           console.error('Error drawing player sprite:', error);
           // Fallback to static image
@@ -978,21 +1082,31 @@ class ReptilianAttackEngine {
       // Draw player - use sprite sheet if available and animated, otherwise use static image
       if (this.playerSpriteSheet && this.imagesLoaded.playerSprite) {
         try {
-          // If animation is running, use the current frame from the sprite sheet
-          // Otherwise, use the first frame (static pose)
-          const frameX = this.spriteAnimationRunning ? this.animationFrame * this.spriteFrameWidth : 0;
-          
-          ctx.drawImage(
-            this.playerSpriteSheet, 
-            frameX, // Current frame x
-            0, // Current frame y (vertical sprite sheets would need to adjust this)
-            this.spriteFrameWidth, 
-            this.spriteFrameHeight,
-            this.player.x, 
-            this.player.y, 
-            this.player.width, 
-            this.player.height
-          );
+          // If it's a GIF or animation is not running, just draw the whole image
+          if (this.animations.player.isGif || !this.animations.player.running) {
+            ctx.drawImage(
+              this.playerSpriteSheet, 
+              this.player.x, 
+              this.player.y, 
+              this.player.width, 
+              this.player.height
+            );
+          } else {
+            // If animation is running, use the current frame from the sprite sheet
+            const frameX = this.animations.player.currentFrame * this.animations.player.frameWidth;
+            
+            ctx.drawImage(
+              this.playerSpriteSheet, 
+              frameX, // Current frame x
+              0, // Current frame y (vertical sprite sheets would need to adjust this)
+              this.animations.player.frameWidth, 
+              this.animations.player.frameHeight,
+              this.player.x, 
+              this.player.y, 
+              this.player.width, 
+              this.player.height
+            );
+          }
         } catch (error) {
           console.error('Error drawing player sprite:', error);
           // Fallback to static image
@@ -1018,7 +1132,19 @@ class ReptilianAttackEngine {
         if (!obstacle.hit) {
           if (this.obstacleImage && this.imagesLoaded.obstacle) {
             try {
-              ctx.drawImage(this.obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+              // If it's a GIF, just draw the whole image
+              if (this.animations.obstacle.isGif) {
+                ctx.drawImage(this.obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+              } else {
+                // For sprite sheets, use current frame
+                const frameX = this.animations.obstacle.currentFrame * this.animations.obstacle.frameWidth;
+                ctx.drawImage(
+                  this.obstacleImage,
+                  frameX, 0,
+                  this.animations.obstacle.frameWidth, this.animations.obstacle.frameHeight,
+                  obstacle.x, obstacle.y, obstacle.width, obstacle.height
+                );
+              }
             } catch (error) {
               console.error('Error drawing obstacle:', error);
               // Fallback
@@ -1038,7 +1164,19 @@ class ReptilianAttackEngine {
         if (!enemy.hit) {
           if (this.enemyImage && this.imagesLoaded.enemy) {
             try {
-              ctx.drawImage(this.enemyImage, enemy.x, enemy.y, enemy.width, enemy.height);
+              // If it's a GIF, just draw the whole image
+              if (this.animations.enemy.isGif) {
+                ctx.drawImage(this.enemyImage, enemy.x, enemy.y, enemy.width, enemy.height);
+              } else {
+                // For sprite sheets, use current frame
+                const frameX = this.animations.enemy.currentFrame * this.animations.enemy.frameWidth;
+                ctx.drawImage(
+                  this.enemyImage,
+                  frameX, 0,
+                  this.animations.enemy.frameWidth, this.animations.enemy.frameHeight,
+                  enemy.x, enemy.y, enemy.width, enemy.height
+                );
+              }
             } catch (error) {
               console.error('Error drawing enemy:', error);
               // Fallback
@@ -1057,7 +1195,19 @@ class ReptilianAttackEngine {
       this.bullets.forEach(bullet => {
         if (this.bulletImage && this.imagesLoaded.bullet) {
           try {
-            ctx.drawImage(this.bulletImage, bullet.x, bullet.y, bullet.width, bullet.height);
+            // If it's a GIF, just draw the whole image
+            if (this.animations.bullet.isGif) {
+              ctx.drawImage(this.bulletImage, bullet.x, bullet.y, bullet.width, bullet.height);
+            } else {
+              // For sprite sheets, use current frame
+              const frameX = this.animations.bullet.currentFrame * this.animations.bullet.frameWidth;
+              ctx.drawImage(
+                this.bulletImage,
+                frameX, 0,
+                this.animations.bullet.frameWidth, this.animations.bullet.frameHeight,
+                bullet.x, bullet.y, bullet.width, bullet.height
+              );
+            }
           } catch (error) {
             console.error('Error drawing bullet:', error);
             // Fallback
@@ -1075,7 +1225,19 @@ class ReptilianAttackEngine {
       this.enemyBullets.forEach(bullet => {
         if (this.enemyBulletImage && this.imagesLoaded.enemyBullet) {
           try {
-            ctx.drawImage(this.enemyBulletImage, bullet.x, bullet.y, bullet.width, bullet.height);
+            // If it's a GIF, just draw the whole image
+            if (this.animations.enemyBullet.isGif) {
+              ctx.drawImage(this.enemyBulletImage, bullet.x, bullet.y, bullet.width, bullet.height);
+            } else {
+              // For sprite sheets, use current frame
+              const frameX = this.animations.enemyBullet.currentFrame * this.animations.enemyBullet.frameWidth;
+              ctx.drawImage(
+                this.enemyBulletImage,
+                frameX, 0,
+                this.animations.enemyBullet.frameWidth, this.animations.enemyBullet.frameHeight,
+                bullet.x, bullet.y, bullet.width, bullet.height
+              );
+            }
           } catch (error) {
             console.error('Error drawing enemy bullet:', error);
             // Fallback
