@@ -162,13 +162,14 @@ export class GameRenderer {
   private drawPlayer(player: Player) {
     const spriteKey = `player${player.animationState.charAt(0).toUpperCase() + player.animationState.slice(1)}`;
     const sprite = this.imageManager.getImage(spriteKey);
-    const config = this.imageManager.getConfig()[spriteKey as keyof typeof this.imageManager.getConfig()];
+    const config = this.imageManager.getConfig();
+    const spriteConfig = config[spriteKey as keyof typeof config];
     
-    if (sprite && this.imageManager.isLoaded(spriteKey) && config && 'frames' in config) {
+    if (sprite && this.imageManager.isLoaded(spriteKey) && spriteConfig && 'frames' in spriteConfig) {
       try {
-        const frameWidth = sprite.width / config.frames;
+        const frameWidth = sprite.width / spriteConfig.frames;
         const frameHeight = sprite.height;
-        const currentFrame = this.animationManager.getCurrentFrame() % config.frames;
+        const currentFrame = this.animationManager.getCurrentFrame() % spriteConfig.frames;
 
         this.context.drawImage(
           sprite,
@@ -186,13 +187,14 @@ export class GameRenderer {
   private drawEnemy(enemy: Enemy) {
     const spriteKey = `enemy${enemy.animationState.charAt(0).toUpperCase() + enemy.animationState.slice(1)}`;
     const sprite = this.imageManager.getImage(spriteKey);
-    const config = this.imageManager.getConfig()[spriteKey as keyof typeof this.imageManager.getConfig()];
+    const config = this.imageManager.getConfig();
+    const spriteConfig = config[spriteKey as keyof typeof config];
     
-    if (sprite && this.imageManager.isLoaded(spriteKey) && config && 'frames' in config) {
+    if (sprite && this.imageManager.isLoaded(spriteKey) && spriteConfig && 'frames' in spriteConfig) {
       try {
-        const frameWidth = sprite.width / config.frames;
+        const frameWidth = sprite.width / spriteConfig.frames;
         const frameHeight = sprite.height;
-        const currentFrame = this.animationManager.getCurrentFrame() % config.frames;
+        const currentFrame = this.animationManager.getCurrentFrame() % spriteConfig.frames;
 
         this.context.drawImage(
           sprite,
