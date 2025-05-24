@@ -8,7 +8,7 @@ export class ImageManager {
   
   private imageConfig: ImageConfig = {
     playerIdle: {
-      src: '/assets/game/playeridle.gif',
+      src: '/playersprite.gif',
       width: 50,
       height: 70,
       frames: 4
@@ -20,7 +20,7 @@ export class ImageManager {
       frames: 4
     },
     playerJump: {
-      src: '/assets/game/playerjump.gif',
+      src: '/playersprite.gif',
       width: 50,
       height: 70,
       frames: 4
@@ -31,19 +31,19 @@ export class ImageManager {
       height: 400
     },
     enemyRun: {
-      src: '/assets/Icons/enemy.gif',
+      src: '/assets/Icons/barrier.gif',
       width: 60,
       height: 60,
       frames: 4
     },
     enemyJump: {
-      src: '/assets/game/enemyjump.gif',
+      src: '/assets/Icons/barrier.gif',
       width: 60,
       height: 60,
       frames: 4
     },
     enemyFire: {
-      src: '/assets/game/enemyfire.gif',
+      src: '/assets/Icons/barrier.gif',
       width: 60,
       height: 60,
       frames: 4

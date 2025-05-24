@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import ReptilianAttackEngine from '@/game/ReptilianAttackEngine';
 import { GameState } from '@/hooks/useGameState';
@@ -11,18 +10,6 @@ interface GameCanvasProps {
   setWindowIsMaximized: (state: boolean) => void;
   gameEngineRef: React.MutableRefObject<ReptilianAttackEngine | null>;
 }
-
-const GAME_ICON_IMAGES = {
-  speed: "/assets/Icons/illuminati.webp",
-  fireRate: "/assets/Icons/illuminati.webp",
-  health: "/assets/Icons/illuminati.webp",
-  logo: "/assets/Icons/tinhatcat.webp",
-  player: "/playersprite.gif",
-  enemy: "/assets/Icons/illuminati.webp",
-  powerup: "/assets/Icons/weed.png",
-  background: "/assets/Icons/sidescrollerbgweed-min.png",
-  playerSprite: "/playersprite.gif"
-};
 
 const GameCanvas: React.FC<GameCanvasProps> = ({ 
   gameState, 
@@ -63,23 +50,6 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       
       if (gameEngineRef.current) {
         try {
-          // Set the game assets immediately so they appear before game starts
-          if (typeof gameEngineRef.current.setPlayerSprite === 'function') {
-            gameEngineRef.current.setPlayerSprite(GAME_ICON_IMAGES.player);
-          }
-          
-          if (typeof gameEngineRef.current.setPlayerAnimatedSprite === 'function') {
-            gameEngineRef.current.setPlayerAnimatedSprite(GAME_ICON_IMAGES.playerSprite, 4);
-          }
-          
-          if (typeof gameEngineRef.current.setBackgroundImage === 'function') {
-            gameEngineRef.current.setBackgroundImage(GAME_ICON_IMAGES.background);
-          }
-          
-          if (typeof gameEngineRef.current.setEnemyImage === 'function') {
-            gameEngineRef.current.setEnemyImage(GAME_ICON_IMAGES.enemy);
-          }
-          
           // Add an animation loop for the start screen
           const animateStartScreen = () => {
             if (gameEngineRef.current && !gameState.gameStarted) {
@@ -184,20 +154,15 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         const containerWidth = gameContainerRef.current.clientWidth;
         const containerHeight = gameContainerRef.current.clientHeight;
         
-        // Force landscape orientation for the game canvas on mobile
         if (isMobile) {
-          // For mobile, use landscape orientation with proper aspect ratio
           const aspectRatio = 16 / 9;
           const height = Math.min(containerHeight, containerWidth / aspectRatio);
           const width = height * aspectRatio;
           
           canvasRef.current.width = width;
           canvasRef.current.height = height;
-          
-          // Center the canvas
           canvasRef.current.style.margin = "0 auto";
         } else {
-          // For desktop, use the container dimensions
           canvasRef.current.width = containerWidth;
           canvasRef.current.height = containerHeight;
         }

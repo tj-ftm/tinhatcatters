@@ -15,8 +15,8 @@ class ReptilianAttackEngine {
   private player: Player = {
     x: 100,
     y: 200,
-    width: 30,
-    height: 50,
+    width: 50,
+    height: 70,
     velocityY: 0,
     isJumping: false,
     animationState: 'idle'
@@ -89,8 +89,8 @@ class ReptilianAttackEngine {
     this.player = {
       x: 100,
       y: 200,
-      width: config.playerRun.width,
-      height: config.playerRun.height,
+      width: 50,
+      height: 70,
       velocityY: 0,
       isJumping: false,
       animationState: 'idle'
@@ -163,9 +163,9 @@ class ReptilianAttackEngine {
       const config = this.imageManager.getConfig();
       this.enemies.push({
         x: this.canvas.width,
-        y: this.canvas.height - config.enemyRun.height - 20,
-        width: config.enemyRun.width,
-        height: config.enemyRun.height,
+        y: this.canvas.height - 60 - 20, // Use barrier size
+        width: 60,
+        height: 60,
         health: 2,
         hit: false,
         velocityY: 0,
