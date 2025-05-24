@@ -85,7 +85,7 @@ class ReptilianAttackEngine {
       height: 400
     },
     obstacle: {
-      src: '/assets/Icons/barrier.png',
+      src: '/assets/Icons/barrier.gif',
       width: 40,
       height: 60
     },
@@ -233,7 +233,7 @@ class ReptilianAttackEngine {
       
       // Try to load fallback image
       const fallbackImage = new Image();
-      fallbackImage.src = '/assets/Icons/barrier.png';
+      fallbackImage.src = '/assets/Icons/barrier.gif';
       fallbackImage.onload = () => {
         this.obstacleImage = fallbackImage;
         this.imagesLoaded.obstacle = true;
