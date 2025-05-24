@@ -9,20 +9,20 @@ export class ImageManager {
   private imageConfig: ImageConfig = {
     playerIdle: {
       src: '/assets/Icons/playeridle.gif',
-      width: 70,
-      height: 90,
+      width: 700,
+      height: 900,
       frames: 4
     },
     playerRun: {
       src: '/assets/Icons/playersprite.gif',
-      width: 70,
-      height: 90,
+      width: 700,
+      height: 900,
       frames: 4
     },
     playerJump: {
       src: '/assets/Icons/playersprite.gif',
-      width: 70,
-      height: 90,
+      width: 700,
+      height: 900,
       frames: 4
     },
     background: {
