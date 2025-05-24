@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import ReptilianAttackEngine from '@/game/ReptilianAttackEngine';
 import { GameState } from '@/hooks/useGameState';
@@ -147,10 +148,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         animationFrameRef.current = requestAnimationFrame(gameLoop);
       }
     } else if (!gameState.gameStarted && gameEngineRef.current) {
-      // When game is not started, still allow animations but render the start screen
+      // Disable sprite animation
       if (gameEngineRef.current && typeof gameEngineRef.current.setAnimationRunning === 'function') {
-        // Keep animations running even on start screen for animated GIFs
-        gameEngineRef.current.setAnimationRunning(true);
+        gameEngineRef.current.setAnimationRunning(false);
       }
       
       // When game is not started, render the start screen instead
