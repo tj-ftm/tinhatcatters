@@ -8,7 +8,7 @@ export class ImageManager {
   
   private imageConfig: ImageConfig = {
     playerIdle: {
-      src: '/assets/Icons/playersprite.gif',
+      src: '/assets/Icons/playeridle.gif',
       width: 70,
       height: 90,
       frames: 4
