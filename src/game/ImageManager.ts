@@ -8,7 +8,7 @@ export class ImageManager {
   
   private imageConfig: ImageConfig = {
     playerIdle: {
-      src: '/assets/Icons/playeridle.gif',
+      src: '/assets/Icons/playersprite.gif',
       width: 70,
       height: 90,
       frames: 4
@@ -107,6 +107,7 @@ export class ImageManager {
     img.onerror = () => {
       console.error(`Failed to load ${key} image:`, src);
       this.imagesLoaded[key] = false;
+      // Don't trigger re-render on error to prevent flashing
     };
     img.src = src;
     this.images[key] = img;
@@ -137,7 +138,7 @@ export class ImageManager {
   }
 
   isLoaded(key: string): boolean {
-    return this.imagesLoaded[key] || false;
+    return this.imagesLoaded[key] === true;
   }
 
   getConfig(): ImageConfig {

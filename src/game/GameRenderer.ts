@@ -43,7 +43,7 @@ export class GameRenderer {
         ctx.fillRect(0, height - 20, width, 20);
       }
 
-      // Draw player in idle state
+      // Draw player in idle state - only if sprite is loaded
       const playerIdleSprite = this.imageManager.getImage('playerIdle');
       if (playerIdleSprite && this.imageManager.isLoaded('playerIdle')) {
         const config = this.imageManager.getConfig().playerIdle;
@@ -56,9 +56,6 @@ export class GameRenderer {
           100, height - config.height - 20,
           config.width, config.height
         );
-      } else {
-        ctx.fillStyle = '#00FF00';
-        ctx.fillRect(100, height - 70 - 20, 50, 70);
       }
 
       // Draw intro video or fallback text
@@ -74,7 +71,7 @@ export class GameRenderer {
         this.drawFallbackTitle(ctx, width, height);
       }
 
-      // Add enemy for show
+      // Add enemy for show - only if sprite is loaded
       const enemySprite = this.imageManager.getImage('enemyRun');
       if (enemySprite && this.imageManager.isLoaded('enemyRun')) {
         const config = this.imageManager.getConfig().enemyRun;
@@ -160,16 +157,16 @@ export class GameRenderer {
   }
 
   private drawPlayer(player: Player) {
-    const spriteKey = `player${player.animationState.charAt(0).toUpperCase() + player.animationState.slice(1)}`;
-    const sprite = this.imageManager.getImage(spriteKey);
-    const config = this.imageManager.getConfig();
-    const spriteConfig = config[spriteKey as keyof typeof config];
+    // Always use playersprite.gif for all animations
+    const sprite = this.imageManager.getImage('playerRun');
+    const config = this.imageManager.getConfig().playerRun;
     
-    if (sprite && this.imageManager.isLoaded(spriteKey) && spriteConfig && 'frames' in spriteConfig) {
+    // Only draw if sprite is fully loaded, otherwise don't draw anything to prevent flashing
+    if (sprite && this.imageManager.isLoaded('playerRun') && config && 'frames' in config) {
       try {
-        const frameWidth = sprite.width / spriteConfig.frames;
+        const frameWidth = sprite.width / config.frames;
         const frameHeight = sprite.height;
-        const currentFrame = this.animationManager.getCurrentFrame() % spriteConfig.frames;
+        const currentFrame = this.animationManager.getCurrentFrame() % config.frames;
 
         this.context.drawImage(
           sprite,
@@ -177,24 +174,23 @@ export class GameRenderer {
           player.x, player.y, player.width, player.height
         );
       } catch (error) {
-        this.drawFallbackRect(player.x, player.y, player.width, player.height, '#00FF00');
+        // Don't draw fallback to prevent flashing
+        console.error('Error drawing player sprite:', error);
       }
-    } else {
-      this.drawFallbackRect(player.x, player.y, player.width, player.height, '#00FF00');
     }
   }
 
   private drawEnemy(enemy: Enemy) {
-    const spriteKey = `enemy${enemy.animationState.charAt(0).toUpperCase() + enemy.animationState.slice(1)}`;
-    const sprite = this.imageManager.getImage(spriteKey);
-    const config = this.imageManager.getConfig();
-    const spriteConfig = config[spriteKey as keyof typeof config];
+    // Always use barrier.gif for all enemy animations
+    const sprite = this.imageManager.getImage('enemyRun');
+    const config = this.imageManager.getConfig().enemyRun;
     
-    if (sprite && this.imageManager.isLoaded(spriteKey) && spriteConfig && 'frames' in spriteConfig) {
+    // Only draw if sprite is fully loaded, otherwise don't draw anything to prevent flashing
+    if (sprite && this.imageManager.isLoaded('enemyRun') && config && 'frames' in config) {
       try {
-        const frameWidth = sprite.width / spriteConfig.frames;
+        const frameWidth = sprite.width / config.frames;
         const frameHeight = sprite.height;
-        const currentFrame = this.animationManager.getCurrentFrame() % spriteConfig.frames;
+        const currentFrame = this.animationManager.getCurrentFrame() % config.frames;
 
         this.context.drawImage(
           sprite,
@@ -202,10 +198,9 @@ export class GameRenderer {
           enemy.x, enemy.y, enemy.width, enemy.height
         );
       } catch (error) {
-        this.drawFallbackRect(enemy.x, enemy.y, enemy.width, enemy.height, '#FF00FF');
+        // Don't draw fallback to prevent flashing
+        console.error('Error drawing enemy sprite:', error);
       }
-    } else {
-      this.drawFallbackRect(enemy.x, enemy.y, enemy.width, enemy.height, '#FF00FF');
     }
   }
 
@@ -213,9 +208,6 @@ export class GameRenderer {
     const bulletImage = this.imageManager.getImage(type);
     if (bulletImage && this.imageManager.isLoaded(type)) {
       this.context.drawImage(bulletImage, bullet.x, bullet.y, bullet.width, bullet.height);
-    } else {
-      const color = type === 'bullet' ? '#FFFF00' : '#FF6600';
-      this.drawFallbackRect(bullet.x, bullet.y, bullet.width, bullet.height, color);
     }
   }
 
