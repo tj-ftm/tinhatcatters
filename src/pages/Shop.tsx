@@ -2,8 +2,10 @@
 import React from 'react';
 import NFTShop from '@/components/NFTShop';
 import SonicNFTDisplay from '@/components/SonicNFTDisplay';
+import WalletBar from '@/components/WalletBar';
 import PlayerCard from '@/components/player/PlayerCard';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useWeb3 } from '@/contexts/Web3Context';
 
 // Configurable shop icon images
 const SHOP_ICON_IMAGES = {
@@ -16,10 +18,14 @@ const SHOP_ICON_IMAGES = {
 
 const Shop: React.FC = () => {
   const isMobile = useIsMobile();
+  const { address } = useWeb3();
   
   return (
     <div className="w-full min-h-screen p-2 md:p-4">
       <div className="max-w-6xl mx-auto space-y-4">
+        {/* Wallet Bar - only show when wallet is connected */}
+        {address && <WalletBar />}
+        
         {/* In mobile view, have PlayerCard at the top */}
         {isMobile && <PlayerCard iconUrl={SHOP_ICON_IMAGES.playerCard} />}
         

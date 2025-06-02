@@ -1,9 +1,11 @@
 
 import React from 'react';
 import WalletConnector from '../components/WalletConnector';
+import WalletBar from '../components/WalletBar';
 import ChatButton from '../components/ChatButton';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useWeb3 } from '@/contexts/Web3Context';
 
 // Configurable index page icon images
 const INDEX_ICON_IMAGES = {
@@ -16,10 +18,18 @@ const INDEX_ICON_IMAGES = {
 
 const Index = () => {
   const navigate = useNavigate();
+  const { address } = useWeb3();
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-grow flex flex-col items-center justify-center p-4">
+        {/* Wallet Bar - only show when wallet is connected */}
+        {address && (
+          <div className="w-full max-w-4xl mb-6">
+            <WalletBar />
+          </div>
+        )}
+        
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold mb-2">Welcome to Reptilian Attack</h1>
           <p className="text-sm mb-4">Windows 95 Edition</p>
