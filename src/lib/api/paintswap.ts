@@ -12,12 +12,13 @@ export interface PaintSwapNFT {
     address: string;
   };
   metadata?: any;
+  attributes?: any[];
 }
 
 export const fetchUserNFTs = async (walletAddress: string): Promise<PaintSwapNFT[]> => {
   try {
-    // Using the user's NFTs endpoint from PaintSwap API
-    const response = await fetch(`${PAINTSWAP_BASE_URL}/user/${walletAddress}/nfts`);
+    // Using the userNFTs endpoint from PaintSwap API
+    const response = await fetch(`${PAINTSWAP_BASE_URL}/userNFTs/${walletAddress}`);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -29,13 +30,14 @@ export const fetchUserNFTs = async (walletAddress: string): Promise<PaintSwapNFT
     return data.map((nft: any) => ({
       id: nft.tokenId || nft.id,
       name: nft.name || `NFT #${nft.tokenId || nft.id}`,
-      image: nft.image || nft.imageUrl,
-      description: nft.description,
+      image: nft.image || nft.imageUrl || nft.metadata?.image,
+      description: nft.description || nft.metadata?.description,
       collection: {
         name: nft.collection?.name || 'Unknown Collection',
         address: nft.contractAddress || nft.collection?.address
       },
-      metadata: nft.metadata || nft
+      metadata: nft.metadata || nft,
+      attributes: nft.attributes || nft.metadata?.attributes || []
     }));
   } catch (error) {
     console.error('Error fetching NFTs from PaintSwap:', error);
@@ -56,13 +58,14 @@ export const fetchNFTMetadata = async (contractAddress: string, tokenId: string)
     return {
       id: nft.tokenId || tokenId,
       name: nft.name || `NFT #${tokenId}`,
-      image: nft.image || nft.imageUrl,
-      description: nft.description,
+      image: nft.image || nft.imageUrl || nft.metadata?.image,
+      description: nft.description || nft.metadata?.description,
       collection: {
         name: nft.collection?.name || 'Unknown Collection',
         address: contractAddress
       },
-      metadata: nft.metadata || nft
+      metadata: nft.metadata || nft,
+      attributes: nft.attributes || nft.metadata?.attributes || []
     };
   } catch (error) {
     console.error('Error fetching NFT metadata:', error);

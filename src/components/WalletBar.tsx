@@ -1,26 +1,31 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { fetchUserNFTs, PaintSwapNFT } from '@/lib/api/paintswap';
 
 const WalletBar: React.FC = () => {
-  const { address, sonicNFTs, refreshNFTs } = useWeb3();
+  const { address } = useWeb3();
+  const [nfts, setNfts] = useState<PaintSwapNFT[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedNFT, setSelectedNFT] = useState<any>(null);
+  const [selectedNFT, setSelectedNFT] = useState<PaintSwapNFT | null>(null);
 
   const fetchNFTs = async () => {
     if (!address) return;
     
     setLoading(true);
     try {
-      await refreshNFTs();
-      if (sonicNFTs.length > 0) {
-        setSelectedNFT(sonicNFTs[0]);
+      console.log('Fetching NFTs for address:', address);
+      const userNFTs = await fetchUserNFTs(address);
+      console.log('Fetched NFTs:', userNFTs);
+      setNfts(userNFTs);
+      if (userNFTs.length > 0) {
+        setSelectedNFT(userNFTs[0]);
         setCurrentIndex(0);
       }
     } catch (error) {
@@ -35,29 +40,29 @@ const WalletBar: React.FC = () => {
     }
   };
 
-  React.useEffect(() => {
-    if (address && sonicNFTs.length > 0) {
-      setSelectedNFT(sonicNFTs[0]);
-      setCurrentIndex(0);
+  useEffect(() => {
+    if (address) {
+      fetchNFTs();
     } else {
+      setNfts([]);
       setSelectedNFT(null);
       setCurrentIndex(0);
     }
-  }, [address, sonicNFTs]);
+  }, [address]);
 
   const nextNFT = () => {
-    if (sonicNFTs.length > 0) {
-      const nextIndex = (currentIndex + 1) % sonicNFTs.length;
+    if (nfts.length > 0) {
+      const nextIndex = (currentIndex + 1) % nfts.length;
       setCurrentIndex(nextIndex);
-      setSelectedNFT(sonicNFTs[nextIndex]);
+      setSelectedNFT(nfts[nextIndex]);
     }
   };
 
   const prevNFT = () => {
-    if (sonicNFTs.length > 0) {
-      const prevIndex = currentIndex === 0 ? sonicNFTs.length - 1 : currentIndex - 1;
+    if (nfts.length > 0) {
+      const prevIndex = currentIndex === 0 ? nfts.length - 1 : currentIndex - 1;
       setCurrentIndex(prevIndex);
-      setSelectedNFT(sonicNFTs[prevIndex]);
+      setSelectedNFT(nfts[prevIndex]);
     }
   };
 
@@ -68,7 +73,7 @@ const WalletBar: React.FC = () => {
   return (
     <div className="win95-window w-full mb-4">
       <div className="win95-title-bar mb-2 flex justify-between items-center">
-        <span className="text-sm">Your Sonic NFT Collection</span>
+        <span className="text-sm">Your NFT Collection</span>
         <Button
           className="win95-button text-xs px-2 py-0.5 flex items-center"
           onClick={fetchNFTs}
@@ -94,9 +99,9 @@ const WalletBar: React.FC = () => {
             <Loader2 className="h-6 w-6 animate-spin mr-2" />
             <span className="text-sm">Loading NFTs...</span>
           </div>
-        ) : sonicNFTs.length === 0 ? (
+        ) : nfts.length === 0 ? (
           <div className="win95-panel p-4 text-center">
-            <p className="text-sm mb-2">No NFTs found in your Sonic wallet.</p>
+            <p className="text-sm mb-2">No NFTs found in your wallet.</p>
             <p className="text-xs text-gray-600">Connect your wallet and make sure you have NFTs on the Sonic network.</p>
           </div>
         ) : (
@@ -109,17 +114,17 @@ const WalletBar: React.FC = () => {
                     <Button
                       className="win95-button p-1"
                       onClick={prevNFT}
-                      disabled={sonicNFTs.length <= 1}
+                      disabled={nfts.length <= 1}
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <span className="text-xs font-bold">
-                      {currentIndex + 1} / {sonicNFTs.length}
+                      {currentIndex + 1} / {nfts.length}
                     </span>
                     <Button
                       className="win95-button p-1"
                       onClick={nextNFT}
-                      disabled={sonicNFTs.length <= 1}
+                      disabled={nfts.length <= 1}
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
@@ -146,6 +151,9 @@ const WalletBar: React.FC = () => {
                   <div className="text-center">
                     <h3 className="text-xs font-bold mb-1 truncate">{selectedNFT.name}</h3>
                     <p className="text-[10px] text-gray-600">Token ID: {selectedNFT.id}</p>
+                    {selectedNFT.collection && (
+                      <p className="text-[10px] text-gray-500 truncate">{selectedNFT.collection.name}</p>
+                    )}
                   </div>
                 </Card>
               )}
@@ -174,6 +182,14 @@ const WalletBar: React.FC = () => {
                         <span className="text-xs font-bold">Token ID:</span>
                         <p className="text-xs">{selectedNFT.id}</p>
                       </div>
+
+                      {selectedNFT.collection && (
+                        <div>
+                          <span className="text-xs font-bold">Collection:</span>
+                          <p className="text-xs">{selectedNFT.collection.name}</p>
+                          <p className="text-[10px] text-gray-500 break-all">{selectedNFT.collection.address}</p>
+                        </div>
+                      )}
                       
                       {selectedNFT.attributes && selectedNFT.attributes.length > 0 && (
                         <div>
