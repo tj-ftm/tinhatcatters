@@ -8,7 +8,7 @@ import { AnimationManager } from './AnimationManager';
 import { GameRenderer } from './GameRenderer';
 import { GameLogic } from './GameLogic';
 
-export default class ReptilianAttackEngine {
+class ReptilianAttackEngine {
   private canvas: HTMLCanvasElement | null = null;
   private context: CanvasRenderingContext2D | null = null;
   
@@ -35,15 +35,6 @@ export default class ReptilianAttackEngine {
   private gameSpeed = 5;
   private startTime: number = 0;
   private gameTime: number = 0;
-  private gameState: GameState = {
-    score: 0,
-    lives: 3,
-    health: 100,
-    gameOver: false,
-    gameStarted: false,
-    paused: false,
-    upgrades: { speed: 1, fireRate: 1, health: 1 }
-  };
   
   // Timing
   private lastEnemyTime = 0;
@@ -59,16 +50,14 @@ export default class ReptilianAttackEngine {
   private animationManager: AnimationManager;
   private gameRenderer: GameRenderer;
 
-  // Callback functions
-  public onStateUpdate?: (newState: Partial<GameState>) => void;
-  public onGameOver?: (finalScore: number, earnedPoints: number) => void;
-
-  constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas;
-    this.context = canvas.getContext('2d');
-    
+  constructor() {
     this.animationManager = new AnimationManager();
     this.imageManager = new ImageManager(() => this.render());
+  }
+
+  initialize(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
+    this.context = canvas.getContext('2d');
     
     if (this.context) {
       this.gameRenderer = new GameRenderer(
@@ -125,37 +114,8 @@ export default class ReptilianAttackEngine {
     this.animationManager.reset();
   }
 
-  start(upgrades: GameUpgrades) {
-    this.gameState = {
-      score: 0,
-      lives: 3,
-      health: 100,
-      gameOver: false,
-      gameStarted: true,
-      paused: false,
-      upgrades
-    };
-
-    this.reset(upgrades);
-    this.startTime = Date.now();
-    
-    if (this.canvas && this.context) {
-      this.render();
-    }
-  }
-
-  pause() {
-    this.gameState.paused = true;
-    this.setAnimationRunning(false);
-  }
-
-  resume() {
-    this.gameState.paused = false;
-    this.setAnimationRunning(true);
-  }
-
   update(delta: number, input: { left: boolean, right: boolean }): GameState {
-    if (!this.canvas || !this.context || this.gameState.paused) return this.getGameState();
+    if (!this.canvas || !this.context) return this.getGameState();
 
     // Calculate game time
     if (!this.gameOver) {
@@ -288,25 +248,8 @@ export default class ReptilianAttackEngine {
       this.pointsEarned += 0.01 * delta;
     }
 
-    // Update game state
-    this.gameState = {
-      score: this.score,
-      lives: this.lives,
-      health: this.health,
-      gameOver: this.gameOver,
-      gameStarted: true,
-      paused: false,
-      upgrades: this.upgrades
-    };
-
-    // Call state update callback
-    if (this.onStateUpdate) {
-      this.onStateUpdate(this.gameState);
-    }
-
     // Save results if game over
-    if (this.gameOver && this.onGameOver) {
-      this.onGameOver(this.score, this.pointsEarned);
+    if (this.gameOver) {
       this.saveGameResults();
     }
 
@@ -334,7 +277,14 @@ export default class ReptilianAttackEngine {
   }
 
   getGameState(): GameState {
-    return this.gameState;
+    return {
+      score: this.score,
+      lives: this.lives,
+      health: this.health,
+      pointsEarned: this.pointsEarned,
+      gameOver: this.gameOver,
+      gameTime: this.gameTime
+    };
   }
 
   getUpgradePrices() {
@@ -389,3 +339,5 @@ export default class ReptilianAttackEngine {
     localStorage.setItem('reptilian-games-played', (gamesPlayed + 1).toString());
   }
 }
+
+export default ReptilianAttackEngine;

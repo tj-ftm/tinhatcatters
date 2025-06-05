@@ -10,14 +10,9 @@ import { useToast } from '@/hooks/use-toast';
 interface NicknameDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onNicknameSave?: (nickname: string) => void;
 }
 
-const NicknameDialog: React.FC<NicknameDialogProps> = ({ 
-  open, 
-  onOpenChange, 
-  onNicknameSave 
-}) => {
+const NicknameDialog: React.FC<NicknameDialogProps> = ({ open, onOpenChange }) => {
   const { nickname, saveNickname, isLoading } = useNickname();
   const [inputValue, setInputValue] = useState(nickname);
   const { toast } = useToast();
@@ -47,12 +42,6 @@ const NicknameDialog: React.FC<NicknameDialogProps> = ({
         title: "Nickname Saved",
         description: "Your nickname has been updated successfully!"
       });
-      
-      // Call the callback if provided (for welcome bonus)
-      if (onNicknameSave) {
-        onNicknameSave(inputValue.trim());
-      }
-      
       onOpenChange(false);
     } else {
       toast({
@@ -81,7 +70,7 @@ const NicknameDialog: React.FC<NicknameDialogProps> = ({
               className="win95-inset"
             />
             <p className="text-xs text-gray-600 mt-1">
-              This will be displayed on the leaderboard. First-time setup earns 500 points!
+              This will be displayed on the leaderboard
             </p>
           </div>
           <div className="flex gap-2 justify-end">
