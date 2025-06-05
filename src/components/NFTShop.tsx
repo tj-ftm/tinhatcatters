@@ -60,8 +60,9 @@ const NFTShop: React.FC = () => {
   
   // Initialize the game engine to get upgrade prices
   useEffect(() => {
-    // Get Reptilian Attack game upgrades
-    const reptilianEngine = new ReptilianAttackEngine();
+    // Create a temporary canvas for getting upgrade prices
+    const tempCanvas = document.createElement('canvas');
+    const reptilianEngine = new ReptilianAttackEngine(tempCanvas);
     const upgradePrices = reptilianEngine.getUpgradePrices();
     
     // Fetch available upgrades from both games

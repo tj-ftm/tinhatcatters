@@ -41,9 +41,10 @@ export interface GameState {
   score: number;
   lives: number;
   health: number;
-  thcEarned: number;
   gameOver: boolean;
-  gameTime: number;
+  gameStarted: boolean;
+  paused: boolean;
+  upgrades: GameUpgrades;
 }
 
 export interface ImageConfig {
