@@ -38,6 +38,10 @@ const Game: React.FC = () => {
     }
   }, [gameState.gameOver, gameState.score, gameState.pointsEarned, saveGameResults]);
 
+  const handlePlayAgain = () => {
+    startGame();
+  };
+
   return (
     <div className="win95-window w-full h-full overflow-hidden flex flex-col">
       <div className="p-2 bg-[#c0c0c0] flex flex-col h-full">
@@ -64,6 +68,7 @@ const Game: React.FC = () => {
           windowIsMaximized={windowIsMaximized}
           setWindowIsMaximized={setWindowIsMaximized}
           gameEngineRef={gameEngineRef}
+          onPlayAgain={handlePlayAgain}
         />
       </div>
       

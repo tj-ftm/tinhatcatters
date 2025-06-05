@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Progress } from '@/components/ui/progress';
 import { GameState } from '@/hooks/useGameState';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNickname } from '@/hooks/useNickname';
@@ -33,14 +34,27 @@ const GameStats: React.FC<GameStatsProps> = ({
           <span className="text-green-600">{gameState.score}</span>
         </div>
         
-        <div className="flex items-center">
-          <span className="font-bold mr-1">Lives:</span>
-          <span className="text-red-600">{gameState.lives}</span>
+        <div className="flex items-center gap-2">
+          <span className="font-bold">Lives:</span>
+          <div className="flex gap-1">
+            {[...Array(3)].map((_, i) => (
+              <div 
+                key={i}
+                className={`w-4 h-4 rounded-full ${i < gameState.lives ? 'bg-red-500' : 'bg-gray-300'}`}
+              />
+            ))}
+          </div>
         </div>
         
-        <div className="flex items-center">
-          <span className="font-bold mr-1">Health:</span>
-          <span className="text-purple-600">{gameState.health}%</span>
+        <div className="flex items-center gap-2 min-w-[120px]">
+          <span className="font-bold">Health:</span>
+          <div className="flex-1">
+            <Progress 
+              value={gameState.health} 
+              className="h-3 bg-gray-300"
+            />
+          </div>
+          <span className="text-xs">{gameState.health}%</span>
         </div>
         
         <div className="flex items-center">

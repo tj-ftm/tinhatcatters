@@ -41,8 +41,11 @@ export interface GameState {
   score: number;
   lives: number;
   health: number;
+  pointsEarned: number;
   thcEarned: number;
   gameOver: boolean;
+  gameStarted: boolean;
+  paused: boolean;
   gameTime: number;
 }
 

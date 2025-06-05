@@ -54,22 +54,22 @@ const NicknameDialog: React.FC<NicknameDialogProps> = ({ open, onOpenChange }) =
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="win95-window">
+      <DialogContent className="win95-window bg-gray-800 text-white border-2 border-gray-600 z-[9999]">
         <DialogHeader>
-          <DialogTitle>Set Your Nickname</DialogTitle>
+          <DialogTitle className="text-white">Set Your Nickname</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 p-4">
           <div>
-            <Label htmlFor="nickname">Nickname</Label>
+            <Label htmlFor="nickname" className="text-white">Nickname</Label>
             <Input
               id="nickname"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Enter your nickname"
               maxLength={20}
-              className="win95-inset"
+              className="win95-inset bg-gray-700 text-white border-gray-600"
             />
-            <p className="text-xs text-gray-600 mt-1">
+            <p className="text-xs text-gray-300 mt-1">
               This will be displayed on the leaderboard
             </p>
           </div>
@@ -77,14 +77,14 @@ const NicknameDialog: React.FC<NicknameDialogProps> = ({ open, onOpenChange }) =
             <Button 
               variant="outline" 
               onClick={() => onOpenChange(false)}
-              className="win95-button"
+              className="win95-button bg-gray-600 text-white border-gray-500 hover:bg-gray-500"
             >
               Cancel
             </Button>
             <Button 
               onClick={handleSave}
               disabled={isLoading}
-              className="win95-button"
+              className="win95-button bg-blue-600 text-white hover:bg-blue-500"
             >
               {isLoading ? 'Saving...' : 'Save'}
             </Button>

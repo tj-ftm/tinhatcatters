@@ -1,12 +1,10 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import WalletConnector from '@/components/WalletConnector';
-import NicknameDialog from '@/components/NicknameDialog';
 import { GameState } from '@/hooks/useGameState';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useNickname } from '@/hooks/useNickname';
-import { User } from 'lucide-react';
+import { usePoints } from '@/hooks/use-points';
 
 interface GameControlsProps {
   gameState: GameState;
@@ -22,8 +20,7 @@ const GameControls: React.FC<GameControlsProps> = ({
   address
 }) => {
   const isMobile = useIsMobile();
-  const { hasNickname } = useNickname();
-  const [showNicknameDialog, setShowNicknameDialog] = useState(false);
+  const { getPoints } = usePoints();
   
   return (
     <div className={`${isMobile ? 'flex flex-col gap-2 items-center' : 'flex gap-2 items-center'}`}>
@@ -33,14 +30,11 @@ const GameControls: React.FC<GameControlsProps> = ({
             Start Game (Free!)
           </Button>
           {address && (
-            <Button 
-              onClick={() => setShowNicknameDialog(true)}
-              className="win95-button h-8 whitespace-nowrap text-xs flex items-center gap-1"
-              variant={hasNickname ? "default" : "outline"}
-            >
-              <User size={12} />
-              {hasNickname ? "Edit Nickname" : "Set Nickname"}
-            </Button>
+            <div className="win95-panel p-2 h-8 flex items-center text-xs">
+              <span className="font-bold text-yellow-600">
+                Points: {getPoints(address)}
+              </span>
+            </div>
           )}
           {!address && <WalletConnector />}
         </>
@@ -52,13 +46,11 @@ const GameControls: React.FC<GameControlsProps> = ({
                 Play Again (Free!)
               </Button>
               {address && (
-                <Button 
-                  onClick={() => setShowNicknameDialog(true)}
-                  className="win95-button h-8 whitespace-nowrap text-xs flex items-center gap-1"
-                >
-                  <User size={12} />
-                  {hasNickname ? "Edit Nickname" : "Set Nickname"}
-                </Button>
+                <div className="win95-panel p-2 h-8 flex items-center text-xs">
+                  <span className="font-bold text-yellow-600">
+                    Points: {getPoints(address)}
+                  </span>
+                </div>
               )}
             </>
           ) : (
@@ -68,11 +60,6 @@ const GameControls: React.FC<GameControlsProps> = ({
           )}
         </>
       )}
-      
-      <NicknameDialog 
-        open={showNicknameDialog} 
-        onOpenChange={setShowNicknameDialog} 
-      />
     </div>
   );
 };

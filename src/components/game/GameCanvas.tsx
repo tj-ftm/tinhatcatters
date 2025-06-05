@@ -1,5 +1,7 @@
+
 import React, { useRef, useEffect } from 'react';
 import ReptilianAttackEngine from '@/game/ReptilianAttackEngine';
+import GameOverScreen from './GameOverScreen';
 import { GameState } from '@/hooks/useGameState';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -9,6 +11,7 @@ interface GameCanvasProps {
   windowIsMaximized: boolean;
   setWindowIsMaximized: (state: boolean) => void;
   gameEngineRef: React.MutableRefObject<ReptilianAttackEngine | null>;
+  onPlayAgain: () => void;
 }
 
 const GameCanvas: React.FC<GameCanvasProps> = ({ 
@@ -16,7 +19,8 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   updateGameState, 
   windowIsMaximized, 
   setWindowIsMaximized,
-  gameEngineRef
+  gameEngineRef,
+  onPlayAgain
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameContainerRef = useRef<HTMLDivElement>(null);
@@ -95,7 +99,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       score: updatedState.score,
       lives: updatedState.lives,
       health: updatedState.health,
-      thcEarned: updatedState.thcEarned,
+      pointsEarned: updatedState.pointsEarned,
       gameOver: updatedState.gameOver
     });
     
@@ -262,6 +266,14 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         />
         {isMobile && gameState.gameStarted && !gameState.paused && !gameState.gameOver && (
           <MobileControlsHelp />
+        )}
+        
+        {gameState.gameOver && (
+          <GameOverScreen
+            score={gameState.score}
+            pointsEarned={gameState.pointsEarned}
+            onPlayAgain={onPlayAgain}
+          />
         )}
       </div>
     </div>
