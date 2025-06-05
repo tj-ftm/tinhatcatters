@@ -14,10 +14,10 @@ class ReptilianAttackEngine {
   
   // Game entities
   private player: Player = {
-    x: 500,
-    y: 750,
-    width: 50,
-    height: 70,
+    x: 100,
+    y: 200,
+    width: 500,
+    height: 750,
     velocityY: 0,
     isJumping: false,
     animationState: 'idle'
