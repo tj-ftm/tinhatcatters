@@ -8,22 +8,41 @@ export class ImageManager {
   
   private imageConfig: ImageConfig = {
     playerIdle: {
+<<<<<<< HEAD
+      src: '/assets/Icons/playeridle.gif',
+      width: 70,
+      height: 90,
+      frames: 1
+=======
       src: '/assets/Icons/playersprite.gif',
       width: 64,
       height: 64,
       frames: 4
+>>>>>>> b938fc361d5c4feef8a16e57c68d1d00f04a981f
     },
     playerRun: {
       src: '/assets/Icons/playersprite.gif',
+<<<<<<< HEAD
+      width: 70,
+      height: 90,
+      frames: 1
+=======
       width: 64,
       height: 64,
       frames: 4
+>>>>>>> b938fc361d5c4feef8a16e57c68d1d00f04a981f
     },
     playerJump: {
       src: '/assets/Icons/playersprite.gif',
+<<<<<<< HEAD
+      width: 70,
+      height: 90,
+      frames: 1
+=======
       width: 64,
       height: 64,
       frames: 4
+>>>>>>> b938fc361d5c4feef8a16e57c68d1d00f04a981f
     },
     background: {
       src: '/assets/Icons/sidescrollerbgweed-min.png',
