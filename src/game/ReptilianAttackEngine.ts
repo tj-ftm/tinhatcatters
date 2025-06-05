@@ -208,7 +208,11 @@ class ReptilianAttackEngine {
     const enemyUpdate = GameLogic.updateEnemies(this.enemies, this.canvas, this.gameSpeed, delta, now);
     this.enemies = enemyUpdate.enemies;
     this.score += enemyUpdate.score;
-    this.pointsEarned += enemyUpdate.score * 0.1; // Convert score to points
+    
+    // Only add points if game is not over
+    if (!this.gameOver) {
+      this.pointsEarned += enemyUpdate.score * 0.05; // Reduced from 0.1 to 0.05
+    }
 
     this.bullets = GameLogic.updateBullets(this.bullets, this.canvas, delta);
     this.enemyBullets = GameLogic.updateBullets(this.enemyBullets, this.canvas, delta);
@@ -225,7 +229,12 @@ class ReptilianAttackEngine {
 
     this.health += collisionResult.health;
     this.score += collisionResult.score;
-    this.pointsEarned += collisionResult.score * 0.1; // Convert score to points
+    
+    // Only add points if game is not over
+    if (!this.gameOver) {
+      this.pointsEarned += collisionResult.score * 0.05; // Reduced from 0.1 to 0.05
+    }
+    
     this.enemies = collisionResult.enemies;
     this.bullets = collisionResult.bullets;
     this.enemyBullets = collisionResult.enemyBullets;
@@ -240,12 +249,11 @@ class ReptilianAttackEngine {
       }
     }
 
-    // Increment score for surviving
-    this.score += Math.ceil(delta);
-
-    // Increase points earned for surviving
+    // Increment score for surviving - only if game is not over
     if (!this.gameOver) {
-      this.pointsEarned += 0.01 * delta;
+      this.score += Math.ceil(delta);
+      // Reduced survival points to aim for ~100 points per minute
+      this.pointsEarned += 0.03 * delta; // Reduced from 0.01 to 0.03
     }
 
     // Save results if game over
@@ -282,7 +290,10 @@ class ReptilianAttackEngine {
       lives: this.lives,
       health: this.health,
       pointsEarned: this.pointsEarned,
+      thcEarned: 0,
       gameOver: this.gameOver,
+      gameStarted: true,
+      paused: false,
       gameTime: this.gameTime
     };
   }
