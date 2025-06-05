@@ -1,4 +1,3 @@
-
 // This is a modified implementation for the ReptilianAttackEngine class
 // Now using images for rendering instead of drawing primitives
 
@@ -8,7 +7,7 @@ import { AnimationManager } from './AnimationManager';
 import { GameRenderer } from './GameRenderer';
 import { GameLogic } from './GameLogic';
 
-class ReptilianAttackEngine {
+export default class ReptilianAttackEngine {
   private canvas: HTMLCanvasElement | null = null;
   private context: CanvasRenderingContext2D | null = null;
   
@@ -35,6 +34,16 @@ class ReptilianAttackEngine {
   private gameSpeed = 5;
   private startTime: number = 0;
   private gameTime: number = 0;
+  private gameState: GameState = {
+    score: 0,
+    lives: 3,
+    health: 100,
+    pointsEarned: 0,
+    gameOver: false,
+    gameStarted: false,
+    paused: false,
+    upgrades: { speed: 1, fireRate: 1, health: 1 }
+  };
   
   // Timing
   private lastEnemyTime = 0;
@@ -112,6 +121,26 @@ class ReptilianAttackEngine {
     this.startTime = Date.now();
     
     this.animationManager.reset();
+  }
+
+  start(upgrades: GameUpgrades) {
+    this.gameState = {
+      score: 0,
+      lives: 3,
+      health: 100,
+      pointsEarned: 0,
+      gameOver: false,
+      gameStarted: true,
+      paused: false,
+      upgrades
+    };
+
+    this.reset(upgrades);
+    this.startTime = Date.now();
+    
+    if (this.canvas && this.context) {
+      this.render();
+    }
   }
 
   update(delta: number, input: { left: boolean, right: boolean }): GameState {
@@ -277,14 +306,7 @@ class ReptilianAttackEngine {
   }
 
   getGameState(): GameState {
-    return {
-      score: this.score,
-      lives: this.lives,
-      health: this.health,
-      pointsEarned: this.pointsEarned,
-      gameOver: this.gameOver,
-      gameTime: this.gameTime
-    };
+    return this.gameState;
   }
 
   getUpgradePrices() {
@@ -339,5 +361,3 @@ class ReptilianAttackEngine {
     localStorage.setItem('reptilian-games-played', (gamesPlayed + 1).toString());
   }
 }
-
-export default ReptilianAttackEngine;

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { formatDistance } from 'date-fns';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { useNickname } from '@/hooks/useNickname';
+import { usePoints } from '@/hooks/use-points';
 
 const Leaderboard = () => {
   const { 
@@ -25,6 +26,7 @@ const Leaderboard = () => {
   
   const { address } = useWeb3();
   const { nickname, getNickname } = useNickname();
+  const { getPoints } = usePoints();
   const [sortBy, setSortBy] = useState<'highestScore' | 'totalGames' | 'totalPoints' | 'averageScore'>('highestScore');
   
   // Sort leaderboard based on selected criteria
@@ -66,6 +68,7 @@ const Leaderboard = () => {
   }
 
   const playerRank = address ? getPlayerRank(address) : 0;
+  const currentPlayerPoints = address ? getPoints(address) : 0;
 
   return (
     <div className="flex flex-col h-full p-4 overflow-auto">
@@ -95,7 +98,7 @@ const Leaderboard = () => {
           {address && playerRank > 0 && (
             <div className="win95-panel p-4 mb-6">
               <h3 className="font-bold mb-2">Your Stats</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
                 <div>
                   <span className="font-bold">Rank:</span> #{playerRank} of {getTotalPlayers()}
                 </div>
@@ -107,6 +110,9 @@ const Leaderboard = () => {
                 </div>
                 <div>
                   <span className="font-bold">Total Games:</span> {leaderboard.find(p => p.walletAddress === address)?.totalGames || 0}
+                </div>
+                <div>
+                  <span className="font-bold">Points:</span> <span className="text-yellow-600">{currentPlayerPoints}</span>
                 </div>
               </div>
             </div>
@@ -150,36 +156,39 @@ const Leaderboard = () => {
                     <th className="text-left p-2 border-b">Player</th>
                     <th className="text-right p-2 border-b">Best Score</th>
                     <th className="text-right p-2 border-b">Games</th>
-                    <th className="text-right p-2 border-b">Total Points</th>
+                    <th className="text-right p-2 border-b">Points</th>
                     <th className="text-right p-2 border-b">Avg Score</th>
                     <th className="text-right p-2 border-b">Last Played</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedLeaderboard.map((entry, index) => (
-                    <tr 
-                      key={entry.walletAddress}
-                      className={`${entry.walletAddress === address ? 'bg-yellow-100' : ''} hover:bg-gray-50`}
-                    >
-                      <td className="p-2 font-bold">
-                        {index + 1}
-                        {index === 0 && <Trophy className="inline h-4 w-4 text-yellow-500 ml-1" />}
-                      </td>
-                      <td className="p-2">
-                        <div className="font-medium">{entry.nickname}</div>
-                        <div className="text-xs text-gray-500">
-                          {entry.walletAddress.substring(0, 6)}...{entry.walletAddress.substring(entry.walletAddress.length - 4)}
-                        </div>
-                      </td>
-                      <td className="p-2 text-right font-bold text-green-600">{entry.highestScore.toLocaleString()}</td>
-                      <td className="p-2 text-right">{entry.totalGames}</td>
-                      <td className="p-2 text-right text-yellow-600">{entry.totalPoints}</td>
-                      <td className="p-2 text-right">{entry.averageScore}</td>
-                      <td className="p-2 text-right text-sm text-gray-500">
-                        {formatDistance(new Date(entry.lastPlayed), new Date(), { addSuffix: true })}
-                      </td>
-                    </tr>
-                  ))}
+                  {sortedLeaderboard.map((entry, index) => {
+                    const playerPoints = getPoints(entry.walletAddress);
+                    return (
+                      <tr 
+                        key={entry.walletAddress}
+                        className={`${entry.walletAddress === address ? 'bg-yellow-100' : ''} hover:bg-gray-50`}
+                      >
+                        <td className="p-2 font-bold">
+                          {index + 1}
+                          {index === 0 && <Trophy className="inline h-4 w-4 text-yellow-500 ml-1" />}
+                        </td>
+                        <td className="p-2">
+                          <div className="font-medium">{entry.nickname}</div>
+                          <div className="text-xs text-gray-500">
+                            {entry.walletAddress.substring(0, 6)}...{entry.walletAddress.substring(entry.walletAddress.length - 4)}
+                          </div>
+                        </td>
+                        <td className="p-2 text-right font-bold text-green-600">{entry.highestScore.toLocaleString()}</td>
+                        <td className="p-2 text-right">{entry.totalGames}</td>
+                        <td className="p-2 text-right font-bold text-yellow-600">{playerPoints}</td>
+                        <td className="p-2 text-right">{entry.averageScore}</td>
+                        <td className="p-2 text-right text-sm text-gray-500">
+                          {formatDistance(new Date(entry.lastPlayed), new Date(), { addSuffix: true })}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
