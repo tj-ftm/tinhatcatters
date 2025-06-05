@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useWeb3 } from '@/contexts/Web3Context';
-import { sendTransaction } from '@/lib/web3';
+import { usePoints } from '@/hooks/use-points';
 
 export interface GameUpgrades {
   speed: number;
@@ -14,24 +14,23 @@ export interface GameState {
   score: number;
   lives: number;
   health: number;
-  thcEarned: number;
+  pointsEarned: number;
   gameOver: boolean;
   gameStarted: boolean;
   paused: boolean;
   upgrades: GameUpgrades;
 }
 
-const RECIPIENT_ADDRESS = '0x097766e8dE97A0A53B3A31AB4dB02d0004C8cc4F';
-const GAME_START_COST = 0.1;
-const UPGRADE_COST = 0.5;
+const UPGRADE_COST = 50; // Points cost for upgrades
 
 export const useGameState = () => {
-  const { address, thcBalance, connect } = useWeb3();
+  const { address } = useWeb3();
+  const { addPoints, getPoints } = usePoints();
   const [gameState, setGameState] = useState<GameState>({
     score: 0,
     lives: 3,
     health: 100,
-    thcEarned: 0,
+    pointsEarned: 0,
     gameOver: false,
     gameStarted: false,
     paused: false,
@@ -53,102 +52,83 @@ export const useGameState = () => {
     setGameState(prev => ({ ...prev, paused: !prev.paused }));
   };
 
-  const handleTransaction = async (amount: number, actionType: string): Promise<boolean> => {
-    setIsLoading(true);
-    setPendingAction(actionType);
-
-    try {
-      const success = await sendTransaction(RECIPIENT_ADDRESS, amount.toString());
-      
-      if (success) {
-        toast({
-          title: "Transaction Successful",
-          description: `Successfully sent ${amount} THC to play the game.`,
-        });
-        return true;
-      } else {
-        toast({
-          title: "Transaction Failed",
-          description: "Failed to send THC. Please try again.",
-          variant: "destructive"
-        });
-        return false;
-      }
-    } catch (error: any) {
-      console.error('Transaction error:', error);
-      toast({
-        title: "Transaction Error",
-        description: error.message || "An error occurred during the transaction.",
-        variant: "destructive"
-      });
-      return false;
-    } finally {
-      setIsLoading(false);
-      setPendingAction(null);
-    }
-  };
-
   const startGame = async () => {
-    if (!address) {
-      toast({
-        title: "Wallet Required",
-        description: "Please connect your wallet to play and earn $THC",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (parseFloat(thcBalance || '0') < GAME_START_COST) {
-      toast({
-        title: "Insufficient THC",
-        description: `You need at least ${GAME_START_COST} THC to start the game.`,
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const success = await handleTransaction(GAME_START_COST, "Starting Game");
+    // Game is now free to play - no wallet required, but encouraged for leaderboard
+    setGameState(prev => ({
+      ...prev,
+      gameStarted: true,
+      gameOver: false,
+      lives: 3,
+      health: 100,
+      score: 0,
+      pointsEarned: 0,
+    }));
     
-    if (success) {
-      setGameState(prev => ({
-        ...prev,
-        gameStarted: true,
-        gameOver: false,
-        lives: 3,
-        health: 100,
-        score: 0,
-        thcEarned: 0,
-      }));
-      return true;
-    }
+    toast({
+      title: "Game Started!",
+      description: address ? "Your score will be saved to the leaderboard!" : "Connect wallet to save your score to the leaderboard",
+    });
     
-    return false;
+    return true;
   };
 
   const handleUpgrade = async (upgradeType: 'speed' | 'fireRate' | 'health') => {
-    if (parseFloat(thcBalance || '0') < UPGRADE_COST) {
+    const currentPoints = address ? getPoints(address) : 0;
+    
+    if (currentPoints < UPGRADE_COST) {
       toast({
-        title: "Insufficient THC",
-        description: `You need at least ${UPGRADE_COST} THC for this upgrade.`,
+        title: "Insufficient Points",
+        description: `You need ${UPGRADE_COST} points for this upgrade. Play more games to earn points!`,
         variant: "destructive"
       });
       return;
     }
 
-    const success = await handleTransaction(UPGRADE_COST, `Upgrading ${upgradeType}`);
+    if (address) {
+      addPoints(address, -UPGRADE_COST);
+    }
     
-    if (success) {
-      setGameState(prev => ({
-        ...prev,
-        upgrades: {
-          ...prev.upgrades,
-          [upgradeType]: prev.upgrades[upgradeType] + 0.25
-        }
-      }));
+    setGameState(prev => ({
+      ...prev,
+      upgrades: {
+        ...prev.upgrades,
+        [upgradeType]: prev.upgrades[upgradeType] + 0.25
+      }
+    }));
+    
+    toast({
+      title: "Upgrade Successful",
+      description: `Your ${upgradeType} has been upgraded! Cost: ${UPGRADE_COST} points`,
+    });
+  };
+
+  // Save game results when game ends
+  const saveGameResults = (finalScore: number, pointsEarned: number) => {
+    if (address) {
+      addPoints(address, pointsEarned);
+      
+      // Save to leaderboard
+      const gameResult = {
+        walletAddress: address,
+        score: finalScore,
+        pointsEarned,
+        timestamp: Date.now(),
+        upgrades: gameState.upgrades
+      };
+      
+      const savedResults = localStorage.getItem('reptilian-leaderboard') || '[]';
+      const results = JSON.parse(savedResults);
+      results.push(gameResult);
+      localStorage.setItem('reptilian-leaderboard', JSON.stringify(results));
       
       toast({
-        title: "Upgrade Successful",
-        description: `Your ${upgradeType} has been upgraded!`,
+        title: "Game Saved!",
+        description: `Score: ${finalScore}, Points earned: ${pointsEarned}`,
+      });
+    } else {
+      toast({
+        title: "Game Complete!",
+        description: `Score: ${finalScore}. Connect wallet to save results and earn points!`,
       });
     }
   };
@@ -161,8 +141,9 @@ export const useGameState = () => {
     pauseGame,
     startGame,
     handleUpgrade,
+    saveGameResults,
     address,
-    thcBalance,
-    connect
+    currentPoints: address ? getPoints(address) : 0,
+    upgradeCost: UPGRADE_COST
   };
 };

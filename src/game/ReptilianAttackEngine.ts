@@ -1,3 +1,4 @@
+
 // This is a modified implementation for the ReptilianAttackEngine class
 // Now using images for rendering instead of drawing primitives
 
@@ -29,7 +30,7 @@ class ReptilianAttackEngine {
   private score = 0;
   private lives = 3;
   private health = 100;
-  private thcEarned = 0;
+  private pointsEarned = 0;
   private gameOver = false;
   private gameSpeed = 5;
   private startTime: number = 0;
@@ -102,7 +103,7 @@ class ReptilianAttackEngine {
     this.score = 0;
     this.lives = 3;
     this.health = 100;
-    this.thcEarned = 0;
+    this.pointsEarned = 0;
     this.gameOver = false;
     this.lastEnemyTime = 0;
     this.lastEnemyShootTime = 0;
@@ -207,7 +208,7 @@ class ReptilianAttackEngine {
     const enemyUpdate = GameLogic.updateEnemies(this.enemies, this.canvas, this.gameSpeed, delta, now);
     this.enemies = enemyUpdate.enemies;
     this.score += enemyUpdate.score;
-    this.thcEarned += enemyUpdate.thcEarned;
+    this.pointsEarned += enemyUpdate.score * 0.1; // Convert score to points
 
     this.bullets = GameLogic.updateBullets(this.bullets, this.canvas, delta);
     this.enemyBullets = GameLogic.updateBullets(this.enemyBullets, this.canvas, delta);
@@ -224,7 +225,7 @@ class ReptilianAttackEngine {
 
     this.health += collisionResult.health;
     this.score += collisionResult.score;
-    this.thcEarned += collisionResult.thcEarned;
+    this.pointsEarned += collisionResult.score * 0.1; // Convert score to points
     this.enemies = collisionResult.enemies;
     this.bullets = collisionResult.bullets;
     this.enemyBullets = collisionResult.enemyBullets;
@@ -242,9 +243,9 @@ class ReptilianAttackEngine {
     // Increment score for surviving
     this.score += Math.ceil(delta);
 
-    // Increase THC earned
+    // Increase points earned for surviving
     if (!this.gameOver) {
-      this.thcEarned += 0.0001 * delta;
+      this.pointsEarned += 0.01 * delta;
     }
 
     // Save results if game over
@@ -270,7 +271,7 @@ class ReptilianAttackEngine {
         this.enemyBullets,
         this.gameOver,
         this.score,
-        this.thcEarned
+        this.pointsEarned
       );
     }
   }
@@ -280,7 +281,7 @@ class ReptilianAttackEngine {
       score: this.score,
       lives: this.lives,
       health: this.health,
-      thcEarned: this.thcEarned,
+      pointsEarned: this.pointsEarned,
       gameOver: this.gameOver,
       gameTime: this.gameTime
     };
@@ -291,17 +292,17 @@ class ReptilianAttackEngine {
       speed: {
         name: "Speed Upgrade",
         description: "Increases movement and attack speed",
-        price: 20 * this.upgrades.speed
+        price: 50 * this.upgrades.speed
       },
       fireRate: {
         name: "Fire Rate Upgrade",
         description: "Shoot faster and more bullets",
-        price: 15 * this.upgrades.fireRate
+        price: 50 * this.upgrades.fireRate
       },
       health: {
         name: "Health Upgrade",
         description: "Reduces damage taken from enemies",
-        price: 25 * this.upgrades.health
+        price: 50 * this.upgrades.health
       }
     };
   }
@@ -324,14 +325,14 @@ class ReptilianAttackEngine {
     const currentBestTimeSeconds = (currentMinutes * 60) + currentSeconds;
     const newTimeSeconds = (minutes * 60) + seconds;
     
-    // Only save if we have a time and it's better (lower) than current best
+    // Only save if we have a time and it's better (higher) than current best
     if (newTimeSeconds > 0 && (currentBestTimeSeconds === 0 || newTimeSeconds > currentBestTimeSeconds)) {
       localStorage.setItem('reptilian-best-time', formattedTime);
     }
     
-    // Save THC earned this game
-    const totalTHCEarned = parseFloat(localStorage.getItem('reptilian-total-thc') || '0');
-    localStorage.setItem('reptilian-total-thc', (totalTHCEarned + this.thcEarned).toString());
+    // Save points earned this game
+    const totalPointsEarned = parseFloat(localStorage.getItem('reptilian-total-points') || '0');
+    localStorage.setItem('reptilian-total-points', (totalPointsEarned + this.pointsEarned).toString());
     
     // Save total games played
     const gamesPlayed = parseInt(localStorage.getItem('reptilian-games-played') || '0', 10);

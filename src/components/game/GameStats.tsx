@@ -2,49 +2,56 @@
 import React from 'react';
 import { GameState } from '@/hooks/useGameState';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useNickname } from '@/hooks/useNickname';
 
 interface GameStatsProps {
   gameState: GameState;
-  thcBalance: string | null;
+  currentPoints: number;
   address: string | null;
 }
 
 const GameStats: React.FC<GameStatsProps> = ({ 
   gameState, 
-  thcBalance,
-  address
+  currentPoints,
+  address 
 }) => {
   const isMobile = useIsMobile();
+  const { nickname, getNickname } = useNickname();
   
+  const displayName = address && nickname ? nickname : address ? getNickname(address) : 'Guest Player';
+
   return (
-    <div className={`${isMobile ? 'flex flex-col gap-2' : 'flex justify-between items-center'}`}>
-      <div className={`${isMobile ? 'flex justify-between' : 'flex items-center gap-2'}`}>
-        <div className="win95-inset px-3 py-1 flex items-center">
-          <span className="font-bold mr-2 text-black">Score:</span>
-          <span className="text-black">{gameState.score}</span>
+    <div className={`${isMobile ? 'w-full' : ''}`}>
+      <div className={`${isMobile ? 'grid grid-cols-2 gap-2 text-xs' : 'flex gap-4 text-sm'}`}>
+        <div className="flex items-center">
+          <span className="font-bold mr-1">Player:</span>
+          <span className="text-blue-600">{displayName}</span>
         </div>
         
-        <div className="win95-inset px-3 py-1 flex items-center">
-          <span className="font-bold mr-2 text-black">Lives:</span>
-          <span className="text-black">{gameState.lives}</span>
+        <div className="flex items-center">
+          <span className="font-bold mr-1">Score:</span>
+          <span className="text-green-600">{gameState.score}</span>
         </div>
         
-        <div className="win95-inset px-3 py-1 flex items-center gap-1">
-          <span className="font-bold mr-1 text-black">Health:</span>
-          <div className="w-24 h-4 win95-inset overflow-hidden">
-            <div 
-              className={`h-full ${gameState.health > 30 ? 'bg-green-600' : 'bg-red-600'}`}
-              style={{ width: `${gameState.health}%` }}
-            ></div>
-          </div>
+        <div className="flex items-center">
+          <span className="font-bold mr-1">Lives:</span>
+          <span className="text-red-600">{gameState.lives}</span>
         </div>
-      </div>
-      
-      <div className={`${isMobile ? 'flex justify-between mt-2' : 'flex items-center gap-2'}`}>
-        {address && (
-          <div className="win95-inset px-3 py-1">
-            <span className="font-bold mr-1 text-black">THC:</span>
-            <span className="text-black">{thcBalance || '0'}</span>
+        
+        <div className="flex items-center">
+          <span className="font-bold mr-1">Health:</span>
+          <span className="text-purple-600">{gameState.health}%</span>
+        </div>
+        
+        <div className="flex items-center">
+          <span className="font-bold mr-1">Points:</span>
+          <span className="text-yellow-600">{currentPoints}</span>
+        </div>
+        
+        {gameState.gameStarted && (
+          <div className="flex items-center">
+            <span className="font-bold mr-1">Earned:</span>
+            <span className="text-orange-600">{Math.floor(gameState.pointsEarned + gameState.score / 10)}</span>
           </div>
         )}
       </div>

@@ -1,11 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import WalletConnector from '../components/WalletConnector';
 import WalletBar from '../components/WalletBar';
 import ChatButton from '../components/ChatButton';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '@/contexts/Web3Context';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import Game from './Game';
+import Shop from './Shop';
+import Leaderboard from './Leaderboard';
 
 // Configurable index page icon images
 const INDEX_ICON_IMAGES = {
@@ -13,12 +17,19 @@ const INDEX_ICON_IMAGES = {
   game: "/assets/Icons/illuminati.webp",
   shop: "/assets/Icons/illuminati.webp",
   wallet: "/assets/Icons/illuminati.webp",
-  chat: "/assets/Icons/illuminati.webp"
+  chat: "/assets/Icons/illuminati.webp",
+  leaderboard: "/assets/Icons/illuminati.webp"
 };
 
 const Index = () => {
   const navigate = useNavigate();
   const { address } = useWeb3();
+  const [openDialog, setOpenDialog] = useState<string | null>(null);
+
+  const openGameDialog = () => setOpenDialog('game');
+  const openShopDialog = () => setOpenDialog('shop');
+  const openLeaderboardDialog = () => setOpenDialog('leaderboard');
+  const closeDialog = () => setOpenDialog(null);
 
   return (
     <div className="flex flex-col h-full">
@@ -47,10 +58,10 @@ const Index = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl w-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl w-full">
           <Button 
             className="win95-button h-auto py-4 flex flex-col items-center"
-            onClick={() => navigate('/game')}
+            onClick={openGameDialog}
           >
             <img 
               src={INDEX_ICON_IMAGES.game} 
@@ -59,7 +70,6 @@ const Index = () => {
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
-                // Add fallback emoji
                 const container = target.parentElement;
                 if (container) {
                   const fallback = document.createElement('span');
@@ -70,12 +80,12 @@ const Index = () => {
               }}
             />
             <span className="font-bold">Play Game</span>
-            <span className="text-xs mt-1">Start your adventure!</span>
+            <span className="text-xs mt-1">Free to play! Earn points!</span>
           </Button>
           
           <Button 
             className="win95-button h-auto py-4 flex flex-col items-center"
-            onClick={() => navigate('/shop')}
+            onClick={openShopDialog}
           >
             <img 
               src={INDEX_ICON_IMAGES.shop} 
@@ -84,7 +94,6 @@ const Index = () => {
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
-                // Add fallback emoji
                 const container = target.parentElement;
                 if (container) {
                   const fallback = document.createElement('span');
@@ -97,6 +106,30 @@ const Index = () => {
             <span className="font-bold">NFT Shop</span>
             <span className="text-xs mt-1">Buy awesome items!</span>
           </Button>
+
+          <Button 
+            className="win95-button h-auto py-4 flex flex-col items-center"
+            onClick={openLeaderboardDialog}
+          >
+            <img 
+              src={INDEX_ICON_IMAGES.leaderboard} 
+              alt="Leaderboard" 
+              className="h-8 w-8 mb-2 object-contain"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const container = target.parentElement;
+                if (container) {
+                  const fallback = document.createElement('span');
+                  fallback.textContent = '🏆';
+                  fallback.className = 'text-2xl mb-2';
+                  container.insertBefore(fallback, container.firstChild);
+                }
+              }}
+            />
+            <span className="font-bold">Leaderboard</span>
+            <span className="text-xs mt-1">See top players!</span>
+          </Button>
         </div>
         
         <div className="mt-6 flex flex-wrap gap-2 justify-center">
@@ -108,6 +141,27 @@ const Index = () => {
       <footer className="win95-panel p-2 text-center text-xs">
         Reptilian Attack - Windows 95 Edition - Copyright © 2023
       </footer>
+
+      {/* Game Dialog */}
+      <Dialog open={openDialog === 'game'} onOpenChange={(open) => !open && closeDialog()}>
+        <DialogContent className="max-w-6xl w-full h-[80vh] p-0">
+          <Game />
+        </DialogContent>
+      </Dialog>
+
+      {/* Shop Dialog */}
+      <Dialog open={openDialog === 'shop'} onOpenChange={(open) => !open && closeDialog()}>
+        <DialogContent className="max-w-6xl w-full h-[80vh] p-0">
+          <Shop />
+        </DialogContent>
+      </Dialog>
+
+      {/* Leaderboard Dialog */}
+      <Dialog open={openDialog === 'leaderboard'} onOpenChange={(open) => !open && closeDialog()}>
+        <DialogContent className="max-w-4xl w-full h-[80vh] p-0">
+          <Leaderboard />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

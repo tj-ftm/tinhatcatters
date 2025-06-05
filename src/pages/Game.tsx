@@ -19,8 +19,10 @@ const Game: React.FC = () => {
     pauseGame, 
     startGame, 
     handleUpgrade,
+    saveGameResults,
     address,
-    thcBalance
+    currentPoints,
+    upgradeCost
   } = useGameState();
   
   const [windowIsMaximized, setWindowIsMaximized] = useState(false);
@@ -28,15 +30,13 @@ const Game: React.FC = () => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  // Show notification when THC is earned
+  // Save game results when game ends
   useEffect(() => {
-    if (gameState.gameOver && gameState.thcEarned > 0 && address) {
-      toast({
-        title: "Crypto Earned!",
-        description: `${gameState.thcEarned.toFixed(2)} $THC added to your wallet!`,
-      });
+    if (gameState.gameOver && gameState.pointsEarned > 0) {
+      const pointsEarned = Math.floor(gameState.score / 10) + Math.floor(gameState.pointsEarned);
+      saveGameResults(gameState.score, pointsEarned);
     }
-  }, [gameState.gameOver, gameState.thcEarned, address, toast]);
+  }, [gameState.gameOver, gameState.score, gameState.pointsEarned, saveGameResults]);
 
   return (
     <div className="win95-window w-full h-full overflow-hidden flex flex-col">
@@ -45,7 +45,7 @@ const Game: React.FC = () => {
           <div className={`${isMobile ? 'flex flex-col space-y-2' : 'flex flex-row justify-between'} items-center`}>
             <GameStats 
               gameState={gameState} 
-              thcBalance={thcBalance} 
+              currentPoints={currentPoints}
               address={address} 
             />
             
@@ -69,7 +69,9 @@ const Game: React.FC = () => {
       
       <GameUpgrades 
         gameState={gameState} 
-        handleUpgrade={handleUpgrade} 
+        handleUpgrade={handleUpgrade}
+        currentPoints={currentPoints}
+        upgradeCost={upgradeCost}
       />
       
       <GameOverlay 
