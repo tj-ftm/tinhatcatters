@@ -1,3 +1,4 @@
+
 // This is a modified implementation for the ReptilianAttackEngine class
 // Now using images for rendering instead of drawing primitives
 
@@ -38,7 +39,6 @@ export default class ReptilianAttackEngine {
     score: 0,
     lives: 3,
     health: 100,
-    pointsEarned: 0,
     gameOver: false,
     gameStarted: false,
     paused: false,
@@ -59,14 +59,16 @@ export default class ReptilianAttackEngine {
   private animationManager: AnimationManager;
   private gameRenderer: GameRenderer;
 
-  constructor() {
-    this.animationManager = new AnimationManager();
-    this.imageManager = new ImageManager(() => this.render());
-  }
+  // Callback functions
+  public onStateUpdate?: (newState: Partial<GameState>) => void;
+  public onGameOver?: (finalScore: number, earnedPoints: number) => void;
 
-  initialize(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.context = canvas.getContext('2d');
+    
+    this.animationManager = new AnimationManager();
+    this.imageManager = new ImageManager(() => this.render());
     
     if (this.context) {
       this.gameRenderer = new GameRenderer(
@@ -128,7 +130,6 @@ export default class ReptilianAttackEngine {
       score: 0,
       lives: 3,
       health: 100,
-      pointsEarned: 0,
       gameOver: false,
       gameStarted: true,
       paused: false,
@@ -143,8 +144,18 @@ export default class ReptilianAttackEngine {
     }
   }
 
+  pause() {
+    this.gameState.paused = true;
+    this.setAnimationRunning(false);
+  }
+
+  resume() {
+    this.gameState.paused = false;
+    this.setAnimationRunning(true);
+  }
+
   update(delta: number, input: { left: boolean, right: boolean }): GameState {
-    if (!this.canvas || !this.context) return this.getGameState();
+    if (!this.canvas || !this.context || this.gameState.paused) return this.getGameState();
 
     // Calculate game time
     if (!this.gameOver) {
@@ -277,8 +288,25 @@ export default class ReptilianAttackEngine {
       this.pointsEarned += 0.01 * delta;
     }
 
+    // Update game state
+    this.gameState = {
+      score: this.score,
+      lives: this.lives,
+      health: this.health,
+      gameOver: this.gameOver,
+      gameStarted: true,
+      paused: false,
+      upgrades: this.upgrades
+    };
+
+    // Call state update callback
+    if (this.onStateUpdate) {
+      this.onStateUpdate(this.gameState);
+    }
+
     // Save results if game over
-    if (this.gameOver) {
+    if (this.gameOver && this.onGameOver) {
+      this.onGameOver(this.score, this.pointsEarned);
       this.saveGameResults();
     }
 
