@@ -14,8 +14,8 @@ class ReptilianAttackEngine {
   
   // Game entities
   private player: Player = {
-    x: 100,
-    y: 200,
+    x: 500,
+    y: 750,
     width: 50,
     height: 70,
     velocityY: 0,
