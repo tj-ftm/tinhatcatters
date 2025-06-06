@@ -16,34 +16,44 @@ import Desktop from "./components/Desktop";
 import Analytics from "./pages/Analytics";
 import GrowRoom from "./components/GrowRoom";
 
-const queryClient = new QueryClient();
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 1
+    }
+  }
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <Web3Provider>
-      <PointsProvider>
-        <GrowRoomProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Desktop />}>
-                  <Route index element={<Index />} />
-                  <Route path="/game" element={<Game />} />
-                  <Route path="/shop" element={<Shop />} />
-                  <Route path="/growroom" element={<GrowRoom />} />
-                  <Route path="/leaderboard" element={<Leaderboard />} />
-                  <Route path="/analytics" element={<Analytics />} />
-                  <Route path="*" element={<NotFound />} />
-                </Route>
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </GrowRoomProvider>
-      </PointsProvider>
-    </Web3Provider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Web3Provider>
+        <PointsProvider>
+          <GrowRoomProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Desktop />}>
+                    <Route index element={<Index />} />
+                    <Route path="/game" element={<Game />} />
+                    <Route path="/shop" element={<Shop />} />
+                    <Route path="/growroom" element={<GrowRoom />} />
+                    <Route path="/leaderboard" element={<Leaderboard />} />
+                    <Route path="/analytics" element={<Analytics />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Route>
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </GrowRoomProvider>
+        </PointsProvider>
+      </Web3Provider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
