@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Taskbar from './Taskbar';
@@ -7,6 +6,7 @@ import WalletWindow from './WalletWindow';
 import ChatButton from './ChatButton';
 import ChatDialog from './ChatDialog';
 import { ScrollArea } from './ui/scroll-area';
+import Windows95Window from './window/Windows95Window';
 import { 
   Computer, 
   ShoppingCart, 
@@ -21,6 +21,8 @@ import {
 const Desktop: React.FC = () => {
   const [activeWindows, setActiveWindows] = useState<string[]>([]);
   const [windowsMinimized, setWindowsMinimized] = useState<Record<string, boolean>>({});
+  const [customWindows, setCustomWindows] = useState<Array<{id: string, title: string, content: React.ReactNode, path?: string}>>([]);
+  const [activeCustomWindow, setActiveCustomWindow] = useState<string | null>(null);
   const [showWalletWindow, setShowWalletWindow] = useState(true);
   const [showChatDialog, setShowChatDialog] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
@@ -44,13 +46,105 @@ const Desktop: React.FC = () => {
 
   // Handle desktop icon double-click
   const handleDesktopIconDoubleClick = (windowId: string, route?: string) => {
-    openWindow(windowId);
+    if (windowId === 'chat') {
+      handleChatClick();
+      return;
+    }
+    
+    openCustomWindow(windowId, getWindowTitle(windowId), route);
+    
     if (route) {
       navigate(route);
     }
   };
 
-  // Open window function
+  // Get the proper window title based on the window ID
+  const getWindowTitle = (windowId: string): string => {
+    switch (windowId) {
+      case 'computer':
+        return 'My Computer';
+      case 'game':
+        return 'Reptilian Attack';
+      case 'growroom':
+        return 'THC Grow Room';
+      case 'shop':
+        return 'NFT Shop';
+      case 'leaderboard':
+        return 'Leaderboard';
+      case 'analytics':
+        return 'Analytics Dashboard';
+      case 'wallet':
+        return 'Wallet';
+      case 'chat':
+        return 'Community Chat';
+      default:
+        return windowId.charAt(0).toUpperCase() + windowId.slice(1);
+    }
+  };
+
+  // Get window content based on the window ID and route
+  const getWindowContent = (windowId: string, route?: string) => {
+    switch (windowId) {
+      case 'computer':
+        // The computer window would show desktop icons as a list
+        return (
+          <div className="p-4">
+            <h2 className="text-lg font-bold mb-4">My Computer</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {Object.entries({
+                game: { label: "Reptilian Attack", icon: <Gamepad2 />, route: "/game" },
+                shop: { label: "NFT Shop", icon: <ShoppingCart />, route: "/shop" },
+                growroom: { label: "THC Grow Room", icon: <Cannabis />, route: "/growroom" },
+                leaderboard: { label: "Leaderboard", icon: <TrendingUp />, route: "/leaderboard" },
+                analytics: { label: "Analytics Dashboard", icon: <BarChart2 />, route: "/analytics" },
+                chat: { label: "Community Chat", icon: <MessageSquare />, route: null },
+                wallet: { label: "Wallet", icon: <Wallet />, route: null }
+              }).map(([key, { label, icon, route }]) => (
+                <div 
+                  key={key}
+                  className="flex flex-col items-center cursor-pointer p-3 hover:bg-gray-200 border border-transparent hover:border-gray-400"
+                  onClick={() => handleDesktopIconDoubleClick(key, route || undefined)}
+                >
+                  <div className="mb-2 flex items-center justify-center w-10 h-10">
+                    {icon}
+                  </div>
+                  <span className="text-xs text-center">{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      default:
+        // For other windows, they just display their corresponding route content
+        return <div className="p-2">Loading {windowId} content...</div>;
+    }
+  };
+
+  // Open a custom window
+  const openCustomWindow = (windowId: string, title: string, route?: string) => {
+    // Check if this window is already open
+    const existingWindow = customWindows.find(w => w.id === windowId);
+    
+    if (existingWindow) {
+      // If it's already open, just make it active
+      setActiveCustomWindow(windowId);
+    } else {
+      // Otherwise, create a new window
+      const content = getWindowContent(windowId, route);
+      setCustomWindows(prev => [...prev, { id: windowId, title, content, path: route }]);
+      setActiveCustomWindow(windowId);
+    }
+  };
+
+  // Close a custom window
+  const closeCustomWindow = (windowId: string) => {
+    setCustomWindows(prev => prev.filter(w => w.id !== windowId));
+    if (activeCustomWindow === windowId) {
+      setActiveCustomWindow(customWindows.length > 1 ? customWindows[0]?.id : null);
+    }
+  };
+
+  // Open window function (for system windows)
   const openWindow = (windowId: string) => {
     if (!activeWindows.includes(windowId)) {
       setActiveWindows(prev => [...prev, windowId]);
@@ -248,6 +342,55 @@ const Desktop: React.FC = () => {
           isSelected={selectedIcon === 'chat'}
           position={{ top: 110, left: 110 }}
         />
+        
+        {/* Custom Windows - using the Windows95Window component */}
+        {customWindows.map((win, index) => (
+          <Windows95Window
+            key={win.id}
+            title={win.title}
+            width={600}
+            height={400}
+            x={100 + index * 30}
+            y={100 + index * 30}
+            isActive={activeCustomWindow === win.id}
+            onFocus={() => setActiveCustomWindow(win.id)}
+            onClose={() => closeCustomWindow(win.id)}
+          >
+            {win.id === 'computer' && (
+              <div className="p-4">
+                <h2 className="text-lg font-bold mb-4">My Computer</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {Object.entries({
+                    game: { label: "Reptilian Attack", icon: <Gamepad2 className="h-5 w-5" />, route: "/game" },
+                    shop: { label: "NFT Shop", icon: <ShoppingCart className="h-5 w-5" />, route: "/shop" },
+                    growroom: { label: "THC Grow Room", icon: <Cannabis className="h-5 w-5" />, route: "/growroom" },
+                    leaderboard: { label: "Leaderboard", icon: <TrendingUp className="h-5 w-5" />, route: "/leaderboard" },
+                    analytics: { label: "Analytics Dashboard", icon: <BarChart2 className="h-5 w-5" />, route: "/analytics" },
+                    chat: { label: "Community Chat", icon: <MessageSquare className="h-5 w-5" />, route: null },
+                    wallet: { label: "Wallet", icon: <Wallet className="h-5 w-5" />, route: null }
+                  }).map(([key, { label, icon, route }]) => (
+                    <div 
+                      key={key}
+                      className="flex flex-col items-center cursor-pointer p-3 hover:bg-gray-200 border border-transparent hover:border-gray-400"
+                      onClick={() => handleDesktopIconDoubleClick(key, route || undefined)}
+                    >
+                      <div className="mb-2 flex items-center justify-center w-10 h-10">
+                        {icon}
+                      </div>
+                      <span className="text-xs text-center">{label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {win.id === 'game' && <iframe className="w-full h-full" src="/game" />}
+            {win.id === 'shop' && <iframe className="w-full h-full" src="/shop" />}
+            {win.id === 'growroom' && <iframe className="w-full h-full" src="/growroom" />}
+            {win.id === 'leaderboard' && <iframe className="w-full h-full" src="/leaderboard" />}
+            {win.id === 'analytics' && <iframe className="w-full h-full" src="/analytics" />}
+          </Windows95Window>
+        ))}
         
         {/* Wallet Window */}
         {showWalletWindow && (
