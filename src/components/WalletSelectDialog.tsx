@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   Dialog,
@@ -8,7 +9,7 @@ import {
   DialogClose
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Wallet, Smartphone, Brain } from 'lucide-react';
+import { Wallet, Smartphone } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface WalletOption {
@@ -25,7 +26,7 @@ interface WalletSelectDialogProps {
   onSelectWallet: (walletId: string) => void;
 }
 
-// Updated wallet options with functional Smart Wallet
+// Configurable wallet icons - can be changed manually
 const walletOptions: WalletOption[] = [
   {
     id: 'browser',
@@ -40,13 +41,6 @@ const walletOptions: WalletOption[] = [
     iconUrl: '/assets/Icons/nftshop.ico',
     fallbackIcon: <Smartphone className="h-5 w-5 text-blue-500" />,
     description: 'Scan QR code with your mobile wallet'
-  },
-  {
-    id: 'smartwallet',
-    name: 'Smart Login',
-    iconUrl: '/assets/Icons/nftshop.ico',
-    fallbackIcon: <Brain className="h-5 w-5 text-purple-500" />,
-    description: 'Connect with email, Google, or social accounts'
   }
 ];
 
