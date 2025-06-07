@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
   connectWallet, 
@@ -12,6 +11,7 @@ import {
 } from '@/lib/web3';
 import { toast } from '@/hooks/use-toast';
 import { fetchOwnedNFTs, NFTMetadata } from '@/lib/web3/nftImport';
+import { useSmartWallet } from '@/hooks/useSmartWallet';
 
 interface Web3ContextType {
   address: string | null;
@@ -53,18 +53,40 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
   const [sonicNFTs, setSonicNFTs] = useState<NFTMetadata[]>([]);
   const [connectedWalletType, setConnectedWalletType] = useState<string | null>(null);
 
-  const connect = async (walletType?: string) => {
-    if (!isWeb3Available()) {
-      toast({
-        title: 'Web3 Not Available',
-        description: 'Please install MetaMask or another Web3 wallet.',
-        variant: 'destructive',
-      });
-      return;
-    }
+  const smartWallet = useSmartWallet();
 
+  const connect = async (walletType?: string) => {
     setConnecting(true);
+    
     try {
+      if (walletType === 'smartwallet') {
+        // Smart wallet connection is handled by Thirdweb's ConnectWallet component
+        // We just need to wait for the address to be available
+        if (smartWallet.address) {
+          setAddress(smartWallet.address);
+          setConnectedWalletType('smartwallet');
+          await refreshBalance();
+          await refreshNFTs();
+          
+          toast({
+            title: "Smart Wallet Connected",
+            description: "Your Smart Wallet has been connected successfully.",
+          });
+        } else {
+          throw new Error("Smart Wallet connection failed");
+        }
+        return;
+      }
+
+      if (!isWeb3Available()) {
+        toast({
+          title: 'Web3 Not Available',
+          description: 'Please install MetaMask or another Web3 wallet.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
       await switchToSonicNetwork();
       
       const userAddress = await connectWallet(walletType);
@@ -99,6 +121,8 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
   const disconnect = () => {
     if (connectedWalletType === 'walletconnect') {
       disconnectWalletConnect();
+    } else if (connectedWalletType === 'smartwallet') {
+      smartWallet.disconnect();
     }
     
     setAddress(null);
@@ -143,6 +167,15 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
       }
     }
   };
+
+  // Handle Smart Wallet address changes
+  useEffect(() => {
+    if (smartWallet.address && connectedWalletType === 'smartwallet') {
+      setAddress(smartWallet.address);
+      refreshBalance();
+      refreshNFTs();
+    }
+  }, [smartWallet.address, connectedWalletType]);
 
   useEffect(() => {
     if (isWeb3Available() && window.ethereum) {
