@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Dialog,
@@ -26,7 +25,7 @@ interface WalletSelectDialogProps {
   onSelectWallet: (walletId: string) => void;
 }
 
-// Updated wallet options with Smart Wallet
+// Updated wallet options with functional Smart Wallet
 const walletOptions: WalletOption[] = [
   {
     id: 'browser',
@@ -47,7 +46,7 @@ const walletOptions: WalletOption[] = [
     name: 'Smart Login',
     iconUrl: '/assets/Icons/nftshop.ico',
     fallbackIcon: <Brain className="h-5 w-5 text-purple-500" />,
-    description: 'Connect with email, Google, or social accounts (Coming Soon)'
+    description: 'Connect with email, Google, or social accounts'
   }
 ];
 

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
   connectWallet, 
@@ -12,6 +11,7 @@ import {
 } from '@/lib/web3';
 import { toast } from '@/hooks/use-toast';
 import { fetchOwnedNFTs, NFTMetadata } from '@/lib/web3/nftImport';
+import { useThirdwebWallet } from '@/hooks/useThirdwebWallet';
 
 interface Web3ContextType {
   address: string | null;
@@ -53,18 +53,34 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
   const [sonicNFTs, setSonicNFTs] = useState<NFTMetadata[]>([]);
   const [connectedWalletType, setConnectedWalletType] = useState<string | null>(null);
 
+  // Thirdweb smart wallet integration
+  const { 
+    account: thirdwebAccount, 
+    connectSmartWallet, 
+    disconnectWallet: disconnectThirdweb 
+  } = useThirdwebWallet();
+
   const connect = async (walletType?: string) => {
     setConnecting(true);
     
     try {
       if (walletType === 'smartwallet') {
-        // For now, show a message that smart wallet is coming soon
-        toast({
-          title: "Smart Wallet Coming Soon",
-          description: "Smart wallet integration is being implemented. Please use MetaMask or WalletConnect for now.",
-          variant: 'default',
-        });
-        return;
+        await connectSmartWallet();
+        
+        if (thirdwebAccount?.address) {
+          setAddress(thirdwebAccount.address);
+          setConnectedWalletType('smartwallet');
+          
+          await refreshBalance();
+          await refreshNFTs();
+          
+          setTimeout(async () => {
+            await refreshBalance();
+            await refreshNFTs();
+          }, 1000);
+          
+          return;
+        }
       }
 
       if (!isWeb3Available()) {
@@ -108,7 +124,9 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
   };
 
   const disconnect = () => {
-    if (connectedWalletType === 'walletconnect') {
+    if (connectedWalletType === 'smartwallet') {
+      disconnectThirdweb();
+    } else if (connectedWalletType === 'walletconnect') {
       disconnectWalletConnect();
     }
     
@@ -196,6 +214,13 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
       return () => clearInterval(interval);
     }
   }, [address]);
+
+  // Update address when Thirdweb account changes
+  useEffect(() => {
+    if (thirdwebAccount?.address && connectedWalletType === 'smartwallet') {
+      setAddress(thirdwebAccount.address);
+    }
+  }, [thirdwebAccount, connectedWalletType]);
 
   return (
     <Web3Context.Provider 
