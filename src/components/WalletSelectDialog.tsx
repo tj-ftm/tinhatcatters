@@ -47,7 +47,7 @@ const walletOptions: WalletOption[] = [
     name: 'Smart Login',
     iconUrl: '/assets/Icons/nftshop.ico',
     fallbackIcon: <Brain className="h-5 w-5 text-purple-500" />,
-    description: 'Connect with email, Google, or social accounts'
+    description: 'Connect with email, Google, or social accounts (Coming Soon)'
   }
 ];
 
