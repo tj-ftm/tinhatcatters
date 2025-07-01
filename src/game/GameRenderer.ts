@@ -25,7 +25,7 @@ export class GameRenderer {
     ctx.clearRect(0, 0, width, height);
 
     try {
-      // Draw background
+      // Draw background to fill entire canvas
       const bgImage = this.imageManager.getImage('background');
       if (bgImage && this.imageManager.isLoaded('background')) {
         ctx.drawImage(bgImage, 0, 0, width, height);
@@ -34,27 +34,22 @@ export class GameRenderer {
         ctx.fillRect(0, 0, width, height);
       }
 
-      // Draw floor
-      const floorImage = this.imageManager.getImage('floor');
-      if (floorImage && this.imageManager.isLoaded('floor')) {
-        ctx.drawImage(floorImage, 0, height - 20, width, 20);
-      } else {
-        ctx.fillStyle = '#444444';
-        ctx.fillRect(0, height - 20, width, 20);
-      }
-
-      // Draw player in idle state - only if sprite is loaded
+      // Draw player in idle state - properly sized
       const playerIdleSprite = this.imageManager.getImage('playerIdle');
       if (playerIdleSprite && this.imageManager.isLoaded('playerIdle')) {
         const config = this.imageManager.getConfig().playerIdle;
         const frameWidth = playerIdleSprite.width / config.frames;
         const frameHeight = playerIdleSprite.height;
 
+        // Use proper scaling for player size
+        const playerWidth = 60;
+        const playerHeight = 80;
+
         ctx.drawImage(
           playerIdleSprite,
           0, 0, frameWidth, frameHeight,
-          100, height - config.height - 20,
-          config.width, config.height
+          100, height - playerHeight - 20,
+          playerWidth, playerHeight
         );
       }
 
@@ -71,7 +66,7 @@ export class GameRenderer {
         this.drawFallbackTitle(ctx, width, height);
       }
 
-      // Add enemy for show - only if sprite is loaded
+      // Add enemy for show - properly sized
       const enemySprite = this.imageManager.getImage('enemyRun');
       if (enemySprite && this.imageManager.isLoaded('enemyRun')) {
         const config = this.imageManager.getConfig().enemyRun;
@@ -106,11 +101,8 @@ export class GameRenderer {
     ctx.clearRect(0, 0, width, height);
 
     try {
-      // Draw scrolling background
+      // Draw scrolling background to fill entire canvas
       this.drawScrollingBackground(width, height);
-      
-      // Draw floor
-      this.drawFloor(width, height);
       
       // Draw game entities
       this.drawPlayer(player);
@@ -133,6 +125,7 @@ export class GameRenderer {
       const bgWidth = Math.max(width, bgImage.width);
       const x1 = Math.floor(this.backgroundScrollX % bgWidth);
       
+      // Draw background to fill entire canvas height
       this.context.drawImage(bgImage, x1, 0, bgWidth, height);
       
       if (x1 < 0) {
@@ -146,46 +139,36 @@ export class GameRenderer {
     }
   }
 
-  private drawFloor(width: number, height: number) {
-    const floorImage = this.imageManager.getImage('floor');
-    if (floorImage && this.imageManager.isLoaded('floor')) {
-      this.context.drawImage(floorImage, 0, height - 20, width, 20);
-    } else {
-      this.context.fillStyle = '#444444';
-      this.context.fillRect(0, height - 20, width, 20);
-    }
-  }
-
   private drawPlayer(player: Player) {
-    // Always use playersprite.gif for all animations
+    // Always use playersprite.gif for all animations with proper sizing
     const sprite = this.imageManager.getImage('playerRun');
     const config = this.imageManager.getConfig().playerRun;
     
-    // Only draw if sprite is fully loaded, otherwise don't draw anything to prevent flashing
+    // Only draw if sprite is fully loaded
     if (sprite && this.imageManager.isLoaded('playerRun') && config && 'frames' in config) {
       try {
         const frameWidth = sprite.width / config.frames;
         const frameHeight = sprite.height;
         const currentFrame = this.animationManager.getCurrentFrame() % config.frames;
 
+        // Use proper player dimensions from the player object
         this.context.drawImage(
           sprite,
           currentFrame * frameWidth, 0, frameWidth, frameHeight,
           player.x, player.y, player.width, player.height
         );
       } catch (error) {
-        // Don't draw fallback to prevent flashing
         console.error('Error drawing player sprite:', error);
       }
     }
   }
 
   private drawEnemy(enemy: Enemy) {
-    // Always use barrier.gif for all enemy animations
+    // Always use barrier.gif for all enemy animations with proper sizing
     const sprite = this.imageManager.getImage('enemyRun');
     const config = this.imageManager.getConfig().enemyRun;
     
-    // Only draw if sprite is fully loaded, otherwise don't draw anything to prevent flashing
+    // Only draw if sprite is fully loaded
     if (sprite && this.imageManager.isLoaded('enemyRun') && config && 'frames' in config) {
       try {
         const frameWidth = sprite.width / config.frames;
@@ -198,7 +181,6 @@ export class GameRenderer {
           enemy.x, enemy.y, enemy.width, enemy.height
         );
       } catch (error) {
-        // Don't draw fallback to prevent flashing
         console.error('Error drawing enemy sprite:', error);
       }
     }
@@ -207,13 +189,29 @@ export class GameRenderer {
   private drawBullet(bullet: Bullet, type: 'bullet' | 'enemyBullet') {
     const bulletImage = this.imageManager.getImage(type);
     if (bulletImage && this.imageManager.isLoaded(type)) {
-      this.context.drawImage(bulletImage, bullet.x, bullet.y, bullet.width, bullet.height);
+      this.context.save();
+      
+      // Calculate rotation based on bullet position for spinning effect
+      const rotation = (Date.now() * 0.01 + bullet.x * 0.1) % (Math.PI * 2);
+      
+      // Move to bullet center for rotation
+      this.context.translate(bullet.x + bullet.width / 2, bullet.y + bullet.height / 2);
+      this.context.rotate(rotation);
+      
+      // Draw bullet 2x bigger and centered on rotation point
+      const scaledWidth = bullet.width * 2;
+      const scaledHeight = bullet.height * 2;
+      
+      this.context.drawImage(
+        bulletImage, 
+        -scaledWidth / 2, 
+        -scaledHeight / 2, 
+        scaledWidth, 
+        scaledHeight
+      );
+      
+      this.context.restore();
     }
-  }
-
-  private drawFallbackRect(x: number, y: number, width: number, height: number, color: string) {
-    this.context.fillStyle = color;
-    this.context.fillRect(x, y, width, height);
   }
 
   private drawFallbackTitle(ctx: CanvasRenderingContext2D, width: number, height: number) {
