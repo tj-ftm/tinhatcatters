@@ -3,24 +3,24 @@ import { ImageConfig } from './types';
 
 export class ImageManager {
   private images: { [key: string]: HTMLImageElement } = {};
-  private video: HTMLVideoElement | null = null;
+  private videos: { [key: string]: HTMLVideoElement } = {};
   private imagesLoaded: { [key: string]: boolean } = {};
   
   private imageConfig: ImageConfig = {
     playerIdle: {
-      src: '/assets/Icons/playersprite.gif',
+      src: '/assets/Icons/playersprite.webm',
       width: 96,
       height: 96,
       frames: 8
     },
     playerRun: {
-      src: '/assets/Icons/playersprite.gif',
+      src: '/assets/Icons/playersprite.webm',
       width: 96,
       height: 96,
       frames: 8
     },
     playerJump: {
-      src: '/assets/Icons/playersprite.gif',
+      src: '/assets/Icons/playersprite.webm',
       width: 96,
       height: 96,
       frames: 8
@@ -75,10 +75,10 @@ export class ImageManager {
   }
 
   private loadAllImages() {
-    // Load player sprites
-    this.loadImage('playerIdle', this.imageConfig.playerIdle.src);
-    this.loadImage('playerRun', this.imageConfig.playerRun.src);
-    this.loadImage('playerJump', this.imageConfig.playerJump.src);
+    // Load player sprites as videos
+    this.loadPlayerVideo('playerIdle', this.imageConfig.playerIdle.src);
+    this.loadPlayerVideo('playerRun', this.imageConfig.playerRun.src);
+    this.loadPlayerVideo('playerJump', this.imageConfig.playerJump.src);
     
     // Load environment
     this.loadImage('background', this.imageConfig.background.src);
@@ -93,8 +93,27 @@ export class ImageManager {
     this.loadImage('bullet', this.imageConfig.bullet.src);
     this.loadImage('enemyBullet', this.imageConfig.enemyBullet.src);
     
-    // Load video
-    this.loadVideo();
+    // Load intro video
+    this.loadIntroVideo();
+  }
+
+  private loadPlayerVideo(key: string, src: string) {
+    const video = document.createElement('video');
+    video.onloadeddata = () => {
+      this.imagesLoaded[key] = true;
+      console.log(`${key} video loaded successfully`);
+      this.onRender?.();
+    };
+    video.onerror = () => {
+      console.error(`Failed to load ${key} video:`, src);
+      this.imagesLoaded[key] = false;
+    };
+    video.src = src;
+    video.loop = true;
+    video.muted = true;
+    video.autoplay = true;
+    video.play().catch(console.error);
+    this.videos[key] = video;
   }
 
   private loadImage(key: string, src: string) {
@@ -113,28 +132,29 @@ export class ImageManager {
     this.images[key] = img;
   }
 
-  private loadVideo() {
-    this.video = document.createElement('video');
-    this.video.onloadeddata = () => {
+  private loadIntroVideo() {
+    const video = document.createElement('video');
+    video.onloadeddata = () => {
       this.imagesLoaded.introVideo = true;
       console.log("Intro video loaded successfully");
       this.onRender?.();
     };
-    this.video.onerror = () => {
+    video.onerror = () => {
       console.error('Failed to load intro video');
       this.imagesLoaded.introVideo = false;
     };
-    this.video.src = this.imageConfig.introVideo.src;
-    this.video.loop = true;
-    this.video.muted = true;
+    video.src = this.imageConfig.introVideo.src;
+    video.loop = true;
+    video.muted = true;
+    this.videos.introVideo = video;
   }
 
   getImage(key: string): HTMLImageElement | null {
     return this.images[key] || null;
   }
 
-  getVideo(): HTMLVideoElement | null {
-    return this.video;
+  getVideo(key: string = 'introVideo'): HTMLVideoElement | null {
+    return this.videos[key] || null;
   }
 
   isLoaded(key: string): boolean {

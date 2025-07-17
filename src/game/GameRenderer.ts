@@ -35,26 +35,22 @@ export class GameRenderer {
       }
 
       // Draw player in idle state - properly sized
-      const playerIdleSprite = this.imageManager.getImage('playerIdle');
+      const playerIdleSprite = this.imageManager.getVideo('playerIdle');
       if (playerIdleSprite && this.imageManager.isLoaded('playerIdle')) {
-        const config = this.imageManager.getConfig().playerIdle;
-        const frameWidth = playerIdleSprite.width / config.frames;
-        const frameHeight = playerIdleSprite.height;
-
         // Use proper scaling for player size
         const playerWidth = 60;
         const playerHeight = 80;
 
         ctx.drawImage(
           playerIdleSprite,
-          0, 0, frameWidth, frameHeight,
+          0, 0, playerIdleSprite.videoWidth, playerIdleSprite.videoHeight,
           100, height - playerHeight - 20,
           playerWidth, playerHeight
         );
       }
 
       // Draw intro video or fallback text
-      const video = this.imageManager.getVideo();
+      const video = this.imageManager.getVideo('introVideo');
       if (video && this.imageManager.isLoaded('introVideo')) {
         try {
           video.play();
@@ -140,21 +136,18 @@ export class GameRenderer {
   }
 
   private drawPlayer(player: Player) {
-    // Always use playersprite.gif for all animations with proper sizing
-    const sprite = this.imageManager.getImage('playerRun');
+    // Use playersprite.webm for all animations with proper sizing
+    const sprite = this.imageManager.getVideo('playerRun');
     const config = this.imageManager.getConfig().playerRun;
     
     // Only draw if sprite is fully loaded
     if (sprite && this.imageManager.isLoaded('playerRun') && config && 'frames' in config) {
       try {
-        const frameWidth = sprite.width / config.frames;
-        const frameHeight = sprite.height;
-        const currentFrame = this.animationManager.getCurrentFrame() % config.frames;
-
+        // For video, we draw the full video frame and let it animate naturally
         // Use proper player dimensions from the player object
         this.context.drawImage(
           sprite,
-          currentFrame * frameWidth, 0, frameWidth, frameHeight,
+          0, 0, sprite.videoWidth, sprite.videoHeight,
           player.x, player.y, player.width, player.height
         );
       } catch (error) {
