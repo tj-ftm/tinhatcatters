@@ -11,6 +11,8 @@ import GameOverlay from '@/components/game/GameOverlay';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Game: React.FC = () => {
+  console.log('Game component rendering');
+  
   const { 
     gameState, 
     isLoading, 
@@ -24,6 +26,9 @@ const Game: React.FC = () => {
     currentPoints,
     upgradeCost
   } = useGameState();
+  
+  console.log('Game state:', gameState);
+  console.log('Is loading:', isLoading);
   
   const [windowIsMaximized, setWindowIsMaximized] = useState(false);
   const gameEngineRef = useRef<ReptilianAttackEngine | null>(null);

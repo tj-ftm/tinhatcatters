@@ -35,15 +35,19 @@ export class GameRenderer {
       }
 
       // Draw player in idle state - properly sized
-      const playerIdleSprite = this.imageManager.getVideo('playerIdle');
+      const playerIdleSprite = this.imageManager.getImage('playerIdle');
       if (playerIdleSprite && this.imageManager.isLoaded('playerIdle')) {
+        const config = this.imageManager.getConfig().playerIdle;
+        const frameWidth = playerIdleSprite.width / config.frames;
+        const frameHeight = playerIdleSprite.height;
+
         // Use proper scaling for player size
         const playerWidth = 60;
         const playerHeight = 80;
 
         ctx.drawImage(
           playerIdleSprite,
-          0, 0, playerIdleSprite.videoWidth, playerIdleSprite.videoHeight,
+          0, 0, frameWidth, frameHeight,
           100, height - playerHeight - 20,
           playerWidth, playerHeight
         );
@@ -136,18 +140,21 @@ export class GameRenderer {
   }
 
   private drawPlayer(player: Player) {
-    // Use playersprite.webm for all animations with proper sizing
-    const sprite = this.imageManager.getVideo('playerRun');
+    // Always use playersprite.gif for all animations with proper sizing
+    const sprite = this.imageManager.getImage('playerRun');
     const config = this.imageManager.getConfig().playerRun;
     
     // Only draw if sprite is fully loaded
     if (sprite && this.imageManager.isLoaded('playerRun') && config && 'frames' in config) {
       try {
-        // For video, we draw the full video frame and let it animate naturally
+        const frameWidth = sprite.width / config.frames;
+        const frameHeight = sprite.height;
+        const currentFrame = this.animationManager.getCurrentFrame() % config.frames;
+
         // Use proper player dimensions from the player object
         this.context.drawImage(
           sprite,
-          0, 0, sprite.videoWidth, sprite.videoHeight,
+          currentFrame * frameWidth, 0, frameWidth, frameHeight,
           player.x, player.y, player.width, player.height
         );
       } catch (error) {

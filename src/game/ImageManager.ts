@@ -8,19 +8,19 @@ export class ImageManager {
   
   private imageConfig: ImageConfig = {
     playerIdle: {
-      src: '/assets/Icons/playersprite.webm',
+      src: '/assets/Icons/playersprite.gif',
       width: 96,
       height: 96,
       frames: 8
     },
     playerRun: {
-      src: '/assets/Icons/playersprite.webm',
+      src: '/assets/Icons/playersprite.gif',
       width: 96,
       height: 96,
       frames: 8
     },
     playerJump: {
-      src: '/assets/Icons/playersprite.webm',
+      src: '/assets/Icons/playersprite.gif',
       width: 96,
       height: 96,
       frames: 8
@@ -75,10 +75,10 @@ export class ImageManager {
   }
 
   private loadAllImages() {
-    // Load player sprites as videos
-    this.loadPlayerVideo('playerIdle', this.imageConfig.playerIdle.src);
-    this.loadPlayerVideo('playerRun', this.imageConfig.playerRun.src);
-    this.loadPlayerVideo('playerJump', this.imageConfig.playerJump.src);
+    // Load player sprites
+    this.loadImage('playerIdle', this.imageConfig.playerIdle.src);
+    this.loadImage('playerRun', this.imageConfig.playerRun.src);
+    this.loadImage('playerJump', this.imageConfig.playerJump.src);
     
     // Load environment
     this.loadImage('background', this.imageConfig.background.src);
@@ -98,14 +98,15 @@ export class ImageManager {
   }
 
   private loadPlayerVideo(key: string, src: string) {
+    console.log(`Loading player video: ${key} from ${src}`);
     const video = document.createElement('video');
     video.onloadeddata = () => {
       this.imagesLoaded[key] = true;
       console.log(`${key} video loaded successfully`);
       this.onRender?.();
     };
-    video.onerror = () => {
-      console.error(`Failed to load ${key} video:`, src);
+    video.onerror = (error) => {
+      console.error(`Failed to load ${key} video:`, src, error);
       this.imagesLoaded[key] = false;
     };
     video.src = src;
