@@ -9,21 +9,21 @@ export class ImageManager {
   private imageConfig: ImageConfig = {
     playerIdle: {
       src: '/assets/Icons/playersprite.gif',
-      width: 64,
-      height: 64,
-      frames: 4
+      width: 96,
+      height: 96,
+      frames: 8
     },
     playerRun: {
       src: '/assets/Icons/playersprite.gif',
-      width: 64,
-      height: 64,
-      frames: 4
+      width: 96,
+      height: 96,
+      frames: 8
     },
     playerJump: {
       src: '/assets/Icons/playersprite.gif',
-      width: 64,
-      height: 64,
-      frames: 4
+      width: 96,
+      height: 96,
+      frames: 8
     },
     background: {
       src: '/assets/Icons/sidescrollerbgweed-min.png',
