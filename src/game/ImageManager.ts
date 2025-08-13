@@ -9,22 +9,22 @@ export class ImageManager {
   private imageConfig: ImageConfig = {
     playerIdle: {
       src: '/assets/Icons/playersprite.gif',
-      width: 96,
-      height: 96,
+      width: 64,
+      height: 64,
       frames: 8,
       orientation: 'vertical'
     },
     playerRun: {
       src: '/assets/Icons/playersprite.gif',
-      width: 96,
-      height: 96,
+      width: 64,
+      height: 64,
       frames: 8,
       orientation: 'vertical'
     },
     playerJump: {
       src: '/assets/Icons/playersprite.gif',
-      width: 96,
-      height: 96,
+      width: 64,
+      height: 64,
       frames: 8,
       orientation: 'vertical'
     },
