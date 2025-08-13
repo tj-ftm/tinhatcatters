@@ -1,4 +1,3 @@
-
 export interface GameUpgrades {
   speed: number;
   fireRate: number;
@@ -61,4 +60,11 @@ export interface ImageConfig {
   enemyBullet: { src: string; width: number; height: number };
   floor: { src: string; width: number; height: number };
   introVideo: { src: string; width: number; height: number };
+}
+
+export interface ImageManager {
+  getImage(key: string): HTMLImageElement | HTMLVideoElement | null;
+  getVideo(key?: string): HTMLVideoElement | null;
+  isLoaded(key: string): boolean;
+  getConfig(): ImageConfig;
 }

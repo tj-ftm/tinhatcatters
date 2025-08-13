@@ -1,11 +1,10 @@
-
 import { ImageConfig } from './types';
 
 export class ImageManager {
   private images: { [key: string]: HTMLImageElement } = {};
   private videos: { [key: string]: HTMLVideoElement } = {};
   private imagesLoaded: { [key: string]: boolean } = {};
-  
+
   private imageConfig: ImageConfig = {
     playerIdle: {
       src: '/assets/Icons/playersprite.gif',
@@ -79,37 +78,45 @@ export class ImageManager {
 
   private loadAllImages() {
     // Load player sprites
-    this.loadImage('playerIdle', this.imageConfig.playerIdle.src);
-    this.loadImage('playerRun', this.imageConfig.playerRun.src);
-    this.loadImage('playerJump', this.imageConfig.playerJump.src);
-    
+    this.loadAsset('playerIdle', this.imageConfig.playerIdle.src);
+    this.loadAsset('playerRun', this.imageConfig.playerRun.src);
+    this.loadAsset('playerJump', this.imageConfig.playerJump.src);
+
     // Load environment
-    this.loadImage('background', this.imageConfig.background.src);
-    this.loadImage('floor', this.imageConfig.floor.src);
-    
+    this.loadAsset('background', this.imageConfig.background.src);
+    this.loadAsset('floor', this.imageConfig.floor.src);
+
     // Load enemy sprites
-    this.loadImage('enemyRun', this.imageConfig.enemyRun.src);
-    this.loadImage('enemyJump', this.imageConfig.enemyJump.src);
-    this.loadImage('enemyFire', this.imageConfig.enemyFire.src);
-    
+    this.loadAsset('enemyRun', this.imageConfig.enemyRun.src);
+    this.loadAsset('enemyJump', this.imageConfig.enemyJump.src);
+    this.loadAsset('enemyFire', this.imageConfig.enemyFire.src);
+
     // Load projectiles
-    this.loadImage('bullet', this.imageConfig.bullet.src);
-    this.loadImage('enemyBullet', this.imageConfig.enemyBullet.src);
-    
+    this.loadAsset('bullet', this.imageConfig.bullet.src);
+    this.loadAsset('enemyBullet', this.imageConfig.enemyBullet.src);
+
     // Load intro video
     this.loadIntroVideo();
   }
 
+  private loadAsset(key: string, src: string) {
+    if (src.endsWith('.gif')) {
+      this.loadPlayerVideo(key, src);
+    } else {
+      this.loadImage(key, src);
+    }
+  }
+
   private loadPlayerVideo(key: string, src: string) {
-    console.log(`Loading player video: ${key} from ${src}`);
+    console.log(`Loading player video/GIF: ${key} from ${src}`);
     const video = document.createElement('video');
     video.onloadeddata = () => {
       this.imagesLoaded[key] = true;
-      console.log(`${key} video loaded successfully`);
+      console.log(`${key} video/GIF loaded successfully`);
       this.onRender?.();
     };
     video.onerror = (error) => {
-      console.error(`Failed to load ${key} video:`, src, error);
+      console.error(`Failed to load ${key} video/GIF:`, src, error);
       this.imagesLoaded[key] = false;
     };
     video.src = src;
@@ -130,7 +137,6 @@ export class ImageManager {
     img.onerror = () => {
       console.error(`Failed to load ${key} image:`, src);
       this.imagesLoaded[key] = false;
-      // Don't trigger re-render on error to prevent flashing
     };
     img.src = src;
     this.images[key] = img;
@@ -153,8 +159,8 @@ export class ImageManager {
     this.videos.introVideo = video;
   }
 
-  getImage(key: string): HTMLImageElement | null {
-    return this.images[key] || null;
+  getImage(key: string): HTMLImageElement | HTMLVideoElement | null {
+    return this.images[key] || this.videos[key] || null;
   }
 
   getVideo(key: string = 'introVideo'): HTMLVideoElement | null {
