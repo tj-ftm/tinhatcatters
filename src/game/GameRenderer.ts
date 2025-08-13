@@ -147,14 +147,19 @@ export class GameRenderer {
     // Only draw if sprite is fully loaded
     if (sprite && this.imageManager.isLoaded('playerRun') && config && 'frames' in config) {
       try {
-        const frameWidth = sprite.width / config.frames;
-        const frameHeight = sprite.height;
+        const isVertical = (config as any).orientation === 'vertical';
+        const frameWidth = isVertical ? sprite.width : sprite.width / config.frames;
+        const frameHeight = isVertical ? sprite.height / config.frames : sprite.height;
         const currentFrame = this.animationManager.getCurrentFrame() % config.frames;
+
+        // Calculate source position based on orientation
+        const srcX = isVertical ? 0 : currentFrame * frameWidth;
+        const srcY = isVertical ? currentFrame * frameHeight : 0;
 
         // Use proper player dimensions from the player object
         this.context.drawImage(
           sprite,
-          currentFrame * frameWidth, 0, frameWidth, frameHeight,
+          srcX, srcY, frameWidth, frameHeight,
           player.x, player.y, player.width, player.height
         );
       } catch (error) {

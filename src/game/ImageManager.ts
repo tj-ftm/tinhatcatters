@@ -11,19 +11,22 @@ export class ImageManager {
       src: '/assets/Icons/playersprite.gif',
       width: 96,
       height: 96,
-      frames: 8
+      frames: 8,
+      orientation: 'vertical'
     },
     playerRun: {
       src: '/assets/Icons/playersprite.gif',
       width: 96,
       height: 96,
-      frames: 8
+      frames: 8,
+      orientation: 'vertical'
     },
     playerJump: {
       src: '/assets/Icons/playersprite.gif',
       width: 96,
       height: 96,
-      frames: 8
+      frames: 8,
+      orientation: 'vertical'
     },
     background: {
       src: '/assets/Icons/sidescrollerbgweed-min.png',
