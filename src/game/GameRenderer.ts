@@ -34,20 +34,16 @@ export class GameRenderer {
         ctx.fillRect(0, 0, width, height);
       }
 
-      // Draw player in idle state - properly sized
+      // Draw player in idle state - animated GIF handles its own frames
       const playerIdleSprite = this.imageManager.getImage('playerIdle');
       if (playerIdleSprite && this.imageManager.isLoaded('playerIdle')) {
-        const config = this.imageManager.getConfig().playerIdle;
-        const frameWidth = playerIdleSprite.width / config.frames;
-        const frameHeight = playerIdleSprite.height;
-
         // Use proper scaling for player size
         const playerWidth = 60;
         const playerHeight = 80;
 
+        // Draw the entire animated GIF
         ctx.drawImage(
           playerIdleSprite,
-          0, 0, frameWidth, frameHeight,
           100, height - playerHeight - 20,
           playerWidth, playerHeight
         );
@@ -66,16 +62,14 @@ export class GameRenderer {
         this.drawFallbackTitle(ctx, width, height);
       }
 
-      // Add enemy for show - properly sized
+      // Add enemy for show - animated GIF handles its own frames
       const enemySprite = this.imageManager.getImage('enemyRun');
       if (enemySprite && this.imageManager.isLoaded('enemyRun')) {
         const config = this.imageManager.getConfig().enemyRun;
-        const frameWidth = enemySprite.width / config.frames;
-        const frameHeight = enemySprite.height;
 
+        // Draw the entire animated GIF
         ctx.drawImage(
           enemySprite,
-          0, 0, frameWidth, frameHeight,
           width - 100, height / 2 - 100,
           config.width, config.height
         );
@@ -140,26 +134,15 @@ export class GameRenderer {
   }
 
   private drawPlayer(player: Player) {
-    // Always use playersprite.gif for all animations with proper sizing
+    // For animated GIFs, just draw the entire image - browser handles animation
     const sprite = this.imageManager.getImage('playerRun');
-    const config = this.imageManager.getConfig().playerRun;
     
     // Only draw if sprite is fully loaded
-    if (sprite && this.imageManager.isLoaded('playerRun') && config && 'frames' in config) {
+    if (sprite && this.imageManager.isLoaded('playerRun')) {
       try {
-        const isVertical = (config as any).orientation === 'vertical';
-        const frameWidth = isVertical ? sprite.width : sprite.width / config.frames;
-        const frameHeight = isVertical ? sprite.height / config.frames : sprite.height;
-        const currentFrame = this.animationManager.getCurrentFrame() % config.frames;
-
-        // Calculate source position based on orientation
-        const srcX = isVertical ? 0 : currentFrame * frameWidth;
-        const srcY = isVertical ? currentFrame * frameHeight : 0;
-
-        // Use proper player dimensions from the player object
+        // Draw the entire animated GIF - browser handles frame animation automatically
         this.context.drawImage(
           sprite,
-          srcX, srcY, frameWidth, frameHeight,
           player.x, player.y, player.width, player.height
         );
       } catch (error) {
@@ -169,20 +152,15 @@ export class GameRenderer {
   }
 
   private drawEnemy(enemy: Enemy) {
-    // Always use barrier.gif for all enemy animations with proper sizing
+    // For animated GIFs, just draw the entire image - browser handles animation
     const sprite = this.imageManager.getImage('enemyRun');
-    const config = this.imageManager.getConfig().enemyRun;
     
     // Only draw if sprite is fully loaded
-    if (sprite && this.imageManager.isLoaded('enemyRun') && config && 'frames' in config) {
+    if (sprite && this.imageManager.isLoaded('enemyRun')) {
       try {
-        const frameWidth = sprite.width / config.frames;
-        const frameHeight = sprite.height;
-        const currentFrame = this.animationManager.getCurrentFrame() % config.frames;
-
+        // Draw the entire animated GIF - browser handles frame animation automatically
         this.context.drawImage(
           sprite,
-          currentFrame * frameWidth, 0, frameWidth, frameHeight,
           enemy.x, enemy.y, enemy.width, enemy.height
         );
       } catch (error) {
