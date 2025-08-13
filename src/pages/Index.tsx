@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import WalletConnector from '../components/WalletConnector';
 import WalletBar from '../components/WalletBar';
@@ -11,28 +10,55 @@ import Game from './Game';
 import Shop from './Shop';
 import Leaderboard from './Leaderboard';
 
-// Configurable index page icon images
+// Configurable index page icon images with placeholder links
 const INDEX_ICON_IMAGES = {
   logo: "/assets/game/reptilian-logo.png",
   game: "/assets/Icons/illuminati.webp",
   shop: "/assets/Icons/illuminati.webp",
   wallet: "/assets/Icons/illuminati.webp",
   chat: "/assets/Icons/illuminati.webp",
-  leaderboard: "/assets/Icons/illuminati.webp"
+  leaderboard: "/assets/Icons/illuminati.webp",
+  analytics: "/assets/Icons/illuminati.webp"
+};
+
+// Placeholder links for external pages
+const EXTERNAL_LINKS = {
+  analytics: "https://analytics.reptilianattack.com",
+  community: "https://community.reptilianattack.com",
+  settings: "https://settings.reptilianattack.com"
 };
 
 const Index = () => {
   const navigate = useNavigate();
   const { address } = useWeb3();
   const [openDialog, setOpenDialog] = useState<string | null>(null);
+  const [clickedIcon, setClickedIcon] = useState<string | null>(null);
 
   const openGameDialog = () => setOpenDialog('game');
   const openShopDialog = () => setOpenDialog('shop');
   const openLeaderboardDialog = () => setOpenDialog('leaderboard');
   const closeDialog = () => setOpenDialog(null);
 
+  // Handle icon click with animation
+  const handleIconClick = (icon: string, action: () => void) => {
+    setClickedIcon(icon);
+    setTimeout(() => {
+      setClickedIcon(null);
+      action();
+    }, 200); // Animation duration
+  };
+
+  // Handle external link navigation
+  const handleExternalLink = (url: string) => {
+    setClickedIcon(url);
+    setTimeout(() => {
+      setClickedIcon(null);
+      window.open(url, '_blank');
+    }, 200);
+  };
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-win95-teal">
       <div className="flex-grow flex flex-col items-center justify-center p-4">
         {/* Wallet Bar - only show when wallet is connected */}
         {address && (
@@ -42,8 +68,8 @@ const Index = () => {
         )}
         
         <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold mb-2">Welcome to Reptilian Attack</h1>
-          <p className="text-sm mb-4">Windows 95 Edition</p>
+          <h1 className="text-2xl font-bold mb-2 text-win95-gray-dark">Welcome to Reptilian Attack</h1>
+          <p className="text-sm mb-4 text-win95-gray">Windows 95 Edition</p>
           
           <div className="animate-float mb-6">
             <img 
@@ -58,78 +84,53 @@ const Index = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl w-full">
-          <Button 
-            className="win95-button h-auto py-4 flex flex-col items-center"
-            onClick={openGameDialog}
-          >
-            <img 
-              src={INDEX_ICON_IMAGES.game} 
-              alt="Game" 
-              className="h-8 w-8 mb-2 object-contain"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                const container = target.parentElement;
-                if (container) {
-                  const fallback = document.createElement('span');
-                  fallback.textContent = '🎮';
-                  fallback.className = 'text-2xl mb-2';
-                  container.insertBefore(fallback, container.firstChild);
-                }
-              }}
-            />
-            <span className="font-bold">Play Game</span>
-            <span className="text-xs mt-1">Free to play! Earn points!</span>
-          </Button>
-          
-          <Button 
-            className="win95-button h-auto py-4 flex flex-col items-center"
-            onClick={openShopDialog}
-          >
-            <img 
-              src={INDEX_ICON_IMAGES.shop} 
-              alt="Shop" 
-              className="h-8 w-8 mb-2 object-contain"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                const container = target.parentElement;
-                if (container) {
-                  const fallback = document.createElement('span');
-                  fallback.textContent = '🛒';
-                  fallback.className = 'text-2xl mb-2';
-                  container.insertBefore(fallback, container.firstChild);
-                }
-              }}
-            />
-            <span className="font-bold">NFT Shop</span>
-            <span className="text-xs mt-1">Buy awesome items!</span>
-          </Button>
-
-          <Button 
-            className="win95-button h-auto py-4 flex flex-col items-center"
-            onClick={openLeaderboardDialog}
-          >
-            <img 
-              src={INDEX_ICON_IMAGES.leaderboard} 
-              alt="Leaderboard" 
-              className="h-8 w-8 mb-2 object-contain"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                const container = target.parentElement;
-                if (container) {
-                  const fallback = document.createElement('span');
-                  fallback.textContent = '🏆';
-                  fallback.className = 'text-2xl mb-2';
-                  container.insertBefore(fallback, container.firstChild);
-                }
-              }}
-            />
-            <span className="font-bold">Leaderboard</span>
-            <span className="text-xs mt-1">See top players!</span>
-          </Button>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl w-full">
+          {[
+            { id: 'game', label: 'Play Game', desc: 'Free to play! Earn points!', icon: INDEX_ICON_IMAGES.game, action: openGameDialog },
+            { id: 'shop', label: 'NFT Shop', desc: 'Buy awesome items!', icon: INDEX_ICON_IMAGES.shop, action: openShopDialog },
+            { id: 'leaderboard', label: 'Leaderboard', desc: 'See top players!', icon: INDEX_ICON_IMAGES.leaderboard, action: openLeaderboardDialog },
+            { id: 'analytics', label: 'Analytics', desc: 'View game stats', icon: INDEX_ICON_IMAGES.analytics, link: EXTERNAL_LINKS.analytics },
+            { id: 'community', label: 'Community', desc: 'Join the discussion', icon: INDEX_ICON_IMAGES.chat, link: EXTERNAL_LINKS.community },
+            { id: 'settings', label: 'Settings', desc: 'Customize your experience', icon: INDEX_ICON_IMAGES.wallet, link: EXTERNAL_LINKS.settings },
+          ].map(({ id, label, desc, icon, action, link }) => (
+            <Button 
+              key={id}
+              className={`
+                win95-button h-auto py-4 flex flex-col items-center
+                ${clickedIcon === (link || id) ? 'animate-icon-click' : ''}
+                hover:bg-win95-gray-light hover:shadow-win95-inner
+                focus:bg-win95-gray-light focus:shadow-win95-inner
+                transition-all duration-200
+              `}
+              onClick={() => link ? handleExternalLink(link) : handleIconClick(id, action)}
+            >
+              <img 
+                src={icon} 
+                alt={label} 
+                className="h-8 w-8 mb-2 object-contain"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const container = target.parentElement;
+                  if (container) {
+                    const fallback = document.createElement('span');
+                    fallback.textContent = {
+                      game: '🎮',
+                      shop: '🛒',
+                      leaderboard: '🏆',
+                      analytics: '📊',
+                      community: '💬',
+                      settings: '⚙️'
+                    }[id] || '❓';
+                    fallback.className = 'text-2xl mb-2';
+                    container.insertBefore(fallback, container.firstChild);
+                  }
+                }}
+              />
+              <span className="font-bold text-win95-gray-dark">{label}</span>
+              <span className="text-xs mt-1 text-win95-gray">{desc}</span>
+            </Button>
+          ))}
         </div>
         
         <div className="mt-6 flex flex-wrap gap-2 justify-center">
@@ -138,25 +139,23 @@ const Index = () => {
         </div>
       </div>
       
-      <footer className="win95-panel p-2 text-center text-xs">
+      <footer className="win95-panel p-2 text-center text-xs text-win95-gray">
         Reptilian Attack - Windows 95 Edition - Copyright © 2023
       </footer>
 
-      {/* Game Dialog */}
+      {/* Dialogs remain unchanged */}
       <Dialog open={openDialog === 'game'} onOpenChange={(open) => !open && closeDialog()}>
         <DialogContent className="max-w-6xl w-full h-[80vh] p-0">
           <Game />
         </DialogContent>
       </Dialog>
 
-      {/* Shop Dialog */}
       <Dialog open={openDialog === 'shop'} onOpenChange={(open) => !open && closeDialog()}>
         <DialogContent className="max-w-6xl w-full h-[80vh] p-0">
           <Shop />
         </DialogContent>
       </Dialog>
 
-      {/* Leaderboard Dialog */}
       <Dialog open={openDialog === 'leaderboard'} onOpenChange={(open) => !open && closeDialog()}>
         <DialogContent className="max-w-4xl w-full h-[80vh] p-0">
           <Leaderboard />

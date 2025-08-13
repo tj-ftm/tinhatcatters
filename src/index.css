@@ -142,3 +142,61 @@
     image-rendering: pixelated;
   }
 }
+
+/* Windows 98 theme colors */
+.bg-win95-teal {
+  background-color: #008080;
+}
+
+.text-win95-gray {
+  color: #808080;
+}
+
+.text-win95-gray-dark {
+  color: #404040;
+}
+
+.win95-button {
+  background-color: #c0c0c0;
+  border: 2px solid;
+  border-top-color: #ffffff;
+  border-left-color: #ffffff;
+  border-right-color: #404040;
+  border-bottom-color: #404040;
+  box-shadow: 1px 1px 0 0 #000000;
+  padding: 4px;
+}
+
+.win95-panel {
+  background-color: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #404040;
+  border-bottom: 2px solid #404040;
+}
+
+.shadow-win95-inner {
+  box-shadow: inset 1px 1px 0 0 #808080;
+}
+
+/* Click animation */
+@keyframes iconClick {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+.animate-icon-click {
+  animation: iconClick 200ms ease-in-out;
+}
+
+/* Hover effect */
+.win95-button:hover {
+  background-color: #d8d8d8;
+}
+
+/* Focus effect for accessibility */
+.win95-button:focus {
+  outline: 1px dotted #000000;
+  outline-offset: -4px;
+}
