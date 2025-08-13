@@ -31,21 +31,21 @@ export class ImageManager {
       height: 400
     },
     enemyRun: {
-      src: '/assets/Icons/barrier.gif',
-      width: 60,
-      height: 60,
+      src: '/assets/Icons/enemy.gif',
+      width: 96,
+      height: 96,
       frames: 4
     },
     enemyJump: {
-      src: '/assets/Icons/barrier.gif',
-      width: 60,
-      height: 60,
+      src: '/assets/Icons/enemy.gif',
+      width: 96,
+      height: 96,
       frames: 4
     },
     enemyFire: {
-      src: '/assets/Icons/barrier.gif',
-      width: 60,
-      height: 60,
+      src: '/assets/Icons/enemy.gif',
+      width: 96,
+      height: 96,
       frames: 4
     },
     bullet: {
