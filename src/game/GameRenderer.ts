@@ -1,3 +1,4 @@
+
 import { Player, Enemy, Bullet } from './types';
 import { ImageManager } from './ImageManager';
 import { AnimationManager } from './AnimationManager';
@@ -33,28 +34,19 @@ export class GameRenderer {
         ctx.fillRect(0, 0, width, height);
       }
 
-      // Draw player in idle state - handle GIF as video
-      const playerIdleSprite = this.imageManager.getImage('playerIdle');
+      // Draw player in idle state - animated GIF loaded as video
+      const playerIdleSprite = this.imageManager.getImage('playerIdle') as HTMLVideoElement | HTMLImageElement;
       if (playerIdleSprite && this.imageManager.isLoaded('playerIdle')) {
+        // Use proper scaling for player size
         const playerWidth = 60;
         const playerHeight = 80;
 
-        if (playerIdleSprite instanceof HTMLVideoElement) {
-          // Ensure video is ready to draw
-          if (playerIdleSprite.readyState >= 2) {
-            ctx.drawImage(
-              playerIdleSprite,
-              100, height - playerHeight - 20,
-              playerWidth, playerHeight
-            );
-          }
-        } else {
-          ctx.drawImage(
-            playerIdleSprite,
-            100, height - playerHeight - 20,
-            playerWidth, playerHeight
-          );
-        }
+        // Draw the animated sprite
+        ctx.drawImage(
+          playerIdleSprite,
+          100, height - playerHeight - 20,
+          playerWidth, playerHeight
+        );
       }
 
       // Draw intro video or fallback text
@@ -64,36 +56,26 @@ export class GameRenderer {
           video.play();
           ctx.drawImage(video, width / 2 - 200, height / 2 - 100, 400, 200);
         } catch (error) {
-          console.error('Error playing intro video:', error);
           this.drawFallbackTitle(ctx, width, height);
         }
       } else {
         this.drawFallbackTitle(ctx, width, height);
       }
 
-      // Draw enemy for show - handle GIF as video
-      const enemySprite = this.imageManager.getImage('enemyRun');
+      // Add enemy for show - animated GIF loaded as video
+      const enemySprite = this.imageManager.getImage('enemyRun') as HTMLVideoElement | HTMLImageElement;
       if (enemySprite && this.imageManager.isLoaded('enemyRun')) {
         const config = this.imageManager.getConfig().enemyRun;
 
-        if (enemySprite instanceof HTMLVideoElement) {
-          if (enemySprite.readyState >= 2) {
-            ctx.drawImage(
-              enemySprite,
-              width - 100, height / 2 - 100,
-              config.width, config.height
-            );
-          }
-        } else {
-          ctx.drawImage(
-            enemySprite,
-            width - 100, height / 2 - 100,
-            config.width, config.height
-          );
-        }
+        // Draw the animated sprite
+        ctx.drawImage(
+          enemySprite,
+          width - 100, height / 2 - 100,
+          config.width, config.height
+        );
       }
     } catch (error) {
-      console.error('Rendering error in start screen:', error);
+      console.error('Rendering error:', error);
     }
   }
 
@@ -115,13 +97,13 @@ export class GameRenderer {
     try {
       // Draw scrolling background to fill entire canvas
       this.drawScrollingBackground(width, height);
-
+      
       // Draw game entities
       this.drawPlayer(player);
       enemies.forEach(enemy => !enemy.hit && this.drawEnemy(enemy));
       bullets.forEach(bullet => this.drawBullet(bullet, 'bullet'));
       enemyBullets.forEach(bullet => this.drawBullet(bullet, 'enemyBullet'));
-
+      
       // Draw game over screen
       if (gameOver) {
         this.drawGameOver(width, height, score, thcEarned);
@@ -136,9 +118,10 @@ export class GameRenderer {
     if (bgImage && this.imageManager.isLoaded('background')) {
       const bgWidth = Math.max(width, bgImage.width);
       const x1 = Math.floor(this.backgroundScrollX % bgWidth);
-
+      
+      // Draw background to fill entire canvas height
       this.context.drawImage(bgImage, x1, 0, bgWidth, height);
-
+      
       if (x1 < 0) {
         this.context.drawImage(bgImage, x1 + bgWidth, 0, bgWidth, height);
       } else if (x1 + bgWidth < width) {
@@ -151,63 +134,37 @@ export class GameRenderer {
   }
 
   private drawPlayer(player: Player) {
-    // Map animation state to sprite key
-    const spriteKeyMap: { [key in Player['animationState']]: string } = {
-      idle: 'playerIdle',
-      running: 'playerRun',
-      jumping: 'playerJump'
-    };
-    const spriteKey = spriteKeyMap[player.animationState];
-    const sprite = this.imageManager.getImage(spriteKey);
-
-    if (sprite && this.imageManager.isLoaded(spriteKey)) {
+    // Get the animated sprite (now loaded as video for proper GIF animation)
+    const sprite = this.imageManager.getImage('playerRun') as HTMLVideoElement | HTMLImageElement;
+    
+    // Only draw if sprite is fully loaded
+    if (sprite && this.imageManager.isLoaded('playerRun')) {
       try {
-        if (sprite instanceof HTMLVideoElement) {
-          if (sprite.readyState >= 2) {
-            this.context.drawImage(
-              sprite,
-              player.x, player.y, player.width, player.height
-            );
-          }
-        } else {
-          this.context.drawImage(
-            sprite,
-            player.x, player.y, player.width, player.height
-          );
-        }
+        // Draw the animated sprite - browser handles frame animation automatically
+        this.context.drawImage(
+          sprite,
+          player.x, player.y, player.width, player.height
+        );
       } catch (error) {
-        console.error(`Error drawing player sprite (${spriteKey}):`, error);
+        console.error('Error drawing player sprite:', error);
       }
     }
   }
 
   private drawEnemy(enemy: Enemy) {
-    // Map animation state to sprite key
-    const spriteKeyMap: { [key in Enemy['animationState']]: string } = {
-      running: 'enemyRun',
-      jumping: 'enemyJump',
-      firing: 'enemyFire'
-    };
-    const spriteKey = spriteKeyMap[enemy.animationState];
-    const sprite = this.imageManager.getImage(spriteKey);
-
-    if (sprite && this.imageManager.isLoaded(spriteKey)) {
+    // Get the animated sprite (now loaded as video for proper GIF animation)
+    const sprite = this.imageManager.getImage('enemyRun') as HTMLVideoElement | HTMLImageElement;
+    
+    // Only draw if sprite is fully loaded
+    if (sprite && this.imageManager.isLoaded('enemyRun')) {
       try {
-        if (sprite instanceof HTMLVideoElement) {
-          if (sprite.readyState >= 2) {
-            this.context.drawImage(
-              sprite,
-              enemy.x, enemy.y, enemy.width, enemy.height
-            );
-          }
-        } else {
-          this.context.drawImage(
-            sprite,
-            enemy.x, enemy.y, enemy.width, enemy.height
-          );
-        }
+        // Draw the animated sprite - browser handles frame animation automatically
+        this.context.drawImage(
+          sprite,
+          enemy.x, enemy.y, enemy.width, enemy.height
+        );
       } catch (error) {
-        console.error(`Error drawing enemy sprite (${spriteKey}):`, error);
+        console.error('Error drawing enemy sprite:', error);
       }
     }
   }
@@ -216,34 +173,26 @@ export class GameRenderer {
     const bulletImage = this.imageManager.getImage(type);
     if (bulletImage && this.imageManager.isLoaded(type)) {
       this.context.save();
-
+      
+      // Calculate rotation based on bullet position for spinning effect
       const rotation = (Date.now() * 0.01 + bullet.x * 0.1) % (Math.PI * 2);
+      
+      // Move to bullet center for rotation
       this.context.translate(bullet.x + bullet.width / 2, bullet.y + bullet.height / 2);
       this.context.rotate(rotation);
-
+      
+      // Draw bullet 2x bigger and centered on rotation point
       const scaledWidth = bullet.width * 2;
       const scaledHeight = bullet.height * 2;
-
-      if (bulletImage instanceof HTMLVideoElement) {
-        if (bulletImage.readyState >= 2) {
-          this.context.drawImage(
-            bulletImage,
-            -scaledWidth / 2,
-            -scaledHeight / 2,
-            scaledWidth,
-            scaledHeight
-          );
-        }
-      } else {
-        this.context.drawImage(
-          bulletImage,
-          -scaledWidth / 2,
-          -scaledHeight / 2,
-          scaledWidth,
-          scaledHeight
-        );
-      }
-
+      
+      this.context.drawImage(
+        bulletImage, 
+        -scaledWidth / 2, 
+        -scaledHeight / 2, 
+        scaledWidth, 
+        scaledHeight
+      );
+      
       this.context.restore();
     }
   }
@@ -251,12 +200,12 @@ export class GameRenderer {
   private drawFallbackTitle(ctx: CanvasRenderingContext2D, width: number, height: number) {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
     ctx.fillRect(width / 2 - 200, height / 2 - 100, 400, 200);
-
+    
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '48px Arial';
     ctx.textAlign = 'center';
     ctx.fillText('REPTILIAN ATTACK', width / 2, height / 2 - 30);
-
+    
     ctx.font = '24px Arial';
     ctx.fillText('Connect wallet & click START GAME', width / 2, height / 2 + 50);
   }
@@ -266,7 +215,7 @@ export class GameRenderer {
     this.context.font = '48px Arial';
     this.context.textAlign = 'center';
     this.context.fillText('GAME OVER', width / 2, height / 2);
-
+    
     this.context.font = '24px Arial';
     this.context.fillText(`Score: ${score}`, width / 2, height / 2 + 40);
     this.context.fillText(`THC Earned: ${thcEarned.toFixed(2)}`, width / 2, height / 2 + 70);
