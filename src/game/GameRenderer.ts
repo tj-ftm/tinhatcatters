@@ -49,7 +49,6 @@ export class GameRenderer {
             );
           }
         } else {
-          // Handle as image (fallback, though not expected for playerIdle)
           ctx.drawImage(
             playerIdleSprite,
             100, height - playerHeight - 20,
@@ -78,7 +77,6 @@ export class GameRenderer {
         const config = this.imageManager.getConfig().enemyRun;
 
         if (enemySprite instanceof HTMLVideoElement) {
-          // Ensure video is ready to draw
           if (enemySprite.readyState >= 2) {
             ctx.drawImage(
               enemySprite,
@@ -87,7 +85,6 @@ export class GameRenderer {
             );
           }
         } else {
-          // Handle as image (fallback, though not expected for enemyRun)
           ctx.drawImage(
             enemySprite,
             width - 100, height / 2 - 100,
@@ -140,7 +137,6 @@ export class GameRenderer {
       const bgWidth = Math.max(width, bgImage.width);
       const x1 = Math.floor(this.backgroundScrollX % bgWidth);
 
-      // Draw background to fill entire canvas height
       this.context.drawImage(bgImage, x1, 0, bgWidth, height);
 
       if (x1 < 0) {
@@ -155,12 +151,18 @@ export class GameRenderer {
   }
 
   private drawPlayer(player: Player) {
-    const sprite = this.imageManager.getImage('playerRun');
-    
-    if (sprite && this.imageManager.isLoaded('playerRun')) {
+    // Map animation state to sprite key
+    const spriteKeyMap: { [key in Player['animationState']]: string } = {
+      idle: 'playerIdle',
+      running: 'playerRun',
+      jumping: 'playerJump'
+    };
+    const spriteKey = spriteKeyMap[player.animationState];
+    const sprite = this.imageManager.getImage(spriteKey);
+
+    if (sprite && this.imageManager.isLoaded(spriteKey)) {
       try {
         if (sprite instanceof HTMLVideoElement) {
-          // Ensure video is ready to draw
           if (sprite.readyState >= 2) {
             this.context.drawImage(
               sprite,
@@ -168,25 +170,30 @@ export class GameRenderer {
             );
           }
         } else {
-          // Handle as image (fallback, though not expected for playerRun)
           this.context.drawImage(
             sprite,
             player.x, player.y, player.width, player.height
           );
         }
       } catch (error) {
-        console.error('Error drawing player sprite:', error);
+        console.error(`Error drawing player sprite (${spriteKey}):`, error);
       }
     }
   }
 
   private drawEnemy(enemy: Enemy) {
-    const sprite = this.imageManager.getImage('enemyRun');
-    
-    if (sprite && this.imageManager.isLoaded('enemyRun')) {
+    // Map animation state to sprite key
+    const spriteKeyMap: { [key in Enemy['animationState']]: string } = {
+      running: 'enemyRun',
+      jumping: 'enemyJump',
+      firing: 'enemyFire'
+    };
+    const spriteKey = spriteKeyMap[enemy.animationState];
+    const sprite = this.imageManager.getImage(spriteKey);
+
+    if (sprite && this.imageManager.isLoaded(spriteKey)) {
       try {
         if (sprite instanceof HTMLVideoElement) {
-          // Ensure video is ready to draw
           if (sprite.readyState >= 2) {
             this.context.drawImage(
               sprite,
@@ -194,14 +201,13 @@ export class GameRenderer {
             );
           }
         } else {
-          // Handle as image (fallback, though not expected for enemyRun)
           this.context.drawImage(
             sprite,
             enemy.x, enemy.y, enemy.width, enemy.height
           );
         }
       } catch (error) {
-        console.error('Error drawing enemy sprite:', error);
+        console.error(`Error drawing enemy sprite (${spriteKey}):`, error);
       }
     }
   }
@@ -211,19 +217,14 @@ export class GameRenderer {
     if (bulletImage && this.imageManager.isLoaded(type)) {
       this.context.save();
 
-      // Calculate rotation based on bullet position for spinning effect
       const rotation = (Date.now() * 0.01 + bullet.x * 0.1) % (Math.PI * 2);
-
-      // Move to bullet center for rotation
       this.context.translate(bullet.x + bullet.width / 2, bullet.y + bullet.height / 2);
       this.context.rotate(rotation);
 
-      // Draw bullet 2x bigger and centered on rotation point
       const scaledWidth = bullet.width * 2;
       const scaledHeight = bullet.height * 2;
 
       if (bulletImage instanceof HTMLVideoElement) {
-        // Ensure video is ready to draw
         if (bulletImage.readyState >= 2) {
           this.context.drawImage(
             bulletImage,
@@ -234,7 +235,6 @@ export class GameRenderer {
           );
         }
       } else {
-        // Handle as image (expected for bullets)
         this.context.drawImage(
           bulletImage,
           -scaledWidth / 2,
