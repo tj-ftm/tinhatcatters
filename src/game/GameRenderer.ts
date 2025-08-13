@@ -34,14 +34,14 @@ export class GameRenderer {
         ctx.fillRect(0, 0, width, height);
       }
 
-      // Draw player in idle state - animated GIF handles its own frames
-      const playerIdleSprite = this.imageManager.getImage('playerIdle');
+      // Draw player in idle state - animated GIF loaded as video
+      const playerIdleSprite = this.imageManager.getImage('playerIdle') as HTMLVideoElement | HTMLImageElement;
       if (playerIdleSprite && this.imageManager.isLoaded('playerIdle')) {
         // Use proper scaling for player size
         const playerWidth = 60;
         const playerHeight = 80;
 
-        // Draw the entire animated GIF
+        // Draw the animated sprite
         ctx.drawImage(
           playerIdleSprite,
           100, height - playerHeight - 20,
@@ -62,12 +62,12 @@ export class GameRenderer {
         this.drawFallbackTitle(ctx, width, height);
       }
 
-      // Add enemy for show - animated GIF handles its own frames
-      const enemySprite = this.imageManager.getImage('enemyRun');
+      // Add enemy for show - animated GIF loaded as video
+      const enemySprite = this.imageManager.getImage('enemyRun') as HTMLVideoElement | HTMLImageElement;
       if (enemySprite && this.imageManager.isLoaded('enemyRun')) {
         const config = this.imageManager.getConfig().enemyRun;
 
-        // Draw the entire animated GIF
+        // Draw the animated sprite
         ctx.drawImage(
           enemySprite,
           width - 100, height / 2 - 100,
@@ -134,13 +134,13 @@ export class GameRenderer {
   }
 
   private drawPlayer(player: Player) {
-    // For animated GIFs, just draw the entire image - browser handles animation
-    const sprite = this.imageManager.getImage('playerRun');
+    // Get the animated sprite (now loaded as video for proper GIF animation)
+    const sprite = this.imageManager.getImage('playerRun') as HTMLVideoElement | HTMLImageElement;
     
     // Only draw if sprite is fully loaded
     if (sprite && this.imageManager.isLoaded('playerRun')) {
       try {
-        // Draw the entire animated GIF - browser handles frame animation automatically
+        // Draw the animated sprite - browser handles frame animation automatically
         this.context.drawImage(
           sprite,
           player.x, player.y, player.width, player.height
@@ -152,13 +152,13 @@ export class GameRenderer {
   }
 
   private drawEnemy(enemy: Enemy) {
-    // For animated GIFs, just draw the entire image - browser handles animation
-    const sprite = this.imageManager.getImage('enemyRun');
+    // Get the animated sprite (now loaded as video for proper GIF animation)
+    const sprite = this.imageManager.getImage('enemyRun') as HTMLVideoElement | HTMLImageElement;
     
     // Only draw if sprite is fully loaded
     if (sprite && this.imageManager.isLoaded('enemyRun')) {
       try {
-        // Draw the entire animated GIF - browser handles frame animation automatically
+        // Draw the animated sprite - browser handles frame animation automatically
         this.context.drawImage(
           sprite,
           enemy.x, enemy.y, enemy.width, enemy.height

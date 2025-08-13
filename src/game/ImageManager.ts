@@ -78,19 +78,19 @@ export class ImageManager {
   }
 
   private loadAllImages() {
-    // Load player sprites
-    this.loadImage('playerIdle', this.imageConfig.playerIdle.src);
-    this.loadImage('playerRun', this.imageConfig.playerRun.src);
-    this.loadImage('playerJump', this.imageConfig.playerJump.src);
+    // Load player sprites as videos to maintain animation
+    this.loadPlayerVideo('playerIdle', this.imageConfig.playerIdle.src);
+    this.loadPlayerVideo('playerRun', this.imageConfig.playerRun.src);
+    this.loadPlayerVideo('playerJump', this.imageConfig.playerJump.src);
     
     // Load environment
     this.loadImage('background', this.imageConfig.background.src);
     this.loadImage('floor', this.imageConfig.floor.src);
     
-    // Load enemy sprites
-    this.loadImage('enemyRun', this.imageConfig.enemyRun.src);
-    this.loadImage('enemyJump', this.imageConfig.enemyJump.src);
-    this.loadImage('enemyFire', this.imageConfig.enemyFire.src);
+    // Load enemy sprites as videos to maintain animation
+    this.loadPlayerVideo('enemyRun', this.imageConfig.enemyRun.src);
+    this.loadPlayerVideo('enemyJump', this.imageConfig.enemyJump.src);
+    this.loadPlayerVideo('enemyFire', this.imageConfig.enemyFire.src);
     
     // Load projectiles
     this.loadImage('bullet', this.imageConfig.bullet.src);
@@ -153,8 +153,8 @@ export class ImageManager {
     this.videos.introVideo = video;
   }
 
-  getImage(key: string): HTMLImageElement | null {
-    return this.images[key] || null;
+  getImage(key: string): HTMLImageElement | HTMLVideoElement | null {
+    return this.images[key] || this.videos[key] || null;
   }
 
   getVideo(key: string = 'introVideo'): HTMLVideoElement | null {
