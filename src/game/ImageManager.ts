@@ -32,20 +32,20 @@ export class ImageManager {
     },
     enemyRun: {
       src: '/assets/Icons/enemy.gif',
-      width: 96,
-      height: 96,
+      width: 150,
+      height: 150,
       frames: 4
     },
     enemyJump: {
       src: '/assets/Icons/enemy.gif',
-      width: 96,
-      height: 96,
+      width: 150,
+      height: 150,
       frames: 4
     },
     enemyFire: {
       src: '/assets/Icons/enemy.gif',
-      width: 96,
-      height: 96,
+      width: 150,
+      height: 150,
       frames: 4
     },
     bullet: {
