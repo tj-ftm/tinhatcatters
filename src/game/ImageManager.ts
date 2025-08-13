@@ -31,20 +31,20 @@ export class ImageManager {
       height: 400
     },
     enemyRun: {
-      src: '/assets/Icons/enemy.gif',
-      width: 150,
+      src: '/assets/Icons/barrier.gif',
+      width: 129,
       height: 150,
       frames: 4
     },
     enemyJump: {
-      src: '/assets/Icons/enemy.gif',
-      width: 150,
+      src: '/assets/Icons/barrier.gif',
+      width: 129,
       height: 150,
       frames: 4
     },
     enemyFire: {
-      src: '/assets/Icons/enemy.gif',
-      width: 150,
+      src: '/assets/Icons/barrier.gif',
+      width: 129,
       height: 150,
       frames: 4
     },
