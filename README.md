@@ -1,8 +1,18 @@
 # Welcome to your Lovable project
 
-## Project info
+# Tinhat Catters
 
-**URL**: https://lovable.dev/projects/160e6844-af86-4120-9049-dbc16039b13c
+## About the Game
+
+Tinhat Catters is an engaging web-based game where players manage a virtual grow room for unique, cat-like creatures called Tinhats. The game combines elements of resource management, strategic growth, and collectible NFTs.
+
+## How to Play
+
+1.  **Grow Your Tinhats**: Nurture your Tinhats in the grow room by providing them with the necessary resources.
+2.  **Collect NFTs**: Discover and collect unique Tinhat NFTs, each with distinct characteristics.
+3.  **Manage Resources**: Strategically manage your in-game resources to optimize the growth and well-being of your Tinhats.
+4.  **Compete on Leaderboards**: Track your progress and compete with other players on various leaderboards.
+5.  **Explore the Shop**: Visit the in-game shop to acquire new items and enhance your gameplay experience.
 
 ## How can I edit this code?
 
