@@ -40,11 +40,13 @@ const SNACK_ICON_IMAGES = {
 // Tab icon images that can be individually customized
 const TAB_ICON_IMAGES = {
   gameUpgrades: "/assets/Icons/illuminati.webp",
-  thc: "/assets/Icons/weed.png"
+  thc: "/assets/Icons/weed.png",
+  collection: "/assets/Icons/illuminati.webp" // Added for NFT collection
 };
 
 const NFTShop: React.FC = () => {
-  const { address, thcBalance, refreshNFTs, connect } = useWeb3();
+  // Update the Web3 context import to include sonicNFTs
+  const { address, thcBalance, sonicNFTs, refreshNFTs, connect } = useWeb3();
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('gameUpgrades');
   const [showWalletDialog, setShowWalletDialog] = useState(false);
@@ -267,6 +269,23 @@ const NFTShop: React.FC = () => {
                 {isMobile ? 'THC' : 'THC Grow Items'}
               </div>
             </TabsTrigger>
+            <TabsTrigger 
+              value="collection" 
+              className={`flex-1 bg-[#c0c0c0] data-[state=active]:bg-[#FF69B4] data-[state=active]:text-black ${isMobile ? 'text-[10px] py-1' : ''}`}
+            >
+              <div className="flex items-center gap-1">
+                <img 
+                  src={TAB_ICON_IMAGES.collection} 
+                  alt="My Collection" 
+                  className="h-4 w-4 object-contain"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+                {isMobile ? 'NFTs' : 'My Collection'}
+              </div>
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="gameUpgrades" className="m-0">
@@ -307,6 +326,31 @@ const NFTShop: React.FC = () => {
                   />
                 ))}
               </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="collection" className="m-0">
+            <div className="win95-window p-2 mb-4">
+              <h3 className="text-sm font-bold mb-2">My Tinhatcatters Collection</h3>
+              {!address ? (
+                <p className="text-center text-gray-600 py-4">Connect your wallet to view your NFTs</p>
+              ) : sonicNFTs.length === 0 ? (
+                <p className="text-center text-gray-600 py-4">No Tinhatcatters NFTs found in your wallet</p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {sonicNFTs.map((nft) => (
+                    <NFTCard
+                      key={nft.id}
+                      id={nft.id}
+                      name={nft.name}
+                      image={nft.image}
+                      description={nft.description}
+                      className="w-full"
+                      disabled={false}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>
