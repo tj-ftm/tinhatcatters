@@ -31,7 +31,6 @@ export default defineConfig(({ mode }) => ({
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
         },
       },
-      external: ['ethers'],
     },
   },
   optimizeDeps: {
