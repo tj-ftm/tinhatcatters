@@ -45,6 +45,7 @@ export default class GameScene extends Phaser.Scene {
     
     // Create player
     this.createPlayer();
+    this.player.setScale(3.0); // Set player scale explicitly
 
     // Create parallax background (moved to render on top)
     this.createParallaxBackground();
@@ -191,7 +192,7 @@ export default class GameScene extends Phaser.Scene {
       const y = Phaser.Math.Between(gameHeight - 150, gameHeight - 80); // Adjust Y range
       const enemy = this.enemies.create(x, y, 'enemy');
       enemy.setTint(0xFF00FF); // Magenta enemies
-      enemy.setScale(1.5); // Increase enemy size
+      enemy.setScale(2.5); // Increased enemy size significantly
       enemy.setVelocityX(Phaser.Math.Between(-50, 50));
       enemy.setBounce(1);
       enemy.setCollideWorldBounds(false);
@@ -219,8 +220,8 @@ export default class GameScene extends Phaser.Scene {
     this.player = this.physics.add.sprite(100, gameHeight - 100, 'player'); // Adjust Y position
     this.player.setBounce(0.1);
     this.player.setCollideWorldBounds(false);
-    this.player.setScale(1.5); // Increase player size
-    
+    this.player.setScale(3.0); // Increased player size significantly by 25%
+
     // Set player hitbox (adjust if necessary after scaling)
     this.player.setSize(this.playerSize.width, this.playerSize.height);
     this.player.setOffset(9, 3);

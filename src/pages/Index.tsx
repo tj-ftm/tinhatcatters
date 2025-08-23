@@ -71,15 +71,30 @@ const Index = () => {
           <h1 className="text-2xl font-bold mb-2 text-win95-gray-dark">Welcome to Reptilian Run</h1>
           <p className="text-sm mb-4 text-win95-gray">Windows 95 Edition</p>
           
-          <div className="animate-float mb-6">
-            <img 
-              src={INDEX_ICON_IMAGES.logo} 
-              alt="Reptilian" 
-              className="w-48 h-48 object-contain"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><text x='20' y='100' font-size='24'>Reptilian Run</text></svg>";
-              }}
+          <div className="flex justify-center items-center w-full max-w-4xl mx-auto mb-6 p-4 bg-gray-800 rounded-lg">
+            <video 
+              src="/assets/Icons/player_idle.webm" 
+              autoPlay 
+              loop 
+              muted 
+              playsInline 
+              className="w-64 h-48 object-contain"
+            />
+            <video 
+              src="/assets/game/reptilianrun.mp4" 
+              autoPlay 
+              loop 
+              muted 
+              playsInline 
+              className="w-64 h-48 object-contain"
+            />
+            <video 
+              src="/assets/Icons/Reptile_running.webm" 
+              autoPlay 
+              loop 
+              muted 
+              playsInline 
+              className="w-64 h-48 object-contain"
             />
           </div>
         </div>
