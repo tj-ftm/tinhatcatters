@@ -38,7 +38,7 @@ interface SingleWindowProps {
 const getWindowTitle = (windowId: string, defaultTitle: string) => {
   switch (windowId) {
     case 'game':
-      return 'Reptilian Attack';
+      return 'Reptilian Run';
     case 'growroom':
       return 'THC Grow Room';
     case 'leaderboard':

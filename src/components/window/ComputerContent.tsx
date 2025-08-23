@@ -68,7 +68,7 @@ const ComputerContent: React.FC<ComputerContentProps> = ({ handleOpenWindow }) =
           isSelected={selectedIcon === 'home'}
         />
         <FileIcon 
-          label="Reptilian Attack" 
+          label="Reptilian Run" 
           icon={renderIcon("game", <Gamepad2 className="h-5 w-5" />)} 
           onClick={() => handleIconClick('game', '/game')} 
           onDoubleClick={() => handleIconDoubleClick('game', '/game')} 

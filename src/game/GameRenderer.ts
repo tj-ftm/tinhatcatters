@@ -620,7 +620,7 @@ export class GameRenderer {
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '48px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('REPTILIAN ATTACK', width / 2, height / 2 - 30);
+    ctx.fillText('REPTILIAN RUN', width / 2, height / 2 - 30);
     
     ctx.font = '24px Arial';
     ctx.fillText('Connect wallet & click START GAME', width / 2, height / 2 + 50);

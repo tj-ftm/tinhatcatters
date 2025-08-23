@@ -102,7 +102,7 @@ const GameUI: React.FC<GameUIProps> = ({ selectedPet }) => {
             return;
           }
           
-          // Get access to the reptilian attack engine instance
+          // Get access to the reptilian run engine instance
           const gameScene = gameManagerRef.current?.getGame()?.scene?.getScene('GameScene');
           if (gameScene) {
             try {
@@ -182,7 +182,7 @@ const GameUI: React.FC<GameUIProps> = ({ selectedPet }) => {
               return;
             }
             
-            // Get access to the reptilian attack engine instance
+            // Get access to the reptilian run engine instance
             const gameScene = gameManagerRef.current?.getGame()?.scene?.getScene('GameScene');
             if (gameScene) {
               try {

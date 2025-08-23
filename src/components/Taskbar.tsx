@@ -174,7 +174,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
                   <div className="py-1">
                     <StartMenuItem 
                       iconSrc={startMenuIconImages.reptilianAttack}
-                      label="Reptilian Attack"
+                      label="Reptilian Run"
                       onClick={() => handleItemClick('/game', 'game')}
                     />
                     <StartMenuItem 

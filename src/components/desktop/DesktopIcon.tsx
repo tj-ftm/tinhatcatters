@@ -88,7 +88,7 @@ const DesktopIcon: React.FC<DesktopIconProps> = ({
   return (
     <button 
       id={`desktop-icon-${id}`}
-      className={`absolute flex flex-col items-center cursor-pointer w-20 h-20 p-1 group z-10
+      className={`absolute flex flex-col items-center cursor-pointer w-24 h-24 p-1 group z-10
         ${isSelected ? 'bg-win95-blue/50 border-dotted border-white' : 'hover:bg-win95-blue/20'} 
         ${isClicking ? 'bg-win95-blue/70 scale-95' : ''}
         ${isPressed ? 'scale-95 brightness-90' : ''}
@@ -107,29 +107,52 @@ const DesktopIcon: React.FC<DesktopIconProps> = ({
       <div className={`text-2xl mb-1 transition-transform duration-100 ${
         isPressed ? 'scale-95' : 'group-hover:scale-105'
       }`}>
-        <img 
-          src={iconSrc} 
-          alt={label} 
-          className={`h-8 w-8 object-contain transition-all duration-100 ${
-            isPressed ? 'brightness-90' : 'drop-shadow-sm group-hover:drop-shadow-md'
-          }`}
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.style.display = 'none';
-            const fallbackElement = document.createElement('div');
-            fallbackElement.textContent = fallbackIcon;
-            fallbackElement.className = 'text-2xl';
-            if (target.parentNode) {
-              target.parentNode.appendChild(fallbackElement);
-            }
-          }}
-        />
+        {iconSrc.endsWith('.webm') ? (
+          <video 
+            src={iconSrc}
+            className={`h-12 w-12 object-contain transition-all duration-100 ${
+               isPressed ? 'brightness-90' : 'drop-shadow-sm group-hover:drop-shadow-md'
+             }`}
+            autoPlay
+            loop
+            muted
+            playsInline
+            onError={(e) => {
+              const target = e.target as HTMLVideoElement;
+              target.style.display = 'none';
+              const fallbackElement = document.createElement('div');
+              fallbackElement.textContent = fallbackIcon;
+              fallbackElement.className = 'text-2xl';
+              if (target.parentNode) {
+                target.parentNode.appendChild(fallbackElement);
+              }
+            }}
+          />
+        ) : (
+          <img 
+            src={iconSrc} 
+            alt={label} 
+            className={`h-12 w-12 object-contain transition-all duration-100 ${
+               isPressed ? 'brightness-90' : 'drop-shadow-sm group-hover:drop-shadow-md'
+             }`}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              const fallbackElement = document.createElement('div');
+              fallbackElement.textContent = fallbackIcon;
+              fallbackElement.className = 'text-2xl';
+              if (target.parentNode) {
+                target.parentNode.appendChild(fallbackElement);
+              }
+            }}
+          />
+        )}
       </div>
       <span 
         className={`text-white text-xs text-center font-medium
           ${isSelected 
-            ? 'bg-win95-blue border border-dotted border-white/50' 
-            : 'bg-transparent group-hover:bg-win95-blue/60'
+            ? 'border border-dotted border-white/50' 
+            : ''
           } 
           px-1 py-0.5 w-full transition-all duration-100
           ${isPressed ? 'brightness-90' : ''}

@@ -60,7 +60,7 @@ const CustomWindowsManager: React.FC<CustomWindowsManagerProps> = ({
       <h2 className="text-lg font-bold mb-4">My Computer</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {Object.entries({
-          game: { label: "Reptilian Attack", icon: <Gamepad2 className="h-5 w-5" />, route: "/game" },
+          game: { label: "Reptilian Run", icon: <Gamepad2 className="h-5 w-5" />, route: "/game" },
           shop: { label: "NFT Shop", icon: <ShoppingCart className="h-5 w-5" />, route: "/shop" },
           growroom: { label: "THC Grow Room", icon: <Cannabis className="h-5 w-5" />, route: "/growroom" },
           leaderboard: { label: "Leaderboard", icon: <TrendingUp className="h-5 w-5" />, route: "/leaderboard" },

@@ -44,14 +44,14 @@ const Leaderboard = () => {
     return (
       <div className="flex flex-col h-full p-4 space-y-6 items-center justify-center">
         <Trophy className="h-16 w-16 text-yellow-500 mb-4" />
-        <h1 className="text-2xl font-bold text-center">Reptilian Attack Leaderboard</h1>
+        <h1 className="text-2xl font-bold text-center">Reptilian Run Leaderboard</h1>
         
         <Alert className="max-w-md">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Ready to Play!</AlertTitle>
           <AlertDescription>
             The leaderboard will show real scores once players start playing.
-            Be the first to appear on the leaderboard by playing Reptilian Attack!
+            Be the first to appear on the leaderboard by playing Reptilian Run!
           </AlertDescription>
         </Alert>
         
@@ -59,7 +59,7 @@ const Leaderboard = () => {
           onClick={() => window.location.href = '/game'}
           className="mt-4 px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors"
         >
-          Play Reptilian Attack
+          Play Reptilian Run
         </button>
       </div>
     );
@@ -73,7 +73,7 @@ const Leaderboard = () => {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <Trophy className="h-6 w-6 text-yellow-500 mr-2" />
-          <h1 className="text-2xl font-bold">Reptilian Attack Leaderboard</h1>
+          <h1 className="text-2xl font-bold">Reptilian Run Leaderboard</h1>
         </div>
         <Button 
           onClick={loadLeaderboard}

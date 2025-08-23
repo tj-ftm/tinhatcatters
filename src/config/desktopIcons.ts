@@ -10,7 +10,7 @@ export interface DesktopIconConfig {
 
 export const desktopIconImages = {
   computer: "/assets/Icons/computer.png",
-  game: "/assets/Icons/illuminati.webp",
+  game: "/assets/Icons/player_idle.webm",
   growroom: "/assets/Icons/weed.png",
   shop: "/assets/Icons/nftshop.ico",
   chat: "/assets/Icons/illuminati.webp",
@@ -28,7 +28,7 @@ export const desktopIcons: DesktopIconConfig[] = [
   },
   {
     id: "game",
-    label: "Reptilian Attack",
+    label: "Reptilian Run",
     iconSrc: desktopIconImages.game,
     fallbackIcon: "🎮",
     route: "/game",

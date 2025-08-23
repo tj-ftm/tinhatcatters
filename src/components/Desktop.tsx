@@ -39,7 +39,7 @@ const Desktop: React.FC = () => {
       case 'computer':
         return 'My Computer';
       case 'game':
-        return 'Reptilian Attack';
+        return 'Reptilian Run';
       case 'growroom':
         return 'THC Grow Room';
       case 'shop':

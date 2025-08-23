@@ -14,7 +14,7 @@ const Header: React.FC = () => {
   
   // Set the title based on the current route
   const getTitle = () => {
-    if (location.pathname === '/game') return 'Reptilian Attack';
+    if (location.pathname === '/game') return 'Reptilian Run';
     return 'Sonic Sidescroller Adventure';
   };
   

@@ -60,7 +60,7 @@ const NFTShop: React.FC = () => {
   
   // Initialize the game engine to get upgrade prices
   useEffect(() => {
-    // Get Reptilian Attack game upgrades
+    // Get Reptilian Run game upgrades
     const reptilianEngine = new ReptilianAttackEngine();
     const upgradePrices = reptilianEngine.getUpgradePrices();
     
@@ -271,7 +271,7 @@ const NFTShop: React.FC = () => {
           
           <TabsContent value="gameUpgrades" className="m-0">
             <div className="win95-window p-2 mb-4">
-              <h3 className="text-sm font-bold mb-2">Reptilian Attack Upgrades</h3>
+              <h3 className="text-sm font-bold mb-2">Reptilian Run Upgrades</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {gameUpgrades.reptilianAttack.map((upgrade: any) => (
                   <NFTCard
