@@ -78,7 +78,6 @@ const Game: React.FC = () => {
           setWindowIsMaximized={setWindowIsMaximized}
           gameEngineRef={gameEngineRef}
           onPlayAgain={handlePlayAgain}
-          onConnectWallet={() => setShowWalletDialog(true)}
         />
       </div>
       
