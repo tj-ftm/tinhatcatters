@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# Tinhat Catters
 
 # Tinhat Catters
 
@@ -18,11 +18,9 @@ Tinhat Catters is an engaging web-based game where players manage a virtual grow
 
 There are several ways of editing your application.
 
-**Use Lovable**
+**How to Edit the Code**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/160e6844-af86-4120-9049-dbc16039b13c) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in the deployed version.
 
 **Use your preferred IDE**
 
@@ -72,8 +70,8 @@ This project is built with .
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/160e6844-af86-4120-9049-dbc16039b13c) and click on Share -> Publish.
+
 
 ## I want to use a custom domain - is that possible?
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+We recommend using Netlify for deployment and custom domains.
