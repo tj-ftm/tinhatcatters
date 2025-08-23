@@ -47,6 +47,15 @@ const TAB_ICON_IMAGES = {
 const NFTShop: React.FC = () => {
   // Update the Web3 context import to include sonicNFTs
   const { address, thcBalance, sonicNFTs, refreshNFTs, connect } = useWeb3();
+  
+  // Add this debug effect
+  useEffect(() => {
+    console.log('NFTShop Debug Info:');
+    console.log('Address:', address);
+    console.log('SonicNFTs:', sonicNFTs);
+    console.log('SonicNFTs length:', sonicNFTs?.length || 0);
+  }, [address, sonicNFTs]);
+  
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('gameUpgrades');
   const [showWalletDialog, setShowWalletDialog] = useState(false);

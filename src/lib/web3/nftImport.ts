@@ -2,11 +2,13 @@
 import { ethers } from 'ethers';
 import { toast } from '@/hooks/use-toast';
 
-// The NFT contract ABI (minimal interface for what we need)
+// The NFT contract ABI (updated to match actual contract)
 const NFT_ABI = [
   'function balanceOf(address owner) view returns (uint256)',
-  'function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)',
-  'function tokenURI(uint256 tokenId) view returns (string)'
+  'function ownerOf(uint256 tokenId) view returns (address)',
+  'function tokenURI(uint256 tokenId) view returns (string)',
+  'function totalSupply() view returns (uint256)',
+  'event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)'
 ];
 
 // Contract address for the NFT collection
@@ -26,7 +28,7 @@ export interface NFTMetadata {
 }
 
 /**
- * Fetches NFTs owned by the provided wallet address
+ * Fetches NFTs owned by the provided wallet address using Transfer events
  */
 export const fetchOwnedNFTs = async (walletAddress: string): Promise<NFTMetadata[]> => {
   try {
@@ -39,22 +41,43 @@ export const fetchOwnedNFTs = async (walletAddress: string): Promise<NFTMetadata
     const provider = new ethers.JsonRpcProvider(SONIC_RPC_URL);
     const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, provider);
 
-    // Get NFT balance for the wallet
-    const balance = await contract.balanceOf(walletAddress);
-    console.log(`Wallet has ${balance.toString()} NFTs from this collection`);
+    console.log(`Fetching NFTs for wallet: ${walletAddress}`);
 
-    if (balance.toString() === '0') {
+    // Get total supply to know the range of token IDs
+    const totalSupply = await contract.totalSupply();
+    console.log(`Total supply: ${totalSupply.toString()}`);
+
+    if (totalSupply.toString() === '0') {
       return [];
     }
 
-    // Fetch all owned NFTs
-    const nftPromises = [];
-    for (let i = 0; i < balance; i++) {
-      nftPromises.push(fetchNFTMetadata(contract, walletAddress, i));
+    // Check ownership for each token ID
+    const ownedTokenIds: string[] = [];
+    const ownershipPromises = [];
+    
+    // Check tokens in batches to avoid overwhelming the RPC
+    const batchSize = 50;
+    for (let i = 1; i <= totalSupply; i += batchSize) {
+      const batch = [];
+      for (let j = i; j < Math.min(i + batchSize, Number(totalSupply) + 1); j++) {
+        batch.push(checkTokenOwnership(contract, j, walletAddress));
+      }
+      const batchResults = await Promise.all(batch);
+      ownedTokenIds.push(...batchResults.filter(tokenId => tokenId !== null) as string[]);
     }
 
-    // Wait for all promises to resolve
-    const nfts = await Promise.all(nftPromises);
+    console.log(`Found ${ownedTokenIds.length} owned tokens:`, ownedTokenIds);
+
+    if (ownedTokenIds.length === 0) {
+      return [];
+    }
+
+    // Fetch metadata for owned tokens
+    const metadataPromises = ownedTokenIds.map(tokenId => 
+      fetchNFTMetadataById(contract, tokenId)
+    );
+    
+    const nfts = await Promise.all(metadataPromises);
     
     // Filter out any null values (failed fetches)
     return nfts.filter(nft => nft !== null) as NFTMetadata[];
@@ -70,17 +93,34 @@ export const fetchOwnedNFTs = async (walletAddress: string): Promise<NFTMetadata
 };
 
 /**
- * Fetches metadata for a single NFT by its index in the owner's collection
+ * Checks if a specific token ID is owned by the given wallet address
  */
-const fetchNFTMetadata = async (
+const checkTokenOwnership = async (
   contract: ethers.Contract,
-  owner: string,
-  index: number
+  tokenId: number,
+  walletAddress: string
+): Promise<string | null> => {
+  try {
+    const owner = await contract.ownerOf(tokenId);
+    if (owner.toLowerCase() === walletAddress.toLowerCase()) {
+      return tokenId.toString();
+    }
+    return null;
+  } catch (error) {
+    // Token might not exist or other error
+    return null;
+  }
+};
+
+/**
+ * Fetches metadata for a single NFT by its token ID
+ */
+const fetchNFTMetadataById = async (
+  contract: ethers.Contract,
+  tokenId: string
 ): Promise<NFTMetadata | null> => {
   try {
-    // Get the token ID at the specified index
-    const tokenId = await contract.tokenOfOwnerByIndex(owner, index);
-    console.log(`Fetching metadata for token ID ${tokenId} (index ${index})`);
+    console.log(`Fetching metadata for token ID ${tokenId}`);
     
     // Get the token URI
     const tokenURI = await contract.tokenURI(tokenId);
@@ -107,7 +147,7 @@ const fetchNFTMetadata = async (
     }
     
     return {
-      id: tokenId.toString(),
+      id: tokenId,
       name: metadata.name || `NFT #${tokenId}`,
       image: metadata.image || '',
       description: metadata.description || '',
@@ -115,7 +155,7 @@ const fetchNFTMetadata = async (
       ...metadata
     };
   } catch (error) {
-    console.error(`Error fetching NFT metadata for index ${index}:`, error);
+    console.error(`Error fetching NFT metadata for token ${tokenId}:`, error);
     return null;
   }
 };
