@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' &&
+
     
   ].filter(Boolean),
   resolve: {
@@ -31,6 +31,7 @@ export default defineConfig(({ mode }) => ({
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
         },
       },
+      external: ['ethers'],
     },
   },
   optimizeDeps: {

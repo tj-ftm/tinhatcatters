@@ -167,7 +167,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
       window.ethereum.on('accountsChanged', handleAccountsChanged);
       window.ethereum.on('chainChanged', handleChainChanged);
       
-      switchToSonicNetwork();
+
       
       return () => {
         window.ethereum.removeListener('accountsChanged', handleAccountsChanged);

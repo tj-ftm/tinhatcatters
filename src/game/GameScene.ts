@@ -110,56 +110,58 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createParallaxBackground() {
+    const { width, height } = this.sys.game.config;
     // Add three layers of background with different scroll speeds and pink/black theme
     this.parallaxBG = [
-      this.add.tileSprite(0, 0, 800, 400, 'bg-layer-1')
+      this.add.tileSprite(0, 0, Number(width), Number(height), 'bg-layer-1')
         .setOrigin(0, 0)
-        .setScrollFactor(0, 0)
-        .setTint(0x000000), // Black
-      this.add.tileSprite(0, 0, 800, 400, 'bg-layer-2')
+        .setScrollFactor(0, 0),
+      this.add.tileSprite(0, 0, Number(width), Number(height), 'bg-layer-2')
         .setOrigin(0, 0)
-        .setScrollFactor(0, 0)
-        .setTint(0xFF69B4), // Pink
-      this.add.tileSprite(0, 0, 800, 400, 'bg-layer-3')
+        .setScrollFactor(0, 0.1),
+      this.add.tileSprite(0, 0, Number(width), Number(height), 'bg-layer-3')
         .setOrigin(0, 0)
-        .setScrollFactor(0, 0)
-        .setTint(0x222222) // Dark gray
+        .setScrollFactor(0, 0.2)
     ];
   }
 
   createPlatforms() {
     this.platforms = this.physics.add.staticGroup();
-    
+    const gameHeight = Number(this.sys.game.config.height);
+    const groundY = gameHeight - 50; // Position ground 50px from the bottom
+
     // Create initial ground
     for (let i = 0; i < 20; i++) {
-      const platform = this.platforms.create(i * 64, 380, 'platform');
+      const platform = this.platforms.create(i * 64, groundY, 'platform');
       platform.setTint(0xFF69B4); // Pink platforms
       platform.refreshBody();
     }
     
-    // Add some floating platforms
-    const floatingPlatform1 = this.platforms.create(300, 280, 'platform');
+    // Add some floating platforms (adjust Y relative to new groundY or gameHeight)
+    const floatingPlatform1 = this.platforms.create(300, groundY - 100, 'platform');
     floatingPlatform1.setTint(0xFF69B4);
     floatingPlatform1.refreshBody();
     
-    const floatingPlatform2 = this.platforms.create(550, 200, 'platform');
+    const floatingPlatform2 = this.platforms.create(550, groundY - 180, 'platform');
     floatingPlatform2.setTint(0xFF69B4);
     floatingPlatform2.refreshBody();
     
-    const floatingPlatform3 = this.platforms.create(750, 300, 'platform');
+    const floatingPlatform3 = this.platforms.create(750, groundY - 80, 'platform');
     floatingPlatform3.setTint(0xFF69B4);
     floatingPlatform3.refreshBody();
   }
 
   createRings() {
     this.rings = this.physics.add.group();
+    const gameHeight = Number(this.sys.game.config.height);
     
     // Add some initial rings with yellow tint
     for (let i = 0; i < 10; i++) {
-      const x = Phaser.Math.Between(200, 800);
-      const y = Phaser.Math.Between(100, 300);
+      const x = Phaser.Math.Between(200, Number(this.sys.game.config.width) - 200);
+      const y = Phaser.Math.Between(gameHeight - 250, gameHeight - 150); // Adjust Y range
       const ring = this.rings.create(x, y, 'ring');
       ring.setTint(0xFFFF00); // Yellow rings
+      ring.setScale(1.5); // Increase ring size
       // Add a simple rotation animation
       this.tweens.add({
         targets: ring,
@@ -172,13 +174,15 @@ export default class GameScene extends Phaser.Scene {
 
   createEnemies() {
     this.enemies = this.physics.add.group();
+    const gameHeight = Number(this.sys.game.config.height);
     
     // Add some initial enemies
     for (let i = 0; i < 5; i++) {
-      const x = Phaser.Math.Between(400, 1200);
-      const y = Phaser.Math.Between(100, 350);
+      const x = Phaser.Math.Between(400, Number(this.sys.game.config.width) + 400);
+      const y = Phaser.Math.Between(gameHeight - 150, gameHeight - 80); // Adjust Y range
       const enemy = this.enemies.create(x, y, 'enemy');
       enemy.setTint(0xFF00FF); // Magenta enemies
+      enemy.setScale(1.5); // Increase enemy size
       enemy.setVelocityX(Phaser.Math.Between(-50, 50));
       enemy.setBounce(1);
       enemy.setCollideWorldBounds(false);
@@ -201,12 +205,14 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createPlayer() {
+    const gameHeight = Number(this.sys.game.config.height);
     // Create player sprite and add physics
-    this.player = this.physics.add.sprite(100, 300, 'player');
+    this.player = this.physics.add.sprite(100, gameHeight - 100, 'player'); // Adjust Y position
     this.player.setBounce(0.1);
     this.player.setCollideWorldBounds(false);
+    this.player.setScale(1.5); // Increase player size
     
-    // Set player hitbox
+    // Set player hitbox (adjust if necessary after scaling)
     this.player.setSize(this.playerSize.width, this.playerSize.height);
     this.player.setOffset(9, 3);
     
@@ -221,8 +227,10 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createPet() {
+    const gameHeight = Number(this.sys.game.config.height);
     // Create pet (would be based on owned NFTs in the real app)
-    this.pet = this.physics.add.sprite(50, 300, 'tinhat');
+    this.pet = this.physics.add.sprite(50, gameHeight - 100, 'tinhat'); // Adjust Y position
+    this.pet.setScale(1.5); // Increase pet size
     
     // Set pet to follow player loosely
     this.pet.setGravity(0);
