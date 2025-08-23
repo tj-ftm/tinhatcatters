@@ -77,7 +77,4 @@
   stroke: rgba(255, 255, 255, 0.3);
 }
 
-/* Add this import to your main CSS file */
-@import url('tailwindcss/base');
-@import url('tailwindcss/components');
-@import url('tailwindcss/utilities');
+/* Tailwind CSS imports are handled in index.css */

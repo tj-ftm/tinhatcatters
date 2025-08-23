@@ -19,13 +19,15 @@ export interface GameState {
   gameStarted: boolean;
   paused: boolean;
   upgrades: GameUpgrades;
+  showCountdown: boolean;
 }
 
 const UPGRADE_COST = 50; // Points cost for upgrades
 
 export const useGameState = () => {
-  const { address } = useWeb3();
+  const { address, connect } = useWeb3();
   const { addPoints, getPoints } = usePoints();
+  const [showWalletDialog, setShowWalletDialog] = useState(false);
   const [gameState, setGameState] = useState<GameState>({
     score: 0,
     lives: 3,
@@ -34,6 +36,7 @@ export const useGameState = () => {
     gameOver: false,
     gameStarted: false,
     paused: false,
+    showCountdown: false,
     upgrades: {
       speed: 1,
       fireRate: 1,
@@ -56,18 +59,14 @@ export const useGameState = () => {
     // Game is now free to play - no wallet required, but encouraged for leaderboard
     setGameState(prev => ({
       ...prev,
-      gameStarted: true,
+      gameStarted: false, // Don't start immediately, wait for countdown
       gameOver: false,
       lives: 3,
       health: 100,
       score: 0,
       pointsEarned: 0,
+      showCountdown: true, // Trigger countdown
     }));
-    
-    toast({
-      title: "Game Started!",
-      description: address ? "Your score will be saved to the leaderboard!" : "Connect wallet to save your score to the leaderboard",
-    });
     
     return true;
   };
@@ -126,10 +125,29 @@ export const useGameState = () => {
         description: `Score: ${finalScore}, Points earned: ${pointsEarned}`,
       });
     } else {
+      // Just show completion message without triggering wallet dialog
       toast({
         title: "Game Complete!",
         description: `Score: ${finalScore}. Connect wallet to save results and earn points!`,
       });
+    }
+  };
+
+  const handleSelectWallet = async (walletId: string) => {
+    try {
+      await connect(walletId);
+      setShowWalletDialog(false);
+      toast({
+        title: "Wallet Connected!",
+        description: "You can now save your scores and earn points!",
+      });
+    } catch (error) {
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect wallet. Please try again.",
+        variant: "destructive"
+      });
+      console.error("Wallet connection error:", error);
     }
   };
 
@@ -144,6 +162,9 @@ export const useGameState = () => {
     saveGameResults,
     address,
     currentPoints: address ? getPoints(address) : 0,
-    upgradeCost: UPGRADE_COST
+    upgradeCost: UPGRADE_COST,
+    showWalletDialog,
+    setShowWalletDialog,
+    handleSelectWallet
   };
 };

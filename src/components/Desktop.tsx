@@ -6,7 +6,6 @@ import WindowManager from './WindowManager';
 import WalletWindow from './WalletWindow';
 import ChatDialog from './ChatDialog';
 import DesktopIcons from './desktop/DesktopIcons';
-import CustomWindowsManager from './desktop/CustomWindowsManager';
 import { useDesktopState } from '@/hooks/useDesktopState';
 
 const Desktop: React.FC = () => {
@@ -14,6 +13,7 @@ const Desktop: React.FC = () => {
   const {
     activeWindows,
     windowsMinimized,
+    windowsMaximized,
     customWindows,
     activeCustomWindow,
     showWalletWindow,
@@ -28,7 +28,10 @@ const Desktop: React.FC = () => {
     minimizeWindow,
     restoreWindow,
     openCustomWindow,
-    closeCustomWindow
+    closeCustomWindow,
+    minimizeCustomWindow,
+    maximizeCustomWindow,
+    restoreCustomWindow
   } = useDesktopState();
 
   const getWindowTitle = (windowId: string): string => {
@@ -55,12 +58,11 @@ const Desktop: React.FC = () => {
   };
 
   const handleDesktopIconClick = (iconId: string) => {
-    setSelectedIcon(prev => prev === iconId ? null : iconId);
+    setSelectedIcon(iconId);
   };
 
   const handleDesktopIconDoubleClick = (windowId: string, route?: string) => {
-    openCustomWindow(windowId, getWindowTitle(windowId), route);
-    
+    openWindow(windowId);
     if (route) {
       navigate(route);
     }
@@ -108,12 +110,11 @@ const Desktop: React.FC = () => {
           onChatClick={handleChatClick}
         />
         
-        <CustomWindowsManager
-          customWindows={customWindows}
-          activeCustomWindow={activeCustomWindow}
-          setActiveCustomWindow={setActiveCustomWindow}
-          closeCustomWindow={closeCustomWindow}
-          onNavigate={handleNavigationFromWindow}
+        <WindowManager 
+          activeWindows={activeWindows} 
+          windowsMinimized={windowsMinimized}
+          closeWindow={closeWindow}
+          minimizeWindow={minimizeWindow}
         />
         
         {showWalletWindow && (
@@ -162,12 +163,7 @@ const Desktop: React.FC = () => {
           </div>
         )}
         
-        <WindowManager 
-          activeWindows={activeWindows} 
-          windowsMinimized={windowsMinimized}
-          closeWindow={closeWindow}
-          minimizeWindow={minimizeWindow}
-        />
+
         
         <div className="hidden">
           <Outlet />

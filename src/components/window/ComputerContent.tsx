@@ -8,6 +8,16 @@ interface ComputerContentProps {
 }
 
 const ComputerContent: React.FC<ComputerContentProps> = ({ handleOpenWindow }) => {
+  const [selectedIcon, setSelectedIcon] = React.useState<string | null>(null);
+  
+  const handleIconClick = (iconId: string, path?: string) => {
+    setSelectedIcon(iconId);
+  };
+  
+  const handleIconDoubleClick = (iconId: string, path?: string) => {
+    setSelectedIcon(iconId);
+    handleOpenWindow(iconId, path);
+  };
   // Each icon has its own URL that can be manually changed
   const iconImages = {
     home: "/assets/Icons/tinhatcat.webp",
@@ -49,46 +59,62 @@ const ComputerContent: React.FC<ComputerContentProps> = ({ handleOpenWindow }) =
         </div>
       </div>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" onClick={(e) => e.target === e.currentTarget && setSelectedIcon(null)}>
         <FileIcon 
           label="Home" 
           icon={renderIcon("home", <Home className="h-5 w-5" />)} 
-          onClick={() => handleOpenWindow('home', '/')} 
+          onClick={() => handleIconClick('home', '/')} 
+          onDoubleClick={() => handleIconDoubleClick('home', '/')} 
+          isSelected={selectedIcon === 'home'}
         />
         <FileIcon 
           label="Reptilian Attack" 
           icon={renderIcon("game", <Gamepad2 className="h-5 w-5" />)} 
-          onClick={() => handleOpenWindow('game', '/game')} 
+          onClick={() => handleIconClick('game', '/game')} 
+          onDoubleClick={() => handleIconDoubleClick('game', '/game')} 
+          isSelected={selectedIcon === 'game'}
         />
         <FileIcon 
           label="NFT Shop" 
           icon={renderIcon("shop", <ShoppingCart className="h-5 w-5" />)} 
-          onClick={() => handleOpenWindow('shop', '/shop')} 
+          onClick={() => handleIconClick('shop', '/shop')} 
+          onDoubleClick={() => handleIconDoubleClick('shop', '/shop')} 
+          isSelected={selectedIcon === 'shop'}
         />
         <FileIcon 
           label="THC Grow Room" 
           icon={renderIcon("growroom", <Cannabis className="h-5 w-5" />)} 
-          onClick={() => handleOpenWindow('growroom', '/growroom')} 
+          onClick={() => handleIconClick('growroom', '/growroom')} 
+          onDoubleClick={() => handleIconDoubleClick('growroom', '/growroom')} 
+          isSelected={selectedIcon === 'growroom'}
         />
         <FileIcon 
           label="Wallet" 
           icon={renderIcon("wallet", <Wallet className="h-5 w-5" />)} 
-          onClick={() => handleOpenWindow('wallet')} 
+          onClick={() => handleIconClick('wallet')} 
+          onDoubleClick={() => handleIconDoubleClick('wallet')} 
+          isSelected={selectedIcon === 'wallet'}
         />
         <FileIcon 
           label="Community Chat" 
           icon={renderIcon("chat", <MessageSquare className="h-5 w-5" />)} 
-          onClick={() => handleOpenWindow('chat')} 
+          onClick={() => handleIconClick('chat')} 
+          onDoubleClick={() => handleIconDoubleClick('chat')} 
+          isSelected={selectedIcon === 'chat'}
         />
         <FileIcon 
           label="Analytics" 
           icon={renderIcon("analytics", <BarChart2 className="h-5 w-5" />)} 
-          onClick={() => handleOpenWindow('analytics', '/analytics')} 
+          onClick={() => handleIconClick('analytics', '/analytics')} 
+          onDoubleClick={() => handleIconDoubleClick('analytics', '/analytics')} 
+          isSelected={selectedIcon === 'analytics'}
         />
         <FileIcon 
           label="Help" 
           icon={renderIcon("help", <HelpCircle className="h-5 w-5" />)} 
-          onClick={() => alert('Help not available in this version!')} 
+          onClick={() => handleIconClick('help')} 
+          onDoubleClick={() => alert('Help not available in this version!')} 
+          isSelected={selectedIcon === 'help'}
         />
       </div>
     </div>

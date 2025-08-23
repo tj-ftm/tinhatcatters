@@ -14,13 +14,16 @@ class ReptilianAttackEngine {
   
   // Game entities
   private player: Player = {
-    x: 100,
+    x: 50, // Moved further left for more engagement time
     y: 200,
     width: 500,
     height: 750,
     velocityY: 0,
     isJumping: false,
-    animationState: 'idle'
+    animationState: 'idle',
+    health: 3,
+    maxHealth: 3,
+    lives: 3
   };
   private enemies: Enemy[] = [];
   private bullets: Bullet[] = [];
@@ -83,18 +86,31 @@ class ReptilianAttackEngine {
   setAnimationRunning(running: boolean) {
     this.animationManager.setRunning(running);
   }
+  
+  // Method to refresh canvas to ensure GIF animations remain visible
+  refreshCanvas() {
+    // Instead of manipulating the image source which breaks transparency,
+    // we'll just ensure the canvas is properly cleared and redrawn
+    if (this.canvas && this.context) {
+      // Request a new render frame
+      this.render();
+    }
+  }
 
   reset(upgrades: GameUpgrades = { speed: 1, fireRate: 1, health: 1 }) {
     const config = this.imageManager.getConfig();
     
     this.player = {
-      x: 100,
+      x: 50, // Moved further left for more engagement time
       y: 200,
-      width: 50,
-      height: 70,
+      width: 60, // 20% bigger than 50
+      height: 84, // 20% bigger than 70
       velocityY: 0,
       isJumping: false,
-      animationState: 'idle'
+      animationState: 'idle',
+      health: 3,
+      maxHealth: 3,
+      lives: 3
     };
     
     this.enemies = [];
@@ -112,6 +128,9 @@ class ReptilianAttackEngine {
     this.startTime = Date.now();
     
     this.animationManager.reset();
+    
+    // Start video playback when game begins
+    this.gameRenderer.setVideoPlayback(true);
   }
 
   update(delta: number, input: { left: boolean, right: boolean }): GameState {
@@ -157,55 +176,99 @@ class ReptilianAttackEngine {
         velocityX: 15 * speedMultiplier
       });
       this.lastShootTime = now;
+      
+      // Trigger throwing animation
+      if (!this.player.isJumping) {
+        this.player.animationState = 'throwing';
+        // Reset to running after a short delay
+        setTimeout(() => {
+          if (this.player.animationState === 'throwing' && !this.player.isJumping) {
+            this.player.animationState = this.animationManager.getCurrentFrame() > 0 ? 'running' : 'idle';
+          }
+        }, 300);
+      }
     }
 
-    // Generate enemies
-    if (now - this.lastEnemyTime > 2000 / (1 + this.gameSpeed / 20)) {
+    // Generate enemies - keep only 2-3 on screen at a time
+    const activeEnemies = this.enemies.filter(e => !e.hit && e.animationState !== 'exploding');
+    if (activeEnemies.length < 3 && now - this.lastEnemyTime > 2000 / (1 + this.gameSpeed / 20)) {
       const config = this.imageManager.getConfig();
+      
+      // Adjust spawn distance based on screen size for better balance
+      // On larger screens (desktop), spawn enemies closer to make game more challenging
+      // On smaller screens (mobile), keep original distance
+      const isMobile = this.canvas.width <= 768; // Simple mobile detection based on canvas width
+      const spawnDistance = isMobile ? this.canvas.width : this.canvas.width * 0.75; // Spawn 25% closer on desktop
+      
       this.enemies.push({
-        x: this.canvas.width,
-        y: this.canvas.height - 60 - 20, // Use barrier size
-        width: 60,
-        height: 60,
-        health: 2,
+        x: spawnDistance,
+        y: this.canvas.height - 72 - 20, // Use 20% bigger size
+        width: 72, // 20% bigger than 60
+        height: 72, // 20% bigger than 60
+        health: 3,
+        maxHealth: 3,
         hit: false,
         velocityY: 0,
         isJumping: false,
         isFiring: false,
         animationState: 'running',
-        lastFireTime: 0
+        lastFireTime: 0,
+        parallaxX: spawnDistance, // Track initial position for parallax
+        speedMultiplier: 0.7 + Math.random() * 0.6, // Random speed between 0.7x and 1.3x
+        jumpCooldown: 2000 + Math.random() * 4000, // Random jump cooldown 2-6 seconds
+        lastJumpTime: 0
       });
       this.lastEnemyTime = now;
     }
 
-    // Enemy shooting
+    // Enemy shooting and jumping logic
     if (now - this.lastEnemyShootTime > 2000 / (1 + this.gameSpeed / 40)) {
-      const shootingEnemies = this.enemies.filter(e => !e.hit);
-      if (shootingEnemies.length > 0) {
-        const shooter = shootingEnemies[Math.floor(Math.random() * shootingEnemies.length)];
-        shooter.isFiring = true;
-        shooter.animationState = 'firing';
-        shooter.lastFireTime = now;
+      const activeEnemies = this.enemies.filter(e => !e.hit && e.animationState !== 'exploding');
+      
+      for (const enemy of activeEnemies) {
+        const distanceToPlayer = Math.abs(enemy.x - this.player.x);
+        
+        // If enemy is too close (within 200 pixels), occasionally jump instead of shooting
+        if (distanceToPlayer < 200) {
+          // 30% chance to jump when close, but not very often
+          if (Math.random() < 0.3 && !enemy.isJumping && enemy.animationState === 'running') {
+            enemy.velocityY = -12; // Jump force
+            enemy.isJumping = true;
+            enemy.animationState = 'jumping';
+          }
+          // Don't shoot when too close
+          continue;
+        }
+        
+        // Normal shooting logic for enemies not too close
+        if (Math.random() < 0.3) { // 30% chance to shoot
+          enemy.isFiring = true;
+          enemy.animationState = 'firing';
+          enemy.lastFireTime = now;
 
-        const config = this.imageManager.getConfig();
-        this.enemyBullets.push({
-          x: shooter.x,
-          y: shooter.y + shooter.height / 2 - config.enemyBullet.height / 2,
-          width: config.enemyBullet.width,
-          height: config.enemyBullet.height,
-          velocityX: -8
-        });
-        this.lastEnemyShootTime = now;
+          const config = this.imageManager.getConfig();
+          this.enemyBullets.push({
+            x: enemy.x,
+            y: enemy.y + enemy.height / 2 - config.enemyBullet.height / 2,
+            width: config.enemyBullet.width,
+            height: config.enemyBullet.height,
+            velocityX: -8
+          });
 
-        setTimeout(() => {
-          shooter.isFiring = false;
-          shooter.animationState = 'running';
-        }, 300);
+          setTimeout(() => {
+            if (enemy.animationState === 'firing') {
+              enemy.isFiring = false;
+              enemy.animationState = 'running';
+            }
+          }, 300);
+          break; // Only one enemy shoots per cycle
+        }
       }
+      this.lastEnemyShootTime = now;
     }
 
     // Update game entities
-    const enemyUpdate = GameLogic.updateEnemies(this.enemies, this.canvas, this.gameSpeed, delta, now);
+    const enemyUpdate = GameLogic.updateEnemies(this.enemies, this.canvas, this.gameSpeed, delta, now, this.startTime);
     this.enemies = enemyUpdate.enemies;
     this.score += enemyUpdate.score;
     
@@ -224,10 +287,10 @@ class ReptilianAttackEngine {
       this.bullets,
       this.enemyBullets,
       this.collisionBehavior,
-      healthMultiplier
+      healthMultiplier,
+      this.gameRenderer.getBackgroundScrollX()
     );
 
-    this.health += collisionResult.health;
     this.score += collisionResult.score;
     
     // Only add points if game is not over
@@ -239,14 +302,11 @@ class ReptilianAttackEngine {
     this.bullets = collisionResult.bullets;
     this.enemyBullets = collisionResult.enemyBullets;
 
-    // Check health and lives
-    if (this.health <= 0) {
-      this.lives -= 1;
-      if (this.lives <= 0) {
-        this.gameOver = true;
-      } else {
-        this.health = 100;
-      }
+    // Check if game is over (player health handled in GameLogic now)
+    if (collisionResult.gameOver) {
+      this.gameOver = true;
+      // Pause video playback when game ends
+      this.gameRenderer.setVideoPlayback(false);
     }
 
     // Increment score for surviving - only if game is not over
@@ -272,6 +332,11 @@ class ReptilianAttackEngine {
 
   render() {
     if (this.gameRenderer) {
+      // Clear the entire canvas before rendering to prevent GIF caching
+      if (this.canvas && this.context) {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      }
+      
       this.gameRenderer.render(
         this.player,
         this.enemies,
@@ -287,8 +352,8 @@ class ReptilianAttackEngine {
   getGameState(): GameState {
     return {
       score: this.score,
-      lives: this.lives,
-      health: this.health,
+      lives: this.player.health, // Use player hearts as lives
+      health: this.player.health,
       pointsEarned: this.pointsEarned,
       thcEarned: 0,
       gameOver: this.gameOver,

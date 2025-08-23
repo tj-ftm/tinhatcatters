@@ -23,36 +23,17 @@ const GameControls: React.FC<GameControlsProps> = ({
   const { getPoints } = usePoints();
   
   return (
-    <div className={`${isMobile ? 'flex flex-col gap-2 items-center' : 'flex gap-2 items-center'}`}>
+    <div className={`${isMobile ? 'flex flex-col gap-2 items-end' : 'flex gap-2 items-center justify-end'}`}>
       {!gameState.gameStarted ? (
-        <>
-          <Button onClick={startGame} className="win95-button h-8 whitespace-nowrap text-xs">
-            Start Game (Free!)
-          </Button>
-          {address && (
-            <div className="win95-panel p-2 h-8 flex items-center text-xs">
-              <span className="font-bold text-yellow-600">
-                Points: {getPoints(address)}
-              </span>
-            </div>
-          )}
-          {!address && <WalletConnector />}
-        </>
+        <Button onClick={startGame} className="win95-button h-8 whitespace-nowrap text-xs">
+          Start Game
+        </Button>
       ) : (
         <>
           {gameState.gameOver ? (
-            <>
-              <Button onClick={startGame} className="win95-button h-8 whitespace-nowrap text-xs">
-                Play Again (Free!)
-              </Button>
-              {address && (
-                <div className="win95-panel p-2 h-8 flex items-center text-xs">
-                  <span className="font-bold text-yellow-600">
-                    Points: {getPoints(address)}
-                  </span>
-                </div>
-              )}
-            </>
+            <Button onClick={startGame} className="win95-button h-8 whitespace-nowrap text-xs">
+              Play Again
+            </Button>
           ) : (
             <Button onClick={pauseGame} className="win95-button h-8 whitespace-nowrap text-xs">
               {gameState.paused ? "Resume" : "Pause"}

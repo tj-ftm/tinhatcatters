@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Windows95Window from '../window/Windows95Window';
 import { 
@@ -11,12 +10,20 @@ import {
   Wallet 
 } from 'lucide-react';
 import { CustomWindow } from '@/hooks/useDesktopState';
+import Game from '@/pages/Game';
+import Shop from '@/pages/Shop';
+import GrowRoom from '@/components/GrowRoom';
+import Leaderboard from '@/pages/Leaderboard';
+import Analytics from '@/pages/Analytics';
 
 interface CustomWindowsManagerProps {
   customWindows: CustomWindow[];
   activeCustomWindow: string | null;
   setActiveCustomWindow: (windowId: string | null) => void;
   closeCustomWindow: (windowId: string) => void;
+  minimizeCustomWindow: (windowId: string) => void;
+  maximizeCustomWindow: (windowId: string) => void;
+  windowsMaximized: Record<string, boolean>;
   onNavigate: (windowId: string, route?: string) => void;
 }
 
@@ -25,8 +32,29 @@ const CustomWindowsManager: React.FC<CustomWindowsManagerProps> = ({
   activeCustomWindow,
   setActiveCustomWindow,
   closeCustomWindow,
+  minimizeCustomWindow,
+  maximizeCustomWindow,
+  windowsMaximized,
   onNavigate
 }) => {
+  // Calculate centered position for windows
+  const getWindowPosition = (index: number) => {
+    const windowWidth = 500;
+    const windowHeight = 350;
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    
+    const centerX = (screenWidth - windowWidth) / 2 + (index * 20);
+    const centerY = (screenHeight - windowHeight) / 2 + (index * 20);
+    
+    return {
+      x: Math.max(20, centerX),
+      y: Math.max(20, centerY),
+      width: windowWidth,
+      height: windowHeight
+    };
+  };
+
   const getComputerWindowContent = () => (
     <div className="p-4">
       <h2 className="text-lg font-bold mb-4">My Computer</h2>
@@ -57,26 +85,34 @@ const CustomWindowsManager: React.FC<CustomWindowsManagerProps> = ({
 
   return (
     <>
-      {customWindows.map((win, index) => (
-        <Windows95Window
-          key={win.id}
-          title={win.title}
-          width={600}
-          height={400}
-          x={100 + index * 30}
-          y={100 + index * 30}
-          isActive={activeCustomWindow === win.id}
-          onFocus={() => setActiveCustomWindow(win.id)}
-          onClose={() => closeCustomWindow(win.id)}
-        >
-          {win.id === 'computer' && getComputerWindowContent()}
-          {win.id === 'game' && <iframe className="w-full h-full" src="/game" />}
-          {win.id === 'shop' && <iframe className="w-full h-full" src="/shop" />}
-          {win.id === 'growroom' && <iframe className="w-full h-full" src="/growroom" />}
-          {win.id === 'leaderboard' && <iframe className="w-full h-full" src="/leaderboard" />}
-          {win.id === 'analytics' && <iframe className="w-full h-full" src="/analytics" />}
-        </Windows95Window>
-      ))}
+      {customWindows.map((win, index) => {
+        const position = getWindowPosition(index);
+        return (
+          <Windows95Window
+            key={win.id}
+            title={win.title}
+            width={position.width}
+            height={position.height}
+            x={position.x}
+            y={position.y}
+            isActive={activeCustomWindow === win.id}
+            onFocus={() => setActiveCustomWindow(win.id)}
+            onClose={() => closeCustomWindow(win.id)}
+            onMinimize={() => minimizeCustomWindow(win.id)}
+            onMaximize={() => maximizeCustomWindow(win.id)}
+            isMaximized={windowsMaximized[win.id] || false}
+            showMinimize={true}
+            showMaximize={true}
+          >
+            {win.id === 'computer' && getComputerWindowContent()}
+            {win.id === 'game' && <div className="w-full h-full overflow-hidden"><Game /></div>}
+            {win.id === 'shop' && <div className="w-full h-full overflow-hidden"><Shop /></div>}
+            {win.id === 'growroom' && <div className="w-full h-full overflow-hidden"><GrowRoom /></div>}
+            {win.id === 'leaderboard' && <div className="w-full h-full overflow-hidden"><Leaderboard /></div>}
+            {win.id === 'analytics' && <div className="w-full h-full overflow-hidden"><Analytics /></div>}
+          </Windows95Window>
+        );
+      })}
     </>
   );
 };

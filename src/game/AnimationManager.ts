@@ -6,8 +6,8 @@ export class AnimationManager {
 
   update() {
     const now = Date.now();
-    if (this.isRunning && now - this.lastAnimationFrameTime > 100) {
-      this.animationFrame = (this.animationFrame + 1) % 4;
+    if (this.isRunning && now - this.lastAnimationFrameTime > 125) {
+      this.animationFrame = (this.animationFrame + 1) % 8;
       this.lastAnimationFrameTime = now;
     }
   }

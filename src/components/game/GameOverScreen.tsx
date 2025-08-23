@@ -10,12 +10,14 @@ interface GameOverScreenProps {
   score: number;
   pointsEarned: number;
   onPlayAgain: () => void;
+  onConnectWallet?: () => void;
 }
 
 const GameOverScreen: React.FC<GameOverScreenProps> = ({
   score,
   pointsEarned,
-  onPlayAgain
+  onPlayAgain,
+  onConnectWallet
 }) => {
   const { leaderboard, getPlayerRank } = useReptilianLeaderboard();
   const { address } = useWeb3();
@@ -84,12 +86,22 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
           </div>
 
           <div className="text-center">
-            <Button 
-              onClick={onPlayAgain}
-              className="win95-button text-sm px-4 py-1"
-            >
-              Play Again
-            </Button>
+            <div className="flex gap-2 justify-center">
+              {!address && onConnectWallet && (
+                <Button 
+                  onClick={onConnectWallet}
+                  className="win95-button text-sm px-4 py-1"
+                >
+                  Connect Wallet
+                </Button>
+              )}
+              <Button 
+                onClick={onPlayAgain}
+                className="win95-button text-sm px-4 py-1"
+              >
+                Play Again
+              </Button>
+            </div>
           </div>
         </div>
       </div>

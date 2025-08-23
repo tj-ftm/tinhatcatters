@@ -1,3 +1,5 @@
+@import './styles/analytics.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -61,8 +63,6 @@
   font-style: normal;
 }
 
-@import './styles/analytics.css';
-
 @layer components {
   .win95-window {
     @apply bg-[#c0c0c0] border-[3px] border-solid;
@@ -106,6 +106,21 @@
   .game-canvas {
     @apply w-full h-full bg-black border-2 border-solid;
     border-color: #808080 #ffffff #ffffff #808080;
+  }
+
+  /* Remove white space from game layout */
+  .game-layout {
+    @apply flex flex-col h-full;
+    margin: 0;
+    padding: 0;
+  }
+
+  .game-top-panel {
+    @apply bg-[#c0c0c0] border-2 border-solid;
+    border-color: #ffffff #808080 #808080 #ffffff;
+    padding: 4px 8px;
+    margin: 0;
+    min-height: 32px;
   }
 
   /* Sonic theme overrides */

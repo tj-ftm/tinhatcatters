@@ -8,6 +8,7 @@ import GameStats from '@/components/game/GameStats';
 import GameControls from '@/components/game/GameControls';
 import GameUpgrades from '@/components/game/GameUpgrades';
 import GameOverlay from '@/components/game/GameOverlay';
+import WalletSelectDialog from '@/components/WalletSelectDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Game: React.FC = () => {
@@ -24,7 +25,10 @@ const Game: React.FC = () => {
     saveGameResults,
     address,
     currentPoints,
-    upgradeCost
+    upgradeCost,
+    showWalletDialog,
+    setShowWalletDialog,
+    handleSelectWallet
   } = useGameState();
   
   console.log('Game state:', gameState);
@@ -49,9 +53,9 @@ const Game: React.FC = () => {
 
   return (
     <div className="win95-window w-full h-full overflow-hidden flex flex-col">
-      <div className="p-2 bg-[#c0c0c0] flex flex-col h-full">
-        <div className="w-full mb-2 win95-panel p-2">
-          <div className={`${isMobile ? 'flex flex-col space-y-2' : 'flex flex-row justify-between'} items-center`}>
+      <div className="game-layout">
+        <div className="game-top-panel">
+          <div className={`${isMobile ? 'flex flex-col space-y-1' : 'flex flex-row justify-between'} items-center h-full`}>
             <GameStats 
               gameState={gameState} 
               currentPoints={currentPoints}
@@ -74,6 +78,7 @@ const Game: React.FC = () => {
           setWindowIsMaximized={setWindowIsMaximized}
           gameEngineRef={gameEngineRef}
           onPlayAgain={handlePlayAgain}
+          onConnectWallet={() => setShowWalletDialog(true)}
         />
       </div>
       
@@ -87,6 +92,12 @@ const Game: React.FC = () => {
       <GameOverlay 
         isLoading={isLoading} 
         pendingAction={pendingAction} 
+      />
+      
+      <WalletSelectDialog 
+        open={showWalletDialog}
+        onOpenChange={setShowWalletDialog}
+        onSelectWallet={handleSelectWallet}
       />
     </div>
   );

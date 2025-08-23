@@ -12,6 +12,7 @@ export const useDesktopState = () => {
   const [showChat, setShowChat] = useState(false);
   const [activeWindows, setActiveWindows] = useState<string[]>([]);
   const [windowsMinimized, setWindowsMinimized] = useState<Record<string, boolean>>({});
+  const [windowsMaximized, setWindowsMaximized] = useState<Record<string, boolean>>({});
   const [customWindows, setCustomWindows] = useState<CustomWindow[]>([]);
   const [activeCustomWindow, setActiveCustomWindow] = useState<string | null>(null);
   const [showWalletWindow, setShowWalletWindow] = useState(false);
@@ -56,6 +57,10 @@ export const useDesktopState = () => {
     setWindowsMinimized(prev => ({ ...prev, [windowId]: true }));
   };
 
+  const maximizeWindow = (windowId: string) => {
+    setWindowsMaximized(prev => ({ ...prev, [windowId]: !prev[windowId] }));
+  };
+
   const restoreWindow = (windowId: string) => {
     setWindowsMinimized(prev => ({ ...prev, [windowId]: false }));
     if (!activeWindows.includes(windowId)) {
@@ -67,13 +72,48 @@ export const useDesktopState = () => {
     const existingWindow = customWindows.find(w => w.id === windowId);
     if (!existingWindow) {
       setCustomWindows(prev => [...prev, { id: windowId, title, route }]);
+      // Add to activeWindows for taskbar display only when creating new window
+      setActiveWindows(prev => [...prev, windowId]);
     }
     setActiveCustomWindow(windowId);
+    // Ensure window is not minimized when opened
+    setWindowsMinimized(prev => ({ ...prev, [windowId]: false }));
   };
 
   const closeCustomWindow = (windowId: string) => {
     setCustomWindows(prev => prev.filter(w => w.id !== windowId));
     setActiveCustomWindow(prev => prev === windowId ? null : prev);
+    // Also remove from activeWindows for taskbar
+    setActiveWindows(prev => prev.filter(id => id !== windowId));
+    // Clean up maximize state
+    setWindowsMaximized(prev => {
+      const newMaximized = { ...prev };
+      delete newMaximized[windowId];
+      return newMaximized;
+    });
+    // Clean up minimize state
+    setWindowsMinimized(prev => {
+      const newMinimized = { ...prev };
+      delete newMinimized[windowId];
+      return newMinimized;
+    });
+  };
+
+  const minimizeCustomWindow = (windowId: string) => {
+    setActiveCustomWindow(prev => prev === windowId ? null : prev);
+    // Set window as minimized in taskbar
+    setWindowsMinimized(prev => ({ ...prev, [windowId]: true }));
+  };
+
+  const maximizeCustomWindow = (windowId: string) => {
+    setWindowsMaximized(prev => ({ ...prev, [windowId]: !prev[windowId] }));
+  };
+
+  const restoreCustomWindow = (windowId: string) => {
+    // Restore the custom window by setting it as active
+    setActiveCustomWindow(windowId);
+    // Ensure it's not minimized
+    setWindowsMinimized(prev => ({ ...prev, [windowId]: false }));
   };
 
   return {
@@ -81,6 +121,7 @@ export const useDesktopState = () => {
     showChat,
     activeWindows,
     windowsMinimized,
+    windowsMaximized,
     customWindows,
     activeCustomWindow,
     showWalletWindow,
@@ -96,8 +137,12 @@ export const useDesktopState = () => {
     openWindow,
     closeWindow,
     minimizeWindow,
+    maximizeWindow,
     restoreWindow,
     openCustomWindow,
-    closeCustomWindow
+    closeCustomWindow,
+    minimizeCustomWindow,
+    maximizeCustomWindow,
+    restoreCustomWindow
   };
 };
