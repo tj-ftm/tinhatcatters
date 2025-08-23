@@ -33,9 +33,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
-    // Create parallax background
-    this.createParallaxBackground();
-    
     // Create platforms
     this.createPlatforms();
     
@@ -48,6 +45,9 @@ export default class GameScene extends Phaser.Scene {
     
     // Create player
     this.createPlayer();
+
+    // Create parallax background (moved to render on top)
+    this.createParallaxBackground();
     
     // Add pet if available
     this.createPet();
@@ -115,14 +115,23 @@ export default class GameScene extends Phaser.Scene {
     this.parallaxBG = [
       this.add.tileSprite(0, 0, Number(width), Number(height), 'bg-layer-1')
         .setOrigin(0, 0)
-        .setScrollFactor(0, 0),
+        .setScrollFactor(0, 0)
+        .setDepth(0),
       this.add.tileSprite(0, 0, Number(width), Number(height), 'bg-layer-2')
         .setOrigin(0, 0)
-        .setScrollFactor(0, 0.1),
+        .setScrollFactor(0, 0.1)
+        .setDepth(1),
       this.add.tileSprite(0, 0, Number(width), Number(height), 'bg-layer-3')
         .setOrigin(0, 0)
         .setScrollFactor(0, 0.2)
+        .setDepth(2)
     ];
+    this.parallaxBG.push(
+      this.add.tileSprite(0, Number(height) - 40, Number(width), 40, 'grass')
+        .setOrigin(0, 0)
+        .setScrollFactor(0, 0.3) // Adjust this speed as needed
+        .setDepth(100) // Set a high depth to render on top
+    );
   }
 
   createPlatforms() {

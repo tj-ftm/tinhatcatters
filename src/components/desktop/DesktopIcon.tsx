@@ -150,10 +150,6 @@ const DesktopIcon: React.FC<DesktopIconProps> = ({
       </div>
       <span 
         className={`text-white text-xs text-center font-medium
-          ${isSelected 
-            ? 'border border-dotted border-white/50' 
-            : ''
-          } 
           px-1 py-0.5 w-full transition-all duration-100
           ${isPressed ? 'brightness-90' : ''}
         `}

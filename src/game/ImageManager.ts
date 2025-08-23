@@ -65,7 +65,7 @@ export class ImageManager {
       isVideo: true
     },
     enemyFire: {
-      src: '/assets/Icons/Reptile_running.webm',
+      src: '/assets/Icons/reptile_jump.webm',
       width: 129,
       height: 150,
       frames: 8,
@@ -92,6 +92,11 @@ export class ImageManager {
     },
     floor: {
       src: '/assets/Icons/floor.png',
+      width: 800,
+      height: 40
+    },
+    grass: {
+      src: '/assets/Icons/grass.png',
       width: 800,
       height: 40
     },
@@ -135,6 +140,7 @@ export class ImageManager {
     // Load environment
     this.loadImage('background', this.imageConfig.background.src);
     this.loadImage('floor', this.imageConfig.floor.src);
+    this.loadImage('grass', this.imageConfig.grass.src);
     
     // Load enemy sprites conditionally
     if (this.imageConfig.enemyRun.isVideo) {
